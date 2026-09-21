@@ -1,0 +1,121 @@
+# Blackjack — The Green Room
+
+[English](./README.md) | **简体中文**
+
+一款基于 **React + TypeScript + Vite** 的本地优先单人 Web Blackjack 游戏。绿色绒面牌桌、纸牌与筹码动画、可选音效，适配桌面和手机屏幕。所有下注均使用虚拟筹码。
+
+[产品需求](./docs/prd.md) · [架构](./docs/architecture.md) · [模块设计快照](./docs/design/) · [存档格式](./docs/contracts/save-format.md) · [测试与验收](./docs/testing.md) · [贡献指南](./AGENTS.md)
+
+## 功能特性
+
+- **经典玩法**：要牌、停牌、加倍、撤销或清空下注、全押。
+- **响应式 2D 牌桌**：自有 SVG 纸牌与筹码、Motion 动画、键盘操作和减少动态效果支持。
+- **双语界面**：英文与简体中文，自动识别浏览器语言并保存手动选择。
+- **可选音效**：合成发牌和筹码声音，支持音量调节与静音。
+- **自动续局**：刷新后恢复当前决策点或已完成的结算结果，动画中刷新也能恢复。
+- **便携存档**：导出 JSON 备份，在其他设备导入；先校验，再确认替换。
+- **本地保护**：跨标签页修改时暂停操作；浏览器存储不可用时继续游戏并提示导出。
+
+## 技术栈
+
+| 领域       | 工具                                        |
+| ---------- | ------------------------------------------- |
+| 界面       | React 19、严格模式 TypeScript               |
+| 构建       | Vite 6、npm 锁文件                          |
+| 展示       | Motion、CSS、内联 SVG、Web Audio            |
+| 状态与存储 | React reducer、纯规则引擎、localStorage     |
+| 质量检查   | Vitest、Prettier、Playwright CLI 浏览器验收 |
+
+## 快速开始
+
+需要 **Node.js 22.12+** 和 npm。
+
+**Windows** —— 双击 `start-game.bat`。
+
+**macOS** —— 双击 `start-game.command`
+（首次若被 Gatekeeper 拦截：右键 → 打开；或在终端执行 `bash start-game.command`）。
+
+**Linux** —— 终端执行 `bash start-game.command`
+（或先赋予可执行权限，再在文件管理器中双击“在终端中运行”）。
+
+启动脚本会检查 Node.js 环境，首次运行自动安装依赖，随后在
+`http://127.0.0.1:5173` 启动游戏服务器并自动打开浏览器。也可以随时在终端手动执行：
+
+```bash
+npm ci
+npm run dev
+```
+
+```bash
+npm test              # 规则与存档校验测试
+npm run typecheck     # 严格 TypeScript 类型检查
+npm run format        # 格式化源码、文档与配置
+npm run format:check  # 只检查格式，不修改文件
+npm run build         # 类型检查并生成 dist/
+npm run preview       # 预览 dist/，默认端口为 4173
+```
+
+## 目录结构
+
+```text
+src/
+  domain/             # 纯规则、命令、事件，以及同目录的 *.test.ts
+  application/        # 状态协调、动画队列与存档生命周期
+  presentation/       # React 界面（components/、format、i18n、styles）
+  infrastructure/     # 存档校验、浏览器存储、音效与测试
+  main.tsx            # 应用入口
+public/               # 网站图标等静态资源
+docs/                 # prd、architecture、design/、contracts/、requirements/、adr/、roadmap、testing
+start-game.bat        # Windows 启动脚本（环境检查、首装依赖、启动并打开浏览器）
+start-game.command    # macOS / Linux 启动脚本
+AGENTS.md             # 贡献指南（上下文路由 + 硬约束）
+LICENSE               # MIT 许可证
+README.md             # 英文项目说明
+README.zh-CN.md       # 简体中文项目说明
+index.html            # Vite HTML 入口
+package.json          # 依赖与开发命令
+package-lock.json     # 可复现的 npm 依赖版本
+tsconfig.json         # 严格 TypeScript 配置
+vite.config.ts        # React 集成与相对资源路径
+```
+
+`node_modules/`、`dist/`、`output/` 为生成内容，已加入忽略规则。测试与实现放在同一目录，无需额外维护重复的测试目录或运行器。
+
+引擎先提交权威游戏状态，再播放展示队列；动画回调不负责扣款和结算。金额使用整数百分之一筹码表示。
+
+## 牌桌规则
+
+- 初始资金为 **2,000 虚拟筹码**，每局重新洗一副 52 张牌。
+- 人头牌为 10 点，A 可作 1 点或 11 点；电脑固定为庄家。
+- 开局立即检查天然 Blackjack，双方天然则平局。
+- 天然 Blackjack **净赔 3:2**，普通获胜**净赔 1:1**，平局返还下注。
+- 普通 21 点自动结束玩家行动，但不保证获胜。庄家所有 17 点均停牌，包括软 17。
+- 仅初始两张牌且余额足够时可加倍：追加同额下注，补一张牌后停牌。
+- 以整筹码下注，余额可含半筹码；全押保留无法下注的半筹码。
+
+本版本暂不包含分牌、保险和投降。
+
+## 存档与隐私
+
+进度和偏好仅保存在当前浏览器。清理站点数据会删除自动存档，请通过 `.blackjack.json` 文件单独备份。存档是未加密、可编辑的单机数据，不提供防作弊能力。项目不包含账号、遥测、广告或后端。
+
+## 部署
+
+执行 `npm run build`，将 **`dist/` 内的内容** 上传到静态 HTTP/HTTPS 服务器。资源使用相对路径，可部署到根目录或子目录，无需客户端路由回退配置。生产环境使用 HTTPS，本地通过服务预览，不要以 `file://` 直接打开 HTML。
+
+项目没有 Service Worker，不保证离线重新打开。浏览器验收结果和待补验的平台见[测试与验收](./docs/testing.md)。
+
+## 路线图
+
+候选方向，均未排期——详见 [docs/roadmap.md](./docs/roadmap.md)：
+
+1. **局域网双人同玩**：同一局域网内两台设备同桌对玩，需引入轻量本地服务与状态同步。
+2. 分牌、多手牌轮转和独立结算。
+3. 保险与投降，同步扩展规则和存档版本。
+4. 将账号、云存档等架构扩展作为独立方向另行评估。
+
+贡献前请阅读 [AGENTS.md](./AGENTS.md)。调整行为或启动命令时，请同步更新中英文说明。
+
+## 许可证
+
+基于 [MIT 许可证](./LICENSE) 开源。

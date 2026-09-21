@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+*.tsbuildinfo
+
+# Test reports, browser sessions, and caches
+coverage/
+output/
+.playwright-cli/
+playwright-report/
+test-results/
+.cache/
+.vite/
+
+# Local game backups and logs
+*.blackjack.json
+logs/
+*.log
+
+# Local environment files
+.env
+.env.*
+!.env.example
+*.local
+
+# OS and editor temporary files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
