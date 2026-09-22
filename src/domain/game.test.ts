@@ -6,6 +6,7 @@ import {
   score,
   shuffle,
   transition,
+  type CardId,
   type GameCommand,
   type GameState,
   type RuleSet,
@@ -187,6 +188,34 @@ describe("classic rules", () => {
     expect(s.dealer.length).toBe(3);
     expect(score(s.dealer).total).toBe(18);
     expect(s.outcome).toBe("push");
+  });
+});
+// @req REQ-2026-002
+describe("soft 17 must-hit variants", () => {
+  const rules: RuleSet = { ...RULES, standSoft17: false, insurance: false };
+  const settle = (prefix: CardId[], bet = 1000) =>
+    transition(dealt(prefix, bet, rules), { type: "stand" }, Math.random, rules)
+      .state;
+  it("dealer A+6 draws to a hard 16 and busts, player wins", () => {
+    const s = settle([9, 0, 7, 5, 8, 9]);
+    expect(s.dealer).toHaveLength(4);
+    expect(score(s.dealer).total).toBe(26);
+    expect(s.outcome).toBe("win");
+    expect(s.balance).toBe(201000);
+  });
+  it("dealer A+6 draws a ten, ace degrades to hard 17 and stands, points settle", () => {
+    const s = settle([7, 0, 8, 5, 9]);
+    expect(s.dealer).toHaveLength(3);
+    expect(score(s.dealer)).toEqual({ total: 17, soft: false });
+    expect(s.outcome).toBe("push");
+    expect(s.balance).toBe(200000);
+  });
+  it("dealer A+A+5 is soft 17, draws a ten, degrades to hard 17 and stands", () => {
+    const s = settle([9, 0, 7, 13, 4, 9]);
+    expect(s.dealer).toHaveLength(4);
+    expect(score(s.dealer)).toEqual({ total: 17, soft: false });
+    expect(s.outcome).toBe("win");
+    expect(s.balance).toBe(201000);
   });
 });
 
