@@ -60,7 +60,7 @@ No lint script — Prettier is the style gate. `start-game.bat` / `start-game.co
 - `docs/architecture.md` — stack, layers, directory layout, build & deploy.
 - `docs/design/` — per-module behavior snapshots (start from its README index).
 - `docs/contracts/save-format.md` — save format v2 fields and validation rules.
-- `docs/requirements/` — incremental requirements (`index.md` + `active/`); template included.
+- `docs/requirements/` — incremental requirements (`index.md` + `active/` + `archive/`); each requirement ends as exactly one document (background / approach / acceptance criteria / acceptance record / change log) — intermediate artifacts (acceptance reports, handoffs, implementation plans) are distilled into the requirement document and then deleted; template included.
 - `docs/adr/` — decision records. `docs/roadmap.md` — rules v2 milestones and unscheduled candidates (incl. LAN two-player).
 - `docs/testing.md` — quality gate, browser acceptance table, known boundaries, past verification records.
 
