@@ -30,6 +30,6 @@ v0.1.0 发布包采用多文件构建（`index.html` + `assets/*.js` + `assets/*
 
 ## 后果
 
-- 正面：双击可玩在 Chromium / WebKit / Firefox 全部成立（沙箱三引擎矩阵 + 真实 Chrome 双击验收通过）；静态托管（根目录/子目录）行为不变；发布包从 3 文件减为 2 文件（`index.html` + `favicon.svg`）。
+- 正面：双击可玩在 Chromium / WebKit / Firefox 全部成立（沙箱三引擎矩阵 + 真实 Chrome 双击验收通过）；`https` 与 `localhost` 静态托管（根目录/子目录）行为不变；明文 `http` + 局域网 IP（非安全上下文）自 REQ-2026-008 修复 `crypto.randomUUID` 白屏后亦可用；发布包从 3 文件减为 2 文件（`index.html` + `favicon.svg`）。
 - 代价：`index.html` 约 419 KB（gzip 约 133 KB），失去外部资源独立缓存与并行加载（单页小游戏影响可忽略）；调试生产产物时无独立 source map 文件（构建期仍生成行内 map，需要时可临时关闭内联）。
 - 流程后果：`docs/testing.md` 浏览器验收规范增补 `file://` 场景，防止同类回归。

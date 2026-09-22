@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import type { Settings } from "../../../infrastructure/save";
 import type { Copy } from "../../i18n";
 
@@ -5,6 +6,7 @@ export function SettingsPanel({
   t,
   settings,
   conflict,
+  focusAbout,
   updateSettings,
   onNewGame,
   onAbout,
@@ -12,10 +14,16 @@ export function SettingsPanel({
   t: Copy;
   settings: Settings;
   conflict: boolean;
+  focusAbout: boolean;
   updateSettings: (patch: Partial<Settings>) => void;
   onNewGame: () => void;
   onAbout: () => void;
 }) {
+  const aboutEntry = useRef<HTMLButtonElement>(null);
+  // @req REQ-2026-011: returning from About restores focus on its entry button.
+  useEffect(() => {
+    if (focusAbout) aboutEntry.current?.focus();
+  }, []);
   return (
     <div className="settings-list">
       <label>
@@ -67,7 +75,7 @@ export function SettingsPanel({
         </select>
       </label>
       {/* @req REQ-2026-007 */}
-      <button className="about-entry" onClick={onAbout}>
+      <button ref={aboutEntry} className="about-entry" onClick={onAbout}>
         {t.about}
         <span aria-hidden="true">→</span>
       </button>

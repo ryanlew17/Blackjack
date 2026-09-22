@@ -98,6 +98,20 @@ describe("save format", () => {
     expect(readSave().error).toBe("storage");
     expect(writeSave(envelope(freshGame(), settings))).toBe(false);
   });
+  // @req REQ-2026-008 Insecure contexts (plain http on a LAN IP) lack crypto.randomUUID;
+  // envelope() must still produce unique non-empty revisions that satisfy parseSave.
+  it("generates unique non-empty revisions when crypto.randomUUID is unavailable", () => {
+    vi.stubGlobal("crypto", { randomUUID: undefined });
+    const revisions = new Set<string>();
+    for (let i = 0; i < 50; i++) {
+      const save = envelope(freshGame(), settings);
+      expect(typeof save.revision).toBe("string");
+      expect(save.revision).not.toBe("");
+      revisions.add(save.revision);
+      expect(parseSave(JSON.stringify(save))).toEqual(save);
+    }
+    expect(revisions.size).toBe(50);
+  });
   it("reports corrupt storage without overwriting it", () => {
     const write = vi.fn();
     vi.stubGlobal("navigator", { language: "en" });

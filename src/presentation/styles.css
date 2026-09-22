@@ -202,7 +202,7 @@ main {
   color: var(--gold);
 }
 .felt-table {
-  height: 494px;
+  height: 550px;
   position: relative;
   border: 1px solid #9aa88235;
   border-radius: 140px 140px 120px 120px;
@@ -679,9 +679,10 @@ main {
   display: flex;
   justify-content: center;
   gap: 14px;
+  flex-wrap: wrap;
 }
 .play-actions button {
-  min-width: 165px;
+  min-width: 115px;
 }
 .play-actions button span {
   font-size: 20px;
@@ -690,6 +691,15 @@ main {
 }
 .play-actions .double-button span {
   font-size: 15px;
+}
+/* @req REQ-2026-010 Touch-reachable action hint; reserved height keeps the button row stable. */
+.action-hint {
+  min-height: 15px;
+  margin: 10px 0 0;
+  font-size: 10px;
+  line-height: 1.5;
+  text-align: center;
+  color: #a3b09f;
 }
 .result-row {
   display: flex;
@@ -974,6 +984,29 @@ dialog::backdrop {
     opacity: 0.2;
   }
 }
+
+/* @req REQ-2026-004 Dual hands preserve readable cards at a 320px viewport. */
+.player-hand {
+  min-width: 0;
+  padding: 6px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+}
+.player-hand.active-hand {
+  border-color: #deca8a88;
+  background: #ffffff05;
+}
+.hand-detail {
+  text-align: center;
+  color: #c9d3b8;
+  font-size: 10px;
+  line-height: 1.6;
+}
+.split-hands {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
 @media (min-width: 1500px) {
   .app-shell {
     padding-top: 15px;
@@ -983,7 +1016,7 @@ dialog::backdrop {
     padding-bottom: 35px;
   }
   .felt-table {
-    height: 530px;
+    height: 580px;
   }
   .dealer-zone {
     top: 40px;
@@ -1039,8 +1072,8 @@ dialog::backdrop {
     letter-spacing: 2px;
   }
   .brand small {
-    font-size: 6px;
-    letter-spacing: 3px;
+    font-size: 8px;
+    letter-spacing: 2px;
   }
   .brand-mark {
     font-size: 35px;
@@ -1061,19 +1094,17 @@ dialog::backdrop {
   .table-heading h1 {
     font-size: 22px;
   }
-  .eyebrow {
-    font-size: 7px;
-    letter-spacing: 1.7px;
+  .eyebrow,
+  .bankroll .eyebrow {
+    font-size: 9px;
+    letter-spacing: 1px;
   }
   .bankroll > div {
     font-size: 26px;
   }
-  .bankroll .eyebrow {
-    font-size: 7px;
-  }
   .felt-table {
     border-radius: 80px 80px 65px 65px;
-    height: 484px;
+    height: 540px;
   }
   .table-trim {
     border-radius: 69px 69px 54px 54px;
@@ -1083,7 +1114,7 @@ dialog::backdrop {
     left: 27px;
     right: 23px;
     top: 27px;
-    font-size: 7px;
+    font-size: 8px;
   }
   .table-meta b {
     margin-left: 3px;
@@ -1096,12 +1127,19 @@ dialog::backdrop {
     font-size: 13px;
   }
   .table-rule {
-    font-size: 6px;
-    letter-spacing: 1.6px;
+    font-size: 8px;
+    letter-spacing: 1px;
+  }
+  .table-bottom-note {
+    font-size: 8px;
+    letter-spacing: 1px;
   }
   .hand-zone {
     left: 6%;
     right: 6%;
+  }
+  .hand-label {
+    font-size: 10px;
   }
   .bet-controls {
     display: grid;
@@ -1144,16 +1182,18 @@ dialog::backdrop {
     gap: 10px;
   }
   .play-actions button {
-    min-width: 0;
-    flex: 1;
-    padding: 0 15px;
+    flex: 1 1 28%;
+    min-width: 75px;
+    padding: 0 9px;
     gap: 12px;
   }
   .page-footer {
     font-size: 8px;
   }
-  .page-footer > span:first-child {
-    font-size: 6px;
+  .page-footer > span:first-child,
+  .page-footer button {
+    font-size: 9px;
+    letter-spacing: 0.5px;
   }
   .page-footer > span:nth-child(2) {
     display: none;
@@ -1163,6 +1203,39 @@ dialog::backdrop {
   }
   .notice > span {
     flex-basis: 100%;
+  }
+  /* @req REQ-2026-004 Dual hands preserve readable cards at a 320px viewport. */
+  .split-hands {
+    gap: 5px;
+    left: 4%;
+    right: 4%;
+  }
+  .split-hands .hand-label {
+    flex-wrap: wrap;
+    gap: 3px;
+    letter-spacing: 0;
+  }
+  .split-hands .card-slot + .card-slot {
+    margin-left: clamp(-42px, calc(5px - var(--count) * 14px), -23px);
+  }
+  .split-hands .card-slot {
+    width: 60px;
+    height: 90px;
+  }
+  .split-hands .card-suit {
+    width: 32px;
+    left: 14px;
+  }
+  .split-hands .card-corner {
+    font-size: 17px;
+    left: 4px;
+  }
+  .split-hands .card-corner.bottom {
+    left: auto;
+    right: 4px;
+  }
+  .player-hand {
+    padding: 3px;
   }
 }
 @media (max-width: 420px) {
@@ -1178,9 +1251,6 @@ dialog::backdrop {
   }
   .brand-mark {
     font-size: 31px;
-  }
-  .brand small {
-    letter-spacing: 2px;
   }
   .icon-button {
     width: 44px;
@@ -1201,16 +1271,8 @@ dialog::backdrop {
   .currency-mark {
     font-size: 17px;
   }
-  .bankroll .eyebrow {
-    letter-spacing: 1px;
-    font-size: 6px;
-  }
-  .eyebrow {
-    font-size: 6px;
-    letter-spacing: 1.1px;
-  }
   .felt-table {
-    height: 454px;
+    height: 530px;
     border-radius: 62px 62px 45px 45px;
   }
   .table-trim {
@@ -1224,7 +1286,6 @@ dialog::backdrop {
     left: 19px;
     right: 13px;
     top: 17px;
-    font-size: 6px;
     letter-spacing: 1px;
   }
   .table-meta button svg {
@@ -1267,10 +1328,6 @@ dialog::backdrop {
   }
   .table-wordmark span {
     font-size: 12px;
-  }
-  .table-rule {
-    font-size: 5px;
-    letter-spacing: 1.2px;
   }
   .wager-display {
     top: 250px;
@@ -1326,7 +1383,6 @@ dialog::backdrop {
   }
   .play-actions button {
     font-size: 12px;
-    padding: 0 11px;
     gap: 7px;
   }
   .dialog-body {
@@ -1384,66 +1440,6 @@ dialog::backdrop {
   top: 245px;
 }
 
-/* Small labels stay legible on touch screens. */
-@media (max-width: 760px) {
-  .eyebrow,
-  .bankroll .eyebrow {
-    font-size: 9px;
-    letter-spacing: 1px;
-  }
-  .hand-label {
-    font-size: 10px;
-  }
-  .table-meta {
-    font-size: 8px;
-  }
-  .table-rule {
-    font-size: 8px;
-    letter-spacing: 1px;
-  }
-  .table-bottom-note {
-    font-size: 8px;
-    letter-spacing: 1px;
-  }
-  .page-footer > span:first-child,
-  .page-footer button {
-    font-size: 9px;
-    letter-spacing: 0.5px;
-  }
-  .brand small {
-    font-size: 8px;
-    letter-spacing: 2px;
-  }
-}
-
-/* @req REQ-2026-004 Dual hands preserve readable cards at a 320px viewport. */
-.player-hand {
-  min-width: 0;
-  padding: 6px;
-  border: 1px solid transparent;
-  border-radius: 12px;
-}
-.player-hand.active-hand {
-  border-color: #deca8a88;
-  background: #ffffff05;
-}
-.hand-detail {
-  text-align: center;
-  color: #c9d3b8;
-  font-size: 10px;
-  line-height: 1.6;
-}
-.split-hands {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-.play-actions {
-  flex-wrap: wrap;
-}
-.play-actions button {
-  min-width: 115px;
-}
 .insurance-controls,
 .insurance-result {
   text-align: center;
@@ -1454,65 +1450,6 @@ dialog::backdrop {
 .history-row > span:nth-child(2) {
   min-width: 0;
   overflow-wrap: anywhere;
-}
-@media (max-width: 760px) {
-  .split-hands {
-    gap: 5px;
-    left: 4%;
-    right: 4%;
-  }
-  .split-hands .hand-label {
-    flex-wrap: wrap;
-    gap: 3px;
-    letter-spacing: 0;
-  }
-  .split-hands .card-slot + .card-slot {
-    margin-left: clamp(-42px, calc(5px - var(--count) * 14px), -23px);
-  }
-  .split-hands .card-slot {
-    width: 60px;
-    height: 90px;
-  }
-  .split-hands .card-suit {
-    width: 32px;
-    left: 14px;
-  }
-  .split-hands .card-corner {
-    font-size: 17px;
-    left: 4px;
-  }
-  .split-hands .card-corner.bottom {
-    left: auto;
-    right: 4px;
-  }
-  .play-actions button {
-    flex: 1 1 28%;
-    min-width: 75px;
-    padding: 0 9px;
-  }
-  .player-hand {
-    padding: 3px;
-  }
-}
-
-/* Reserve vertical space for per-hand status without overlapping the wager. */
-.felt-table {
-  height: 550px;
-}
-@media (min-width: 1500px) {
-  .felt-table {
-    height: 580px;
-  }
-}
-@media (max-width: 760px) {
-  .felt-table {
-    height: 540px;
-  }
-}
-@media (max-width: 420px) {
-  .felt-table {
-    height: 530px;
-  }
 }
 
 .split-hands .cards {
