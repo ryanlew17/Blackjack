@@ -95,7 +95,7 @@ The engine commits the authoritative state before the presentation queue runs. A
 - Double only on the initial two cards with enough remaining funds: match the wager, draw one card, then stand.
 - Wagers use whole chips; balances may include half chips. All in preserves any unbettable half chip.
 
-Splitting, insurance, and late surrender are implemented in this working tree, accepted after independent final verification; v2 has not been deployed:
+Splitting, insurance, and late surrender are implemented and independently accepted (2026-09-22):
 
 - Split equal-value initial cards into at most two hands, with no re-splitting. Split aces receive one card each and cannot double; other split hands may double. Split 21 is not a natural Blackjack.
 - With a dealer Ace showing, choose insurance before the natural check. Insurance costs half the original wager and pays 2:1 net for dealer Blackjack; the main wager settles independently.
@@ -114,7 +114,7 @@ There is no Service Worker or guaranteed offline relaunch. Browser verification 
 
 ## Roadmap
 
-Splitting, insurance, and late surrender are implemented and independently accepted, **not yet deployed**. See the [technical roadmap](./docs/roadmap.md) and [requirements index](./docs/requirements/index.md) (REQ-2026-003–006).
+Splitting, insurance, and late surrender are implemented and independently accepted (REQ-2026-003–006, archived). See the [technical roadmap](./docs/roadmap.md) and [requirements index](./docs/requirements/index.md).
 
 1. M0: register requirements and align planning documentation.
 2. M1: shared rules v2 state, settlement, and save validation.

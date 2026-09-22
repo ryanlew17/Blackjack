@@ -2,11 +2,11 @@
 
 > 日期：2026-09-22。验收人：交接验收 Agent（独立于实现 Agent）。
 > 结论：**通过**。四条需求的全部验收标准经独立复核、完整质量门槛与生产产物浏览器验收确认满足。未发现产品缺陷。
-> 状态：需求已归档。功能分支已由实现 Agent 提交并推送（2026-09-22，含第 8 节提交前复核），同日经复核后合并至 main；**尚未部署发布**（按用户后续指令处理）。浏览器覆盖：Chromium 100 项、Firefox 93 项（2026-09-22 补验，另 7 项环境阻塞）、WebKit 53 项。
+> 状态：需求已归档。功能分支已由实现 Agent 提交并推送（2026-09-22，含第 8 节提交前复核），同日经复核后合并至 main。浏览器覆盖：Chromium 100 项、Firefox 93 项（2026-09-22 补验，另 7 项环境阻塞）、WebKit 53 项。
 
 ## 1. 验收方法
 
-依据 [v2 交接清单](./v2-handoff.md) 与 `docs/testing.md` 门槛，独立执行：
+依据 [v2 交接清单](./archive/v2-handoff.md) 与 `docs/testing.md` 门槛，独立执行：
 
 1. **代码独立复审**：逐行审阅 `src/domain/game.ts`、`game.test.ts`、`src/infrastructure/save.ts`、`save.test.ts`、`src/application/useGame.ts`、`src/presentation/`（App/GameTable/ControlDeck/HistoryPanel/SavesPanel/SettingsPanel/Modal/Card/i18n/format），并核对设计快照（game-rules / state-and-animation / persistence / ui / architecture / save-format 契约 / roadmap / 双语 README）与实现一致。
 2. **完整质量门槛复跑**（见 §2）。
@@ -77,7 +77,7 @@ Firefox（Playwright 1.63 内置 Firefox 155.0）：落盘报告 `acc-report-fir
 
 ## 7. 结论与后续
 
-REQ-2026-003、004、005、006 验收**通过**，需求归档（`archive/`），`docs/testing.md`、`docs/roadmap.md`、需求索引已回填。功能分支已推送，2026-09-22 报告复核通过后合并至 main；发布未执行——按用户后续指令处理。
+REQ-2026-003、004、005、006 验收**通过**，需求归档（`archive/`），`docs/testing.md`、`docs/roadmap.md`、需求索引已回填。功能分支已推送，2026-09-22 报告复核通过后合并至 main。
 
 ## 8. 提交前复核（实现 Agent，2026-09-22）
 

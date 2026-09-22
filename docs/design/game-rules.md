@@ -1,6 +1,6 @@
 # design/game-rules — 规则引擎行为快照
 
-> 适用范围：`src/domain/` 当前工作区的规则 v2 实现；已通过独立最终验收，覆盖范围见验收报告。
+> 适用范围：`src/domain/` 规则引擎（规则 v2）的行为快照。
 > 何时读取：改规则、赔付、命令合法性、规则变体或领域测试时。
 > 关联需求：REQ-2026-003、REQ-2026-004、REQ-2026-005、REQ-2026-006。
 > 最后更新：2026-09-22
@@ -46,4 +46,4 @@ betting → deal → insurance（庄家明牌 A 且启用保险）→ player →
 
 `GameEvent { type: chip | card | reveal | result, state }` 携带事件时刻的完整快照。权威最终状态由 transition 一次性计算，useGame 先保存再播放。无事件的轮转同样提交状态，动画回调永不决定赔付。
 
-CardId 0–51；花色按 ♠♥♣♦，牌面按 A、2…10、J、Q、K。`shuffle(random)` 注入随机源，`testHelpers.ts` 提供固定牌序。开发测试覆盖所有新增动作及其非法时机；正式验收见需求及交接清单。
+CardId 0–51；花色按 ♠♥♣♦，牌面按 A、2…10、J、Q、K。`shuffle(random)` 注入随机源，`testHelpers.ts` 提供固定牌序。领域测试覆盖所有动作及其非法时机。
