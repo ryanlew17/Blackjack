@@ -40,3 +40,5 @@ M0–M4 已全部完成：功能实现与开发自测由实现 Agent 完成，�
 版本迭代：自 v0.1.0（2026-09-22 首次发布）起，每次发布自动递增版本号，需求随所属发布迭代版本；仅当某一需求被标记为重大升级时，由用户指定版本号跳跃。v0.1.1（2026-09-22）为发布后紧急热修复（双击 `file://` 白屏，见 [ADR-002](./adr/ADR-002-singlefile-release-build.md)），只改构建产物形态，不改规则与存档。
 
 v0.1.2（2026-09-22）：[REQ-2026-007](./requirements/archive/REQ-2026-007-about-panel.md) 设置内关于页完成开发与验收并归档，展示构建版本、仓库、MIT 许可与反馈入口。发布版本从 package.json 注入，随每次发布自动同步。
+
+v0.1.3（2026-09-23）：bug-fix 批次——[REQ-2026-008](./requirements/archive/REQ-2026-008-insecure-context-white-screen.md) 明文 http 非安全上下文白屏修复（revision 生成降级）、[REQ-2026-009](./requirements/archive/REQ-2026-009-css-patch-consolidation.md) styles.css 补丁合并（零视觉回归）、[REQ-2026-010](./requirements/archive/REQ-2026-010-touch-action-hints.md) 玩家动作提示触屏可达、[REQ-2026-011](./requirements/archive/REQ-2026-011-interaction-semantics.md) 交互语义修缮（品牌区非交互、旧档导出收口、关于返回焦点对称）。规则与存档格式保持 v2。
