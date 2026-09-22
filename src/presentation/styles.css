@@ -1517,3 +1517,46 @@ dialog::backdrop {
   overflow-x: auto;
   justify-content: safe center;
 }
+
+/* @req REQ-2026-007 */
+.about-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 64px;
+  border-bottom: 1px solid #ffffff0a;
+  color: var(--gold);
+  font-size: 13px;
+}
+.about-panel {
+  font-size: 13px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+.about-back,
+.about-panel a {
+  color: var(--gold);
+}
+.about-panel a {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.about-details {
+  margin: 18px 0 24px;
+}
+.about-details > div {
+  padding: 12px 0;
+  border-bottom: 1px solid #ffffff0a;
+}
+.about-details dt,
+.about-panel p {
+  color: #aebca7;
+}
+.about-details dd {
+  margin: 4px 0 0;
+}
+.about-panel h3 {
+  margin-bottom: 0;
+  font-size: 15px;
+  font-weight: 500;
+}

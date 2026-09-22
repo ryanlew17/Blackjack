@@ -15,6 +15,7 @@ A local-first, single-player Blackjack game for the browser, built with **React 
 - **Automatic resume**: restore the current decision point or completed result after a refresh, including during animations.
 - **Portable saves**: export a JSON backup and validate it before confirming an import on another device.
 - **Local safeguards**: pause on cross-tab changes; keep playing with an export reminder when browser storage is unavailable.
+- **About**: open Settings → About for the current version, project repository, MIT license, and GitHub Issues feedback.
 
 ## Tech Stack
 

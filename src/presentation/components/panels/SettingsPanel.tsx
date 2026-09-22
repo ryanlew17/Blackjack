@@ -7,12 +7,14 @@ export function SettingsPanel({
   conflict,
   updateSettings,
   onNewGame,
+  onAbout,
 }: {
   t: Copy;
   settings: Settings;
   conflict: boolean;
   updateSettings: (patch: Partial<Settings>) => void;
   onNewGame: () => void;
+  onAbout: () => void;
 }) {
   return (
     <div className="settings-list">
@@ -64,6 +66,11 @@ export function SettingsPanel({
           <option value="full">{t.full}</option>
         </select>
       </label>
+      {/* @req REQ-2026-007 */}
+      <button className="about-entry" onClick={onAbout}>
+        {t.about}
+        <span aria-hidden="true">→</span>
+      </button>
       <button className="danger-link" disabled={conflict} onClick={onNewGame}>
         {t.newGame}
       </button>

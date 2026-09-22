@@ -73,3 +73,5 @@ v2 全场景清单（Chromium 全量、Firefox 基础矩阵同集）：
 - 2026-09-22 规则 v2：开发自测（Vitest 60 项、内置浏览器 320px 中文冒烟，期间修复状态标签与下注区重叠）→ 独立最终验收通过（Chromium 100 / WebKit 53 / Firefox 93，零产品缺陷，含质量门槛复跑全绿），REQ-2026-003–006 归档并合入 main；完整证据与提交前复核已提炼进各归档需求文档的"验收记录"小节。
 - 2026-09-22 v0.1.0 首次发布：main 打 tag `v0.1.0`，发布产物为生产 `dist/` 静态包（`The-Green-Room-v0.1.0.zip`），质量门槛全绿（Vitest 63 项）；版本迭代规则见 [roadmap.md](./roadmap.md) 流程小节。
 - 2026-09-22 v0.1.1 紧急热修复：修复 v0.1.0 双击 `index.html`（`file://`）在 Chromium/WebKit 白屏（发布包多文件 ES module 被 CORS 拦截，Firefox 放行故漏检；全部既有验收经 http preview，见 ADR-002）。修复为单文件构建（`vite-plugin-singlefile`），`start-game` 启动脚本保留为源码运行用途。质量门槛全绿（Vitest 63/63、typecheck、format:check、build）；沙箱 `file://` 矩阵：v0.1.0 于 Chromium/WebKit 复现白屏、v0.1.1 三引擎零错误渲染；真实 Chrome 经 macOS `open`（等效双击）实机验收通过。
+
+- 2026-09-22 v0.1.2 / REQ-2026-007：关于页验收通过，质量门槛全绿（63/63 测试、typecheck、format:check、build）。Chrome 生产 preview 覆盖键盘入口、返回、Esc/关闭/重开、版本与三个链接、中英文 320px 及桌面；实际发布包干净解压后 `file://` 关于页、下注发牌通过，零控制台/页面错误。本次未重跑其他引擎，完整证据见 [REQ-2026-007](./requirements/archive/REQ-2026-007-about-panel.md)。

@@ -11,11 +11,12 @@ import { HistoryPanel } from "./components/panels/HistoryPanel";
 import { ResetPanel } from "./components/panels/ResetPanel";
 import { RulesPanel } from "./components/panels/RulesPanel";
 import { SavesPanel } from "./components/panels/SavesPanel";
+import { AboutPanel } from "./components/panels/AboutPanel";
 import { SettingsPanel } from "./components/panels/SettingsPanel";
 import { formatChips } from "./format";
 import { en, zh } from "./i18n";
 
-type Panel = "rules" | "settings" | "saves" | "history" | "reset";
+type Panel = "about" | "rules" | "settings" | "saves" | "history" | "reset";
 
 export default function App() {
   const systemReduced = !!useReducedMotion();
@@ -188,7 +189,11 @@ export default function App() {
                 conflict={api.conflict}
                 updateSettings={api.updateSettings}
                 onNewGame={() => setPanel("reset")}
+                onAbout={() => setPanel("about")}
               />
+            )}
+            {panel === "about" && (
+              <AboutPanel t={t} onBack={() => setPanel("settings")} />
             )}
             {panel === "saves" && (
               <SavesPanel

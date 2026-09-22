@@ -2,7 +2,8 @@
 
 > 适用范围：`src/presentation/` 当前实现的界面行为——组件结构、i18n、响应式、动效与音效约定。
 > 何时读取：改任何组件、样式、用户可见文案前。
-> 关联需求：[REQ-2026-001](../requirements/active/REQ-2026-001-reset-panel-cancel.md)
+> 关联需求：[REQ-2026-001](../requirements/archive/REQ-2026-001-reset-panel-cancel.md)
+> 关联需求：[REQ-2026-007](../requirements/archive/REQ-2026-007-about-panel.md)
 > 最后更新：2026-09-22
 > 来源：2026-09-22 重构定稿（App.tsx 拆分为 components/）
 
@@ -15,6 +16,7 @@ App.tsx                     # 组装层：useGame 接线、面板开关（panel 
   Modal.tsx                 # 原生弹层：焦点限制、Esc 关闭
     panels/RulesPanel.tsx   # 规则说明
     panels/SettingsPanel.tsx# 语言/音效/音量/动效
+    panels/AboutPanel.tsx  # 设置内关于二级视图（复用 Modal）
     panels/SavesPanel.tsx   # 导出/导入（导入预览与确认）
     panels/HistoryPanel.tsx # 最近 30 局
     panels/ResetPanel.tsx   # 重新开始确认
@@ -40,3 +42,9 @@ App.tsx                     # 组装层：useGame 接线、面板开关（panel 
 - 动效：遵循系统/用户减少动态效果设置（设置项 `motion`）；动画只读事件快照，不回写状态（见 `state-and-animation.md`）。
 - 音效：Web Audio 合成，首次用户交互时 `unlockAudio()` 解锁；遵循静音与音量设置，无音频资源文件。
 - 键盘操作：按钮使用原生 Tab/Enter/Space；弹层 Esc 关闭、焦点限制在弹层内。
+
+## 4. 设置与关于
+
+设置内的「关于」按钮可由 Tab 聚焦并 Enter / Space 激活，在同一 Modal 内切换到关于视图，标题同步更新。关于页将焦点移至「返回设置」按钮；返回后显示设置首页，关闭再打开也回到设置首页。Esc、关闭按钮和背景关闭均由 App 的 `closePanel()` 处理。
+
+关于页显示 package.json 的当前发布版本（Vite 构建时注入 `__APP_VERSION__`）、项目仓库、MIT 许可与 GitHub Issues 反馈说明。三个外部链接均新标签页打开且设置 `rel="noopener"`。文案完整进入双语字典，长仓库地址允许换行，320px 无横向溢出；无网络版本探测或遥测。

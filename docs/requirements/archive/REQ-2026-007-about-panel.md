@@ -1,6 +1,7 @@
 # REQ-2026-007: 设置面板新增「关于」页
 
-状态: active
+状态: done
+发布版本: v0.1.2
 来源: 用户（2026-09-22 首次发布后新增）
 关联设计: docs/design/ui.md（受影响的快照；落地后回写）
 影响模块: src/presentation/
@@ -15,7 +16,7 @@ v0.1.0 首次发布后，玩家在游戏内无法获知项目仓库地址、当�
 - 设置面板（SettingsPanel）新增「关于」入口行，可键盘聚焦；点击进入关于二级视图，页内提供返回设置的路径。复用现有面板容器做视图切换，不新增弹层层级；Esc / 关闭按钮仍统一走 `closePanel()`。
 - 「关于」页内容：
   - 项目仓库地址：`https://github.com/ryanlew17/Blackjack`，超链接可点击（新标签页打开，`rel="noopener"`）；
-  - 版本号：取 `package.json` 的 `version` 构建时注入（当前 0.1.1，随发布迭代），不在代码中硬编码第二个版本来源；
+  - 版本号：取 `package.json` 的 `version` 构建时注入（本次 0.1.2，随发布迭代），不在代码中硬编码第二个版本来源；
   - 开源声明：MIT License，附许可文本链接（仓库 `LICENSE` 文件）；
   - 反馈提示信息与反馈地址：说明欢迎通过 GitHub Issues 反馈问题与建议，超链接跳转 `https://github.com/ryanlew17/Blackjack/issues`（新标签页打开）。
 - 所有新增用户可见文案进 `i18n.ts` 英文与中文两个字典，禁止硬编码。
@@ -31,9 +32,17 @@ v0.1.0 首次发布后，玩家在游戏内无法获知项目仓库地址、当�
 
 ## 验收记录
 
-（待验收通过后填写：日期、验收人、结论与关键证据；本需求的验收报告等中间产物提炼进本节，不单独留档。）
+- 2026-09-22，Codex 开发并验收：通过，随 v0.1.2 交付。
+- 自动门槛：Vitest 63/63、严格 TypeScript、Prettier、生产构建通过。
+- Chrome（Playwright CLI，生产 preview）：Tab 聚焦关于入口并 Enter 打开；同一 dialog 内切换标题与内容，返回设置、中英文切换、Esc / 关闭、重开恢复设置首页均通过。代码复核关闭仍统一调用 `closePanel()`。
+- 三个链接的完整目标地址、`target="_blank"` 与 `rel="noopener"` 已断言；显示版本 0.1.2 与 package.json 一致。Vite 从 package.json 注入版本，不维护第二份版本常量。
+- 桌面与 320px 中英文截图人工复核通过；页面及关于内容 scrollWidth 均不超出可用宽度。证据：`output/playwright/req007-desktop.png`、`req007-320-en.png`、`req007-320-zh.png`。
+- 实际发布包 `The-Green-Room-v0.1.2.zip` 解压到干净临时目录，通过 Chrome `file://` 打开，关于页版本正确，下注与发牌可用，控制台及页面错误均为 0；截图 `output/playwright/req007-file.png`。
+- 本次浏览器验收仅覆盖 Chrome；未重跑其他引擎或完整规则 v2 浏览器矩阵。游戏规则与存档格式未改动。
 
 ## 变更记录
 
 - 2026-09-22 创建并登记索引
 - 2026-09-22 入口方案定为设置面板内二级页（about dialog 右上角弹窗方案作废），以最新需求为准
+
+- 2026-09-22 完成关于二级页、构建版本注入与双语文案；回写 UI 快照、双语 README、测试历史与路线图，验收后归档。
