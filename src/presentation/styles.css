@@ -1413,3 +1413,107 @@ dialog::backdrop {
     letter-spacing: 2px;
   }
 }
+
+/* @req REQ-2026-004 Dual hands preserve readable cards at a 320px viewport. */
+.player-hand {
+  min-width: 0;
+  padding: 6px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+}
+.player-hand.active-hand {
+  border-color: #deca8a88;
+  background: #ffffff05;
+}
+.hand-detail {
+  text-align: center;
+  color: #c9d3b8;
+  font-size: 10px;
+  line-height: 1.6;
+}
+.split-hands {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.play-actions {
+  flex-wrap: wrap;
+}
+.play-actions button {
+  min-width: 115px;
+}
+.insurance-controls,
+.insurance-result {
+  text-align: center;
+  font-size: 12px;
+  color: #c9d3b8;
+  line-height: 1.7;
+}
+.history-row > span:nth-child(2) {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 760px) {
+  .split-hands {
+    gap: 5px;
+    left: 4%;
+    right: 4%;
+  }
+  .split-hands .hand-label {
+    flex-wrap: wrap;
+    gap: 3px;
+    letter-spacing: 0;
+  }
+  .split-hands .card-slot + .card-slot {
+    margin-left: clamp(-42px, calc(5px - var(--count) * 14px), -23px);
+  }
+  .split-hands .card-slot {
+    width: 60px;
+    height: 90px;
+  }
+  .split-hands .card-suit {
+    width: 32px;
+    left: 14px;
+  }
+  .split-hands .card-corner {
+    font-size: 17px;
+    left: 4px;
+  }
+  .split-hands .card-corner.bottom {
+    left: auto;
+    right: 4px;
+  }
+  .play-actions button {
+    flex: 1 1 28%;
+    min-width: 75px;
+    padding: 0 9px;
+  }
+  .player-hand {
+    padding: 3px;
+  }
+}
+
+/* Reserve vertical space for per-hand status without overlapping the wager. */
+.felt-table {
+  height: 550px;
+}
+@media (min-width: 1500px) {
+  .felt-table {
+    height: 580px;
+  }
+}
+@media (max-width: 760px) {
+  .felt-table {
+    height: 540px;
+  }
+}
+@media (max-width: 420px) {
+  .felt-table {
+    height: 530px;
+  }
+}
+
+.split-hands .cards {
+  overflow-x: auto;
+  justify-content: safe center;
+}

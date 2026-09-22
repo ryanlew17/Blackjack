@@ -2,14 +2,14 @@
 
 > 适用范围：`src/application/useGame.ts` 当前实现的协调行为——权威状态、动画队列、刷新恢复、跨标签冲突。
 > 何时读取：改 useGame、动画节奏、持久化时机、冲突处理前。
-> 关联需求：无。
+> 关联需求：REQ-2026-003–006。
 > 最后更新：2026-09-22
 > 来源：2026-09-22 重构定稿（effectId 单调计数器）
 
 ## 1. 权威状态与视图
 
 - `current` ref 持有最新 `SaveEnvelope`（权威快照）；`view`（useReducer）仅保存当前正在渲染的 `game` + `busy` + 当前动效。
-- **先持久化、后渲染**：`send` 中 `transition` 算出新状态后，先 `persist` 写 localStorage，成功才 dispatch；写入失败或冲突时界面保持原状。
+- **先持久化、后渲染**：`send` 中 `transition` 算出新状态后，先 `persist` 写 localStorage，冲突时不提交；存储写入失败则保留内存权威状态并提示导出，当前会话继续。
 - 动画回调（`setTimeout` 步进）只 dispatch 事件快照，**永不修改余额或结算结果**；资金变化已全部包含在提交的状态里。
 
 ## 2. 动画队列
@@ -33,4 +33,6 @@
 
 ## 5. 对外 API（`useGame(reduced)` 返回）
 
-`game / busy / effect / effectId / settings / problem / conflict` + `send / updateSettings / reset / replace / reloadLatest / snapshot()`。`problem` 取值 `"corrupt"`（自动存档损坏，拒绝继续写入直到导入或重置）与 `"storage"`（存储不可用，继续游戏并提示导出）。表现层只消费该 API，不直接触碰 localStorage。
+`game / busy / effect / effectId / settings / problem / conflict` + `send / updateSettings / reset / replace / reloadLatest / snapshot()`。新增保险决策与多手轮转状态沿用同一提交路径，无事件的手牌轮转也立即保存。
+
+`problem` 取值 `"version"`（旧版/未知版本自动存档，暂停直至显式替换）、`"corrupt"`（自动存档损坏，拒绝继续写入直到导入或重置）与 `"storage"`（存储不可用，继续游戏并提示导出）。表现层只消费该 API，不直接触碰 localStorage。

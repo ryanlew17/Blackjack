@@ -28,7 +28,11 @@ export default function App() {
   const [panel, setPanel] = useState<Panel | null>(null);
   const [pending, setPending] = useState<SaveEnvelope | null>(null);
   const actions = legalActions(g);
-  const blocked = api.busy || api.conflict || api.problem === "corrupt";
+  const blocked =
+    api.busy ||
+    api.conflict ||
+    api.problem === "corrupt" ||
+    api.problem === "version";
   const can = (action: GameCommand["type"]) =>
     !blocked && actions.includes(action);
   useEffect(() => {
@@ -110,8 +114,10 @@ export default function App() {
               <span>
                 {api.conflict
                   ? t.conflict
-                  : api.problem === "corrupt"
-                    ? t.corrupt
+                  : api.problem === "corrupt" || api.problem === "version"
+                    ? api.problem === "version"
+                      ? t.legacySave
+                      : t.corrupt
                     : t.storage}
               </span>
               {api.conflict ? (
@@ -119,7 +125,7 @@ export default function App() {
               ) : (
                 <>
                   <button onClick={() => setPanel("saves")}>{t.saves}</button>
-                  {api.problem === "corrupt" && (
+                  {(api.problem === "corrupt" || api.problem === "version") && (
                     <button onClick={() => setPanel("reset")}>
                       {t.newGame}
                     </button>

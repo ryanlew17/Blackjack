@@ -31,9 +31,9 @@ export function useGame(reduced: boolean) {
     busy: false,
   });
   const [settings, setSettings] = useState(initial.save.settings);
-  const [problem, setProblem] = useState<"corrupt" | "storage" | null>(
-    initial.error,
-  );
+  const [problem, setProblem] = useState<
+    "corrupt" | "storage" | "version" | null
+  >(initial.error);
   const [conflict, setConflict] = useState(false);
   const conflictRef = useRef(false),
     busy = useRef(false),
@@ -97,7 +97,13 @@ export function useGame(reduced: boolean) {
   };
   const send = (command: GameCommand) => {
     unlockAudio();
-    if (busy.current || conflictRef.current || problem === "corrupt") return;
+    if (
+      busy.current ||
+      conflictRef.current ||
+      problem === "corrupt" ||
+      problem === "version"
+    )
+      return;
     const result = transition(current.current.game, command);
     if (result.state === current.current.game) return;
     if (!persist(envelope(result.state, current.current.settings))) return;
@@ -145,7 +151,7 @@ export function useGame(reduced: boolean) {
   const updateSettings = (patch: Partial<Settings>) => {
     unlockAudio();
     const next = { ...current.current.settings, ...patch };
-    if (problem === "corrupt" || conflictRef.current) {
+    if (problem === "corrupt" || problem === "version" || conflictRef.current) {
       setSettings(next);
       return;
     }
@@ -155,7 +161,7 @@ export function useGame(reduced: boolean) {
     if (conflictRef.current) return;
     cancel();
     const next = envelope(save.game, save.settings);
-    if (!persist(next, problem === "corrupt")) return;
+    if (!persist(next, problem === "corrupt" || problem === "version")) return;
     setSettings(next.settings);
     dispatch({ game: next.game, busy: false });
   };

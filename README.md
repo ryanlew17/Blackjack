@@ -89,13 +89,18 @@ The engine commits the authoritative state before the presentation queue runs. A
 
 - Start with **2,000 virtual chips**. Each hand uses a freshly shuffled 52-card deck.
 - Face cards count as 10; aces count as 1 or 11. The computer is always the dealer.
-- Initial natural Blackjacks are checked immediately. Two naturals push.
+- Initial natural Blackjacks are checked after the insurance choice when the dealer shows an Ace; otherwise immediately. Two naturals push.
 - Natural Blackjack pays **3:2 net**; an ordinary win pays **1:1 net**. A push returns the wager.
 - An ordinary 21 ends the player's turn but does not guarantee a win. The dealer stands on every 17, including soft 17.
 - Double only on the initial two cards with enough remaining funds: match the wager, draw one card, then stand.
 - Wagers use whole chips; balances may include half chips. All in preserves any unbettable half chip.
 
-Splitting, insurance, and surrender are not implemented in this release.
+Splitting, insurance, and late surrender are implemented in this working tree, accepted after independent final verification; v2 has not been deployed:
+
+- Split equal-value initial cards into at most two hands, with no re-splitting. Split aces receive one card each and cannot double; other split hands may double. Split 21 is not a natural Blackjack.
+- With a dealer Ace showing, choose insurance before the natural check. Insurance costs half the original wager and pays 2:1 net for dealer Blackjack; the main wager settles independently.
+- After dealer Blackjack is ruled out, surrender an unsplit initial hand before hitting or doubling to recover half the main wager. Insurance losses are not refunded.
+- Save and rules versions are now v2. v1 and unknown versions are rejected without migration; existing automatic saves are not silently overwritten. Explicitly start over or import a valid v2 backup.
 
 ## Saves & Privacy
 
@@ -109,12 +114,17 @@ There is no Service Worker or guaranteed offline relaunch. Browser verification 
 
 ## Roadmap
 
-Candidates, all unscheduled — details in [docs/roadmap.md](./docs/roadmap.md):
+Splitting, insurance, and late surrender are implemented and independently accepted, **not yet deployed**. See the [technical roadmap](./docs/roadmap.md) and [requirements index](./docs/requirements/index.md) (REQ-2026-003–006).
 
-1. **Two players over LAN**: a shared table between two devices on the same network, via a lightweight local service and state sync.
-2. Split hands, turn sequencing, and independent settlement.
-3. Insurance and surrender, with corresponding rules and save-version updates.
-4. Evaluate accounts, cloud saves, and other architectural extensions separately.
+1. M0: register requirements and align planning documentation.
+2. M1: shared rules v2 state, settlement, and save validation.
+3. M2: split into at most two hands, with turn sequencing and independent settlement.
+4. M3: insurance decisions before checking dealer Blackjack, with independent payouts.
+5. M4: late surrender, integration checks, and a single rules/save v2 release.
+
+Milestones have no calendar commitments; M1–M3 are development checkpoints, not separate releases. v2 rejects v1 and unknown saves without migration. Existing automatic saves must not be silently overwritten; starting over requires an explicit user choice.
+
+LAN two-player play, multiple decks, online deployment, and accounts/cloud saves remain unscheduled candidates; cloud and multiplayer work require separate architectural review.
 
 See [AGENTS.md](./AGENTS.md) before contributing. Keep documentation in both languages aligned when changing behavior or setup commands.
 

@@ -1,4 +1,8 @@
-import type { GameCommand, GameState } from "../../domain/game";
+import {
+  insuranceNet,
+  type GameCommand,
+  type GameState,
+} from "../../domain/game";
 import type { Language } from "../../infrastructure/save";
 import { formatChips } from "../format";
 import type { Copy } from "../i18n";
@@ -37,14 +41,56 @@ export function ControlDeck({
       ? t.waiting
       : g.phase === "settled"
         ? t.settled
-        : t.turn;
+        : g.phase === "insurance"
+          ? t.insurancePhase
+          : `${t.turn} · ${t.player} ${g.activeHand + 1}`;
   return (
     <section className="control-deck" aria-label={t.betLabel}>
       <div className="control-status" aria-live="polite">
         <span className={`status-dot ${busy ? "pulsing" : ""}`} />
         {status}
       </div>
-      {isBetting ? (
+      {g.insurance.outcome !== "not-offered" &&
+        g.insurance.outcome !== "pending" && (
+          <p className="insurance-result" aria-live="polite">
+            {g.insurance.outcome === "declined" ? (
+              t.insuranceDeclined
+            ) : (
+              <>
+                {g.insurance.outcome === "win"
+                  ? t.insuranceWin
+                  : t.insuranceLose}{" "}
+                · {t.bet} {formatChips(g.insurance.bet, language)} · {t.payout}{" "}
+                {formatChips(insuranceNet(g.insurance), language)}
+              </>
+            )}
+          </p>
+        )}
+      {g.phase === "insurance" ? (
+        <div className="insurance-controls">
+          <p>{t.insuranceHint}</p>
+          <p>
+            {t.insurance} · {formatChips(g.originalBet / 2, language)}
+          </p>
+          {g.balance < g.originalBet / 2 && <p>{t.insuranceUnaffordable}</p>}
+          <div className="play-actions">
+            <button
+              className="primary"
+              disabled={!can("insure")}
+              onClick={() => send({ type: "insure" })}
+            >
+              {t.insure}
+            </button>
+            <button
+              className="secondary"
+              disabled={!can("declineInsurance")}
+              onClick={() => send({ type: "declineInsurance" })}
+            >
+              {t.declineInsurance}
+            </button>
+          </div>
+        </div>
+      ) : isBetting ? (
         <>
           <div className="bet-controls">
             <div className="chip-selection">
@@ -122,6 +168,14 @@ export function ControlDeck({
       ) : (
         <div className="play-actions">
           <button
+            className="secondary"
+            title={t.helpSplit}
+            disabled={!can("split")}
+            onClick={() => send({ type: "split" })}
+          >
+            {t.split}
+          </button>
+          <button
             className="primary"
             aria-label={t.hit}
             disabled={!can("hit")}
@@ -148,6 +202,14 @@ export function ControlDeck({
           >
             <span>×2</span>
             {t.double}
+          </button>
+          <button
+            className="secondary"
+            title={t.helpSurrender}
+            disabled={!can("surrender")}
+            onClick={() => send({ type: "surrender" })}
+          >
+            {t.surrender}
           </button>
         </div>
       )}

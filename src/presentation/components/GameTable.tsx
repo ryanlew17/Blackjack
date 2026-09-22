@@ -1,6 +1,11 @@
 import { type CSSProperties } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { score, type GameEvent, type GameState } from "../../domain/game";
+import {
+  score,
+  totalWager,
+  type GameEvent,
+  type GameState,
+} from "../../domain/game";
 import type { Language } from "../../infrastructure/save";
 import { formatChips } from "../format";
 import type { Copy } from "../i18n";
@@ -28,10 +33,10 @@ export function GameTable({
   const hand = g.hands[0];
   const isBetting = g.phase === "betting";
   const depleted = isBetting && g.balance + hand.bet < 100;
-  const playerScore = score(hand.cards);
+  const hiddenDealer = g.phase === "player" || g.phase === "insurance";
   const dealerScore =
     g.dealer.length > 0
-      ? score(g.phase === "player" ? g.dealer.slice(0, 1) : g.dealer).total
+      ? score(hiddenDealer ? g.dealer.slice(0, 1) : g.dealer).total
       : null;
   return (
     <section
@@ -75,7 +80,7 @@ export function GameTable({
           {dealerScore !== null && (
             <span className="score">
               {dealerScore}
-              {g.phase === "player" ? " + ?" : ""}
+              {hiddenDealer ? " + ?" : ""}
             </span>
           )}
         </div>
@@ -88,7 +93,7 @@ export function GameTable({
               <Card
                 key={`${g.round}-${card}`}
                 card={card}
-                hidden={g.phase === "player" && i === 1}
+                hidden={hiddenDealer && i === 1}
                 reduced={reduced}
                 t={t}
               />
@@ -129,7 +134,7 @@ export function GameTable({
               <span className="mini-chip">◈</span>
               <div>
                 <small>{t.betLabel}</small>
-                <strong>{formatChips(hand.bet, language)}</strong>
+                <strong>{formatChips(totalWager(g), language)}</strong>
               </div>
             </motion.div>
           ) : (
@@ -137,37 +142,71 @@ export function GameTable({
           )}
         </AnimatePresence>
       </div>
-      <div className="player-zone hand-zone">
-        <div
-          className="cards"
-          style={{ "--count": Math.max(hand.cards.length, 2) } as CSSProperties}
-        >
-          {hand.cards.length ? (
-            hand.cards.map((card) => (
-              <Card
-                key={`${g.round}-${card}`}
-                card={card}
-                reduced={reduced}
-                t={t}
-              />
-            ))
-          ) : (
-            <div className="opening-message">
-              <span className="tiny-diamond">◇</span>
-              <h2>{depleted ? t.exhausted : t.placeBet}</h2>
-              <p>{depleted ? t.exhaustedCopy : t.betHint}</p>
+      {/* @req REQ-2026-004 Each hand keeps its own cards, wager and result. */}
+      <div
+        className={`player-zone hand-zone ${g.hands.length > 1 ? "split-hands" : ""}`}
+      >
+        {g.hands.map((h, index) => {
+          const playerScore = score(h.cards);
+          const active = g.phase === "player" && g.activeHand === index;
+          return (
+            <div
+              key={index}
+              className={`player-hand ${active ? "active-hand" : ""}`}
+              aria-current={active ? "step" : undefined}
+            >
+              <div
+                className="cards"
+                style={
+                  { "--count": Math.max(h.cards.length, 2) } as CSSProperties
+                }
+              >
+                {h.cards.length ? (
+                  h.cards.map((card) => (
+                    <Card
+                      key={`${g.round}-${card}`}
+                      card={card}
+                      reduced={reduced}
+                      t={t}
+                    />
+                  ))
+                ) : (
+                  <div className="opening-message">
+                    <span className="tiny-diamond">◇</span>
+                    <h2>{depleted ? t.exhausted : t.placeBet}</h2>
+                    <p>{depleted ? t.exhaustedCopy : t.betHint}</p>
+                  </div>
+                )}
+              </div>
+              {h.cards.length > 0 && (
+                <>
+                  <div className="hand-label">
+                    {t.player}
+                    {g.hands.length > 1 ? ` ${index + 1}` : ""}
+                    <span
+                      className={`score ${playerScore.total > 21 ? "bust" : ""}`}
+                    >
+                      {playerScore.total}
+                      {playerScore.soft ? ` ${t.soft}` : ""}
+                    </span>
+                  </div>
+                  <div className="hand-detail">
+                    {t.bet} {formatChips(h.bet, language)} ·{" "}
+                    {h.outcome
+                      ? t[`${h.outcome}Short`]
+                      : active
+                        ? t.activeHand
+                        : h.status === "busted"
+                          ? t.handBusted
+                          : h.status === "stood"
+                            ? t.handStood
+                            : t.handWaiting}
+                  </div>
+                </>
+              )}
             </div>
-          )}
-        </div>
-        {hand.cards.length > 0 && (
-          <div className="hand-label">
-            {t.player}
-            <span className={`score ${playerScore.total > 21 ? "bust" : ""}`}>
-              {playerScore.total}
-              {playerScore.soft ? ` ${t.soft}` : ""}
-            </span>
-          </div>
-        )}
+          );
+        })}
       </div>
       <div className="table-bottom-note">
         <span>♣</span>

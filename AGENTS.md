@@ -27,7 +27,7 @@ GitHub Issue > `docs/requirements/active/*.md` > design docs. Register every new
 
 1. **`src/domain/` stays pure TypeScript** — no React, no browser APIs; randomness is injected → `docs/design/game-rules.md`
 2. **Commit authoritative state before animations; animation callbacks never determine payouts** — `transition` computes everything, `useGame` persists first, the queue only replays event snapshots → `docs/design/state-and-animation.md`
-3. **Money is integer hundredths of a chip** (100 = one chip); wagers are positive multiples of 100 → `docs/design/game-rules.md` §4
+3. **Money is integer hundredths of a chip** (100 = one chip); main wagers are positive multiples of 100; insurance is half the original wager and may be a multiple of 50 → `docs/design/game-rules.md` §4
 4. **Validate imported saves before replacing progress**; unsupported versions are rejected, never guessed — format changes bump versions and update `docs/contracts/save-format.md`
 5. **Every user-visible string goes into BOTH dictionaries** in `src/presentation/i18n.ts` (en + zh-CN); no hardcoded copy → `docs/design/ui.md`
 6. **Rule variants only via the `rules` parameter** of `transition`; pinned `RuleSet` literal fields mean "not implemented" — changing one = implement the rule + bump `rulesVersion` → `docs/adr/ADR-001-ruleset-parameterization.md`
@@ -59,9 +59,9 @@ No lint script — Prettier is the style gate. `start-game.bat` / `start-game.co
 - `docs/prd.md` — positioning / users / non-goals (authoritative for scope).
 - `docs/architecture.md` — stack, layers, directory layout, build & deploy.
 - `docs/design/` — per-module behavior snapshots (start from its README index).
-- `docs/contracts/save-format.md` — save format v1 fields and validation rules.
+- `docs/contracts/save-format.md` — save format v2 fields and validation rules.
 - `docs/requirements/` — incremental requirements (`index.md` + `active/`); template included.
-- `docs/adr/` — decision records. `docs/roadmap.md` — unscheduled candidates (incl. LAN two-player).
+- `docs/adr/` — decision records. `docs/roadmap.md` — rules v2 milestones and unscheduled candidates (incl. LAN two-player).
 - `docs/testing.md` — quality gate, browser acceptance table, known boundaries, past verification records.
 
 ## Deliberate Quirks — do not "clean up"

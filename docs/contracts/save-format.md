@@ -1,43 +1,50 @@
-# contracts/save-format — 存档格式 v1
+# contracts/save-format — 存档格式 v2
 
-> 适用范围：存档文件与 localStorage 快照的字段、编码、校验与恢复规则。
-> 何时读取：改 `src/infrastructure/save.ts`、导入导出、版本迁移时。
-> 关联需求：无。
+> 适用范围：当前工作区 v2 文件与自动存档契约；已通过独立最终验收。
+> 何时读取：改 save.ts、导入导出或版本兼容时。
+> 关联需求：REQ-2026-003–006。
 > 最后更新：2026-09-22
-> 来源：原 docs/SAVE_FORMAT.md（2026-09-22 迁入 contracts/，表述随实现更新）
 
-文件：UTF-8 紧凑 JSON，建议文件名 `green-room-YYYY-MM-DD.blackjack.json`。最大 128 KiB。localStorage 键为 `green-room.blackjack.v1`。
+## 外层与兼容
 
-外层 `SaveEnvelope`：
+UTF-8 JSON，最大 128 KiB；建议文件名 `green-room-YYYY-MM-DD.blackjack.json`。
 
-| 字段         | 含义                              |
-| ------------ | --------------------------------- |
-| version      | 存档格式版本，当前为 1            |
-| rulesVersion | 规则版本，当前为 1                |
-| savedAt      | ISO 日期时间                      |
-| revision     | 每次写入生成的 UUID，用于识别快照 |
-| game         | GameState 权威游戏状态            |
-| settings     | language、muted、volume、motion   |
+`SaveEnvelope`：`version: 2`、`rulesVersion: 2`、`savedAt`（可解析日期）、`revision`（非空字符串，写入时生成 UUID）、`game`、`settings`（language: en/zh，muted，volume: 0–1，motion: system/reduce/full）。仅支持默认桌规。
+
+**存储键继续为 `green-room.blackjack.v1`**：这是稳定的存储位置，不是负载格式版本。沿用该键可以发现旧档并保留跨标签冲突检测；不另起新键跳过旧档。
+
+v1、未知规则/格式版本均拒绝，不迁移。旧自动存档触发 `problem: version`，阻止游戏动作和设置写入，原文不自动覆盖。用户可明确确认重新开始或导入有效 v2 存档。读取失败返回的新局仅作为暂停界面的占位，不代表旧进度已转换。
 
 ## 游戏状态
 
-`phase` 可持久化为 betting / player / settled。dealer 是同步结算过程中的内部瞬态，导入不接受该阶段。
+| 字段                      | 含义                                                          |
+| ------------------------- | ------------------------------------------------------------- |
+| phase                     | betting / insurance / player / settled；dealer 瞬态禁止导入   |
+| balance / bets            | 可用资金及下注阶段的下注栈（最多 1000 项）                    |
+| hands                     | 一至两手，含 cards、bet、doubled、status、outcome             |
+| activeHand                | 当前行动手索引，非玩家阶段为 0；玩家阶段指向第一个 active 手  |
+| originalBet               | 发牌前原始主注；下注阶段为 0                                  |
+| insurance                 | bet 与 outcome：not-offered / pending / declined / win / lose |
+| dealer / deck             | 庄家牌与未发牌，deck[0] 为下一张                              |
+| round / outcome / history | 局号、汇总结果（含 mixed）、最近最多 30 局                    |
 
-`balance`、手牌 `bet`、下注栈 `bets`、历史 `net` 均使用整数百分之一筹码：100 = 一枚筹码，50 = 半枚筹码。下注必须为 100 的正整数倍。所有金额必须是非负安全整数且为 50 的倍数；除此之外不设固定上限，与游戏逻辑保持一致，任何可达的对局状态都能通过校验。
+`Hand.status` 为 active / stood / busted / surrendered，`outcome` 为 null 或 blackjack / win / lose / push / surrender。两手表示分牌；分牌手初始牌须同点值，各手下注为 originalBet 或加倍后的两倍。分 A 只能两张并停牌；21 点或爆牌后不可继续抽牌。
 
-`hands` 当前只允许一手，包含 cards、bet、doubled；未来分牌会通过新的规则/存档版本扩展。`dealer` 为庄家牌张，`deck` 为未发出的牌，下一张牌位于索引 0。
+金额为整数百分之一筹码；默认桌规下余额与保险是非负安全整数且为 50 的倍数，主注为 100 的正整数倍。历史净收益允许负数且须与明细精确一致；不设固定余额上限。
 
-CardId 是 0–51 的整数。花色按 ♠、♥、♣、♦ 排列，每种花色按 A、2…10、J、Q、K 排列：`花色 = floor(id / 13)`，`牌面 = id % 13`。进行中及已结算局的牌组、庄家与玩家手牌合计必须恰好覆盖 52 张不重复的牌。
+进行中和结算状态，全部玩家牌、庄家牌及剩余牌合计恰好覆盖 52 个不重复的 CardId（0–51）。下注状态无牌，仅一手，下注栈之和等于主注。
 
-`round` 为回合数；`outcome` 为 blackjack / win / lose / push 或 null；`history` 保存最近最多 30 局，含 round、outcome、bet、net。点数、UI 位置、动画和音频状态不写入文件。
+## 历史与一致性
+
+每条 `RoundRecord` 含 round、originalBet、outcome、bet、net、hands（逐手 bet/outcome/net）和 insurance。总下注包含保费，总净收益包含保险；各手结果不同时为 mixed。终局第一条记录必须与当前各手及保险一致。
+
+历史局号连续递减；保险或玩家行动中的当前局尚不入历史，其余状态最新历史对应当前 round；保存 min(已完成局数, 30) 条。记录必须满足逐手赔率、保险金额与结果组合约束。历史不保存完整牌面，因此校验数学与结构，不能证明过往随机牌序真实性。
 
 ## 校验与恢复
 
-1. 检查文件字节数、JSON 格式、存档版本与规则版本。
-2. 检查金额、牌张、设置值、阶段、天然 Blackjack、终局结果和历史净收益一致性。
-3. 仅在全部通过后展示余额、阶段与保存时间；用户确认后替换进度。
-4. 不支持的版本明确拒绝，不猜测转换。未来迁移应在 `parseSave` 入口按版本增加纯转换函数，转换结果仍需完整校验。
+1. 检查字节数、JSON、格式/规则版本、设置与元数据。
+2. 检查金额、手牌结构、牌组完整性、当前手顺序、分牌/加倍限制及保险时机。
+3. 检查天然、停牌/爆牌/投降状态、庄家补牌顺序和终局结果，核对历史明细与总收益。
+4. 全部通过才展示导入预览，用户确认后替换；失败保持现有进度。
 
-浏览器存储写入失败时，当前会话继续运行并显示导出提醒；损坏的自动存档不会被直接覆盖，必须导入或确认重新开始。导出读取权威快照，因此动画中导出也不会保存半截动画或重复结算。
-
-其他标签页写入后，当前标签页取消动画并暂停操作。写入前也会比较完整基准快照，发现变化要求重新载入。此机制用于日常单机冲突保护，不是跨标签页事务数据库或云端并发协议。
+权威状态先提交，动画中导出不保存中间事件。自动存档损坏和版本不支持均不静默覆盖；存储不可用则会话继续并提示导出。跨标签变更取消动画并暂停，重新载入最新状态后恢复。
