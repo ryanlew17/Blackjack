@@ -58,8 +58,8 @@ start-game.command    # macOS / Linux 启动脚本
 ## 4. 构建与部署
 
 - `npm run dev`：Vite 开发服，默认 `http://127.0.0.1:5173`（`--host 127.0.0.1` 已固定在脚本中）。
-- `npm run build`：`tsc -b` 类型检查 + `vite build` → `dist/`。
-- 部署：仅上传 `dist/` **内容**到静态 HTTP/HTTPS 主机；`vite.config.ts` 使用相对资源路径（`base: "./"`），支持根目录或子目录，无客户端路由回退。不要以 `file://` 打开。
+- `npm run build`：`tsc -b` 类型检查 + `vite build` → `dist/`（单文件产物：`vite-plugin-singlefile` 将 JS/CSS 内联进 `index.html`，仅 favicon 外置；`base: "./"` 保留）。
+- 分发/部署：`dist/` 是单文件静态产物，`file://` 双击可直接运行（自 v0.1.1 起，见 [ADR-002](./adr/ADR-002-singlefile-release-build.md)）；也可上传任意静态 HTTP/HTTPS 主机的根目录或子目录。无客户端路由回退。
 - 无 Service Worker，不保证离线重新打开。
 
 ## 5. 关键数据流（一帧命令）

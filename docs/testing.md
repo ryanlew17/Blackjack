@@ -23,6 +23,8 @@ npm run build         # tsc -b + vite build → dist/
 
 规范：使用 Playwright CLI（未引入第二套测试框架），先 `npm run build` 以生产产物走查（`npm run preview`）；仅记录实际覆盖，环境阻塞不计为通过。固定牌序存档夹具导入后抽牌顺序确定，金额可精确断言；截图与夹具位于 `output/playwright/`（已忽略，不属发布内容）。
 
+发布验收必须补做 **`file://` 双击场景**（自 v0.1.1 起）：在干净目录解压发布包后以 `file://` 打开 `index.html`，至少 Chromium/WebKit 其一须取得零控制台错误的渲染证据。v0.1.0 的教训：全部走查经 `http://127.0.0.1` preview 进行，未覆盖用户双击路径，Chromium/WebKit 的 CORS 白屏漏检流出（根因与决策见 [ADR-002](./adr/ADR-002-singlefile-release-build.md)）。
+
 当前覆盖（规则 v2 最终验收，2026-09-22，结论与证据见 `requirements/archive/` 各需求文档的"验收记录"小节）：
 
 | 引擎                               | 覆盖                                            |
@@ -70,3 +72,4 @@ v2 全场景清单（Chromium 全量、Firefox 基础矩阵同集）：
 - 2026-09-22 v1 浏览器矩阵：Chrome 完整对局/存档导入导出/无效文件/跨标签/双击防护/动画中刷新/弹窗焦点/存储禁用、WebKit 加倍与刷新、中文与 320px、390px 截图，均通过；桌面复验含五个面板开合与 Esc（Kimi 桌面浏览器；文件选择不支持处以代码审查核对 `closePanel` 清空 `pending`）。
 - 2026-09-22 规则 v2：开发自测（Vitest 60 项、内置浏览器 320px 中文冒烟，期间修复状态标签与下注区重叠）→ 独立最终验收通过（Chromium 100 / WebKit 53 / Firefox 93，零产品缺陷，含质量门槛复跑全绿），REQ-2026-003–006 归档并合入 main；完整证据与提交前复核已提炼进各归档需求文档的"验收记录"小节。
 - 2026-09-22 v0.1.0 首次发布：main 打 tag `v0.1.0`，发布产物为生产 `dist/` 静态包（`The-Green-Room-v0.1.0.zip`），质量门槛全绿（Vitest 63 项）；版本迭代规则见 [roadmap.md](./roadmap.md) 流程小节。
+- 2026-09-22 v0.1.1 紧急热修复：修复 v0.1.0 双击 `index.html`（`file://`）在 Chromium/WebKit 白屏（发布包多文件 ES module 被 CORS 拦截，Firefox 放行故漏检；全部既有验收经 http preview，见 ADR-002）。修复为单文件构建（`vite-plugin-singlefile`），`start-game` 启动脚本保留为源码运行用途。质量门槛全绿（Vitest 63/63、typecheck、format:check、build）；沙箱 `file://` 矩阵：v0.1.0 于 Chromium/WebKit 复现白屏、v0.1.1 三引擎零错误渲染；真实 Chrome 经 macOS `open`（等效双击）实机验收通过。

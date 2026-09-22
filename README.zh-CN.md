@@ -18,17 +18,19 @@
 
 ## 技术栈
 
-| 领域       | 工具                                        |
-| ---------- | ------------------------------------------- |
-| 界面       | React 19、严格模式 TypeScript               |
-| 构建       | Vite 6、npm 锁文件                          |
-| 展示       | Motion、CSS、内联 SVG、Web Audio            |
-| 状态与存储 | React reducer、纯规则引擎、localStorage     |
-| 质量检查   | Vitest、Prettier、Playwright CLI 浏览器验收 |
+| 领域       | 工具                                                     |
+| ---------- | -------------------------------------------------------- |
+| 界面       | React 19、严格模式 TypeScript                            |
+| 构建       | Vite 6、npm 锁文件、vite-plugin-singlefile（单文件产物） |
+| 展示       | Motion、CSS、内联 SVG、Web Audio                         |
+| 状态与存储 | React reducer、纯规则引擎、localStorage                  |
+| 质量检查   | Vitest、Prettier、Playwright CLI 浏览器验收              |
 
 ## 快速开始
 
-需要 **Node.js 22.12+** 和 npm。
+**只想玩游戏？** 下载最新的 Release 构建包，解压后双击 `index.html` 即可——无需 Node.js 或本地服务器（自 v0.1.1 起；v0.1.0 发布包双击白屏，见 [ADR-002](./docs/adr/ADR-002-singlefile-release-build.md)）。
+
+**从源码运行**需要 **Node.js 22.12+** 和 npm。
 
 **Windows** —— 双击 `start-game.bat`。
 
@@ -76,7 +78,7 @@ index.html            # Vite HTML 入口
 package.json          # 依赖与开发命令
 package-lock.json     # 可复现的 npm 依赖版本
 tsconfig.json         # 严格 TypeScript 配置
-vite.config.ts        # React 集成与相对资源路径
+vite.config.ts        # React 插件 + 单文件内联（vite-plugin-singlefile），base "./"
 ```
 
 `node_modules/`、`dist/`、`output/` 为生成内容，已加入忽略规则。测试与实现放在同一目录，无需额外维护重复的测试目录或运行器。
@@ -106,7 +108,7 @@ vite.config.ts        # React 集成与相对资源路径
 
 ## 部署
 
-执行 `npm run build`，将 **`dist/` 内的内容** 上传到静态 HTTP/HTTPS 服务器。资源使用相对路径，可部署到根目录或子目录，无需客户端路由回退配置。生产环境使用 HTTPS，本地通过服务预览，不要以 `file://` 直接打开 HTML。
+执行 `npm run build` 生成**单文件 `dist/`**（全部 JavaScript 与 CSS 内联进 `index.html`）。产物可直接分发：双击 `index.html` 即可在 Chrome、Edge、Firefox、Safari 中经 `file://` 运行；同一目录也可上传到任意静态 HTTP/HTTPS 服务器的根目录或子目录，无需客户端路由回退配置。
 
 项目没有 Service Worker，不保证离线重新打开。浏览器验收覆盖与已知边界见[测试与验收](./docs/testing.md)。
 

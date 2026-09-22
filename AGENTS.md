@@ -52,7 +52,7 @@ No lint script — Prettier is the style gate. `start-game.bat` / `start-game.co
 
 - **Four layers**: `domain/` (pure rules) ← `application/` (`useGame` coordination) ← `presentation/` (React UI); `infrastructure/` (save, audio) is used by application/presentation. The UI never bypasses `transition` to compute results, and never touches localStorage directly — only through the `useGame` API → `docs/architecture.md` §2
 - Tests live beside implementation as `*.test.ts` with injected fixed card sequences (`src/domain/testHelpers.ts`); no separate test tree.
-- `vite.config.ts` uses relative asset paths (`base: "./"`) for subdirectory static hosting — don't change.
+- `vite.config.ts` pins relative asset paths (`base: "./"`) and builds a **single-file dist** via `vite-plugin-singlefile`, so the release works when opened directly over `file://` — subdirectory static hosting still works. Don't change either; the rationale is [ADR-002](docs/adr/ADR-002-singlefile-release-build.md).
 
 ## Docs Pointers
 

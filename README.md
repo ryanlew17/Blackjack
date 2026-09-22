@@ -18,17 +18,21 @@ A local-first, single-player Blackjack game for the browser, built with **React 
 
 ## Tech Stack
 
-| Area              | Tools                                                 |
-| ----------------- | ----------------------------------------------------- |
-| UI                | React 19, TypeScript in strict mode                   |
-| Build             | Vite 6, npm lockfile                                  |
-| Presentation      | Motion, CSS, inline SVG, Web Audio                    |
-| State and storage | React reducer, pure rules engine, localStorage        |
-| Quality           | Vitest, Prettier, Playwright CLI browser verification |
+| Area              | Tools                                                           |
+| ----------------- | --------------------------------------------------------------- |
+| UI                | React 19, TypeScript in strict mode                             |
+| Build             | Vite 6, npm lockfile, vite-plugin-singlefile (single-file dist) |
+| Presentation      | Motion, CSS, inline SVG, Web Audio                              |
+| State and storage | React reducer, pure rules engine, localStorage                  |
+| Quality           | Vitest, Prettier, Playwright CLI browser verification           |
 
 ## Getting Started
 
-Requires **Node.js 22.12+** and npm.
+**Just playing?** Grab the latest release build, unzip it, and double-click
+`index.html` — no Node.js or server needed (since v0.1.1; the v0.1.0 package
+showed a blank page on double-click, see [ADR-002](./docs/adr/ADR-002-singlefile-release-build.md)).
+
+**Running from source** requires **Node.js 22.12+** and npm.
 
 **Windows** — double-click `start-game.bat`.
 
@@ -78,7 +82,7 @@ index.html            # Vite HTML entry
 package.json          # Dependencies and development commands
 package-lock.json     # Reproducible npm dependency versions
 tsconfig.json         # Strict TypeScript configuration
-vite.config.ts        # React integration and relative asset paths
+vite.config.ts        # React plugin + single-file inlining (vite-plugin-singlefile), base "./"
 ```
 
 `node_modules/`, `dist/`, and `output/` are generated and ignored. Tests remain next to their implementation; no separate test runner or duplicated test tree is required.
@@ -108,7 +112,11 @@ Progress and preferences stay in the current browser. Clearing site data removes
 
 ## Deployment
 
-Run `npm run build`, then upload **only the contents of `dist/`** to a static HTTP/HTTPS host. Relative asset paths support root or subdirectory deployment; no client-side routing fallback is required. Use HTTPS in production, and serve locally rather than opening HTML through `file://`.
+Run `npm run build` to produce a **single-file `dist/`** (all JavaScript and CSS
+inlined into `index.html`). Distribute it as-is: double-clicking `index.html`
+works over `file://` in Chrome, Edge, Firefox, and Safari, and the same folder
+can be uploaded to any static HTTP/HTTPS host at root or in a subdirectory —
+no client-side routing fallback is required.
 
 There is no Service Worker or guaranteed offline relaunch. Browser verification results and outstanding platform checks are documented in [testing & verification](./docs/testing.md).
 
