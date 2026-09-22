@@ -1,4 +1,4 @@
-import type { RoundRecord } from "../../../domain/game";
+import { insuranceNet, type RoundRecord } from "../../../domain/game";
 import type { Language } from "../../../infrastructure/save";
 import { formatChips } from "../../format";
 import type { Copy } from "../../i18n";
@@ -24,6 +24,29 @@ export function HistoryPanel({
             <small>
               {t.bet} {formatChips(r.bet, language)}
             </small>
+            {r.hands.map((h, index) => (
+              <small key={index}>
+                {t.player} {index + 1} · {t[`${h.outcome}Short`]} · {t.bet}{" "}
+                {formatChips(h.bet, language)} · {t.payout}{" "}
+                {formatChips(h.net, language)}
+              </small>
+            ))}
+            {r.insurance.outcome !== "not-offered" && (
+              <small>
+                {r.insurance.outcome === "declined" ? (
+                  t.insuranceDeclined
+                ) : (
+                  <>
+                    {r.insurance.outcome === "win"
+                      ? t.insuranceWin
+                      : t.insuranceLose}{" "}
+                    · {t.bet} {formatChips(r.insurance.bet, language)} ·{" "}
+                    {t.payout}{" "}
+                    {formatChips(insuranceNet(r.insurance), language)}
+                  </>
+                )}
+              </small>
+            )}
           </span>
           <strong className={r.net > 0 ? "positive" : ""}>
             {r.net > 0 ? "+" : ""}

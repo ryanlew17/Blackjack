@@ -31,7 +31,7 @@ presentation/  ──▶  application/  ──▶  domain/
 - `presentation/`：React 组件、样式、i18n 字典；不直接写 localStorage、不含规则判断。
 - `infrastructure/`：存档校验与读写、Web Audio；不依赖 React。
 
-规则引擎 API 只有三个入口：`transition(state, command, random?, rules?)`（唯一状态推进）、`legalActions(state)`（可用命令）、`score(cards)`。界面层禁止绕过 `transition` 自算结果。
+规则引擎主要入口：`transition(state, command, random?, rules?)`（唯一状态推进）、`legalActions(state, rules?)`（可用命令）、`score(cards)`。另提供逐手结算、历史汇总等纯函数供内部复用与存档校验。界面层禁止绕过 `transition` 自算结果。
 
 ## 3. 目录结构
 
@@ -67,7 +67,7 @@ start-game.command    # macOS / Linux 启动脚本
 ```text
 用户操作 → useGame.send(command)
   → transition(权威 state) 计算新状态与事件序列（不落地不动画）
-  → persist：先写 localStorage（冲突/失败即中止，界面不变）
+  → persist：先写 localStorage（冲突即中止；存储失败提示导出但保留内存进度）
   → 无事件：直接 dispatch 终态；有事件：busy 锁定，按节奏逐步 dispatch 事件快照并播音效
   → 队列播完：解除 busy，dispatch 终态
 ```

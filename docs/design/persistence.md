@@ -2,13 +2,13 @@
 
 > 适用范围：`src/infrastructure/save.ts` 与 useGame 协作实现的存档行为——自动保存、校验、导入导出、损坏恢复。字段与版本细节在 `../contracts/save-format.md`。
 > 何时读取：改 save.ts、导入导出流程、版本迁移前。
-> 关联需求：无。
+> 关联需求：REQ-2026-003–006。
 > 最后更新：2026-09-22
 > 来源：2026-09-22 文档架构升级（原 docs/SAVE_FORMAT.md 校验章节 + useGame 行为）
 
 ## 1. 自动保存
 
-- 每次 `transition` 提交新状态即写 `localStorage`（键 `green-room.blackjack.v1`）；设置变更（语言/静音/音量/动效）同样持久化。
+- 每次 `transition` 提交新状态即写 `localStorage`（沿用键 `green-room.blackjack.v1`，负载 version/rulesVersion 均为 2）；设置变更（语言/静音/音量/动效）同样持久化。
 - 导出读取 `snapshot()` 权威快照，因此动画中导出也不会保存半截动画或重复结算。
 
 ## 2. 校验入口
@@ -25,9 +25,11 @@
 
 - 校验失败：提示无效文件，**保持原存档不变**。
 - 预览后取消：清空待导入快照，不触碰现进度。
-- `dealer` 瞬态阶段不出现在合法存档中；进行中 (`player`) 与已结算 (`settled`) 局均可恢复。
+- `dealer` 瞬态阶段不出现在合法存档中；进行中 (`insurance` / `player`) 与已结算 (`settled`) 局均可恢复。
 
-## 4. 损坏与降级
+## 4. 损坏、旧档与降级
+
+- v1 与未知版本不迁移；旧自动存档触发 `problem = "version"`，提示不支持并暂停动作/设置写入，需明确确认重新开始或导入有效 v2 存档。原文不会自动覆盖。
 
 - 启动读到损坏自动存档：`problem = "corrupt"`，不自动覆盖、不静默丢弃；用户必须导入有效备份或确认重新开始（`replace` 以 `overwrite` 写入）。
 - 浏览器存储不可用/写入失败：`problem = "storage"`，当前会话继续游戏并显示导出提醒，进度只能靠手动导出备份。
