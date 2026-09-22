@@ -220,7 +220,7 @@ export default function App() {
                   api.reset();
                   closePanel();
                 }}
-                onCancel={() => setPanel(null)}
+                onCancel={closePanel}
               />
             )}
           </Modal>
