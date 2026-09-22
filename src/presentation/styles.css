@@ -875,6 +875,8 @@ dialog::backdrop {
 .danger-link {
   align-self: flex-start;
   margin-top: 22px;
+  padding: 0;
+  text-align: left;
   color: #cba88e;
 }
 .save-summary {
@@ -1523,7 +1525,9 @@ dialog::backdrop {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 64px;
+  min-height: 75px;
+  padding: 0;
+  text-align: left;
   border-bottom: 1px solid #ffffff0a;
   color: var(--gold);
   font-size: 13px;
