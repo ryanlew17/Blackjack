@@ -9,6 +9,7 @@ A local-first, single-player Blackjack game for the browser, built with **React 
 ## Features
 
 - **Classic rules**: hit, stand, double down, undo or clear wagers, and all in.
+- **Action hints**: when split, double, or surrender is available, a one-line explainer appears under the action buttons — reachable on touch screens, with desktop tooltips kept.
 - **Responsive 2D table**: custom SVG cards and chips, Motion animations, keyboard controls, and reduced-motion support.
 - **Bilingual interface**: English and Simplified Chinese, with browser-language detection and a saved language preference.
 - **Optional sound**: synthesized card and chip sounds, volume control, and mute.
@@ -109,7 +110,7 @@ Splitting, insurance, and late surrender are implemented and independently accep
 
 ## Saves & Privacy
 
-Progress and preferences stay in the current browser. Clearing site data removes the automatic save; export a `.blackjack.json` file for a separate backup. Saves are unencrypted, editable single-player data and do not provide anti-cheat protection. No accounts, telemetry, ads, or backend are included.
+Progress and preferences stay in the current browser. Clearing site data removes the automatic save; export a `.blackjack.json` file for a separate backup. When a rejected legacy or corrupt save is loaded, the export entry is hidden because the in-memory progress is a fresh placeholder — importing a valid v2 backup restores it. Saves are unencrypted, editable single-player data and do not provide anti-cheat protection. No accounts, telemetry, ads, or backend are included.
 
 ## Deployment
 

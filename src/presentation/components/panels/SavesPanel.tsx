@@ -17,6 +17,7 @@ export function SavesPanel({
   language,
   snapshot,
   conflict,
+  problem,
   pending,
   onPending,
   onConfirmImport,
@@ -26,6 +27,7 @@ export function SavesPanel({
   language: Language;
   snapshot: () => SaveEnvelope;
   conflict: boolean;
+  problem: "corrupt" | "storage" | "version" | null;
   pending: SaveEnvelope | null;
   onPending: (save: SaveEnvelope) => void;
   onConfirmImport: () => void;
@@ -33,6 +35,8 @@ export function SavesPanel({
 }) {
   const [fileError, setFileError] = useState<FileError | null>(null);
   const input = useRef<HTMLInputElement>(null);
+  // @req REQ-2026-011: a version/corrupt placeholder snapshot must not be exportable.
+  const legacy = problem === "version" || problem === "corrupt";
   const exportSave = () => {
     const blob = new Blob([JSON.stringify(snapshot())], {
       type: "application/json",
@@ -58,21 +62,25 @@ export function SavesPanel({
   return (
     <>
       <p className="modal-intro">{t.saveCopy}</p>
-      <div className="save-summary">
-        <span>
-          {t.balance}
-          <strong>{formatChips(snapshot().game.balance, language)}</strong>
-        </span>
-        <span>
-          {t.round}
-          <strong>{snapshot().game.round}</strong>
-        </span>
-      </div>
+      {!legacy && (
+        <div className="save-summary">
+          <span>
+            {t.balance}
+            <strong>{formatChips(snapshot().game.balance, language)}</strong>
+          </span>
+          <span>
+            {t.round}
+            <strong>{snapshot().game.round}</strong>
+          </span>
+        </div>
+      )}
       <div className="modal-actions">
-        <button className="primary" onClick={exportSave}>
-          {t.export}
-          <Icon name="save" />
-        </button>
+        {!legacy && (
+          <button className="primary" onClick={exportSave}>
+            {t.export}
+            <Icon name="save" />
+          </button>
+        )}
         <button
           className="secondary"
           disabled={conflict}

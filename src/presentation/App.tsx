@@ -28,6 +28,7 @@ export default function App() {
     (settings.motion === "system" && systemReduced);
   const [panel, setPanel] = useState<Panel | null>(null);
   const [pending, setPending] = useState<SaveEnvelope | null>(null);
+  const [focusAbout, setFocusAbout] = useState(false);
   const actions = legalActions(g);
   const blocked =
     api.busy ||
@@ -42,17 +43,13 @@ export default function App() {
   const closePanel = () => {
     setPanel(null);
     setPending(null);
+    setFocusAbout(false);
   };
   return (
     <MotionConfig reducedMotion={reduced ? "always" : "never"}>
       <div className="app-shell">
         <header className="topbar">
-          <a
-            className="brand"
-            href="#"
-            onClick={(e) => e.preventDefault()}
-            aria-label="Blackjack — The Green Room"
-          >
+          <div className="brand">
             <span className="brand-mark">♠</span>
             <span>
               <strong>
@@ -60,7 +57,7 @@ export default function App() {
               </strong>
               <small>{t.room}</small>
             </span>
-          </a>
+          </div>
           <nav aria-label={t.settings}>
             <button className="rules-link" onClick={() => setPanel("rules")}>
               {t.rules}
@@ -187,13 +184,20 @@ export default function App() {
                 t={t}
                 settings={settings}
                 conflict={api.conflict}
+                focusAbout={focusAbout}
                 updateSettings={api.updateSettings}
                 onNewGame={() => setPanel("reset")}
                 onAbout={() => setPanel("about")}
               />
             )}
             {panel === "about" && (
-              <AboutPanel t={t} onBack={() => setPanel("settings")} />
+              <AboutPanel
+                t={t}
+                onBack={() => {
+                  setFocusAbout(true);
+                  setPanel("settings");
+                }}
+              />
             )}
             {panel === "saves" && (
               <SavesPanel
@@ -201,6 +205,7 @@ export default function App() {
                 language={settings.language}
                 snapshot={api.snapshot}
                 conflict={api.conflict}
+                problem={api.problem}
                 pending={pending}
                 onPending={setPending}
                 onConfirmImport={() => {

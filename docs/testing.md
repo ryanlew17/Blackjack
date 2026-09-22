@@ -3,13 +3,13 @@
 > 适用范围：提交/发布前的质量门槛——单元测试、类型检查、格式、构建、浏览器验收；当前覆盖状态、已知边界与验证历史摘要。
 > 何时读取：写完代码准备验证时；发布前；核对某平台是否验收过时。
 > 关联需求：无（门槛本身的需求变更走 `requirements/`）。
-> 最后更新：2026-09-22
+> 最后更新：2026-09-23
 > 来源：原 docs/VERIFICATION.md（2026-09-22 迁入并改现名；2026-09-22 随规则 v2 验收完成整理）
 
 ## 1. 自动检查（每次改动）
 
 ```bash
-npm test              # Vitest：规则与存档校验（当前 63 项，含 300 局牌组检查与 600 局固定种子逐决策存档往返）
+npm test              # Vitest：规则与存档校验（当前 64 项，含 300 局牌组检查与 600 局固定种子逐决策存档往返）
 npm run typecheck     # 严格 TypeScript
 npm run format:check  # Prettier（源码、docs、双语 README、AGENTS.md 等；启动脚本与 LICENSE 不在其列）
 npm run build         # tsc -b + vite build → dist/
@@ -79,3 +79,4 @@ v2 全场景清单（Chromium 全量、Firefox 基础矩阵同集）：
 
 - 2026-09-22 v0.1.2 / REQ-2026-007：关于页验收通过，质量门槛全绿（63/63 测试、typecheck、format:check、build）。Chrome 生产 preview 覆盖键盘入口、返回、Esc/关闭/重开、版本与三个链接、中英文 320px 及桌面；实际发布包干净解压后 `file://` 关于页、下注发牌通过，零控制台/页面错误。本次未重跑其他引擎，完整证据见 [REQ-2026-007](./requirements/archive/REQ-2026-007-about-panel.md)。
 - 2026-09-22 REQ-2026-008：第三方 UX 审查发现明文 `http` + 局域网 IP（非安全上下文）访问白屏——`envelope()` 的 `crypto.randomUUID()` 在该上下文不存在，首次渲染抛错且 catch 兜底再次抛错，`#root` 为空（v0.1.1 单文件修复未覆盖此变体）。修复为 `save.ts` 内封装 revision 生成：有 `crypto.randomUUID` 则用，否则降级为时间戳+随机串（revision 仅需唯一性）。验收：Vitest 64/64（新增降级用例模拟 `randomUUID` 缺失，验证 50 次生成唯一且过 parseSave）；Chromium（桌面 Chrome）经 `http://192.168.31.26` 实测 `isSecureContext: false`、`randomUUID` 缺失下正常渲染，完成下注→发牌→结算→下一局、发牌动画中刷新恢复、导出→清空→导入往返，零控制台/页面错误；`file://`、localhost http、https 回归零错误。ADR-002 表述同步修订。
+- 2026-09-23 REQ-2026-009–011（bug-fix 批次）：009 styles.css 补丁合并为单一规则集——重构前后 5 视口 × 中英 × 5 状态共 50 张截图 SHA-256 与 scrollWidth 全等（期间以全元素几何探针定位并修复一处媒体块源序颠倒导致的 ≤760px 层叠回归）；010 玩家动作提示行——390/320 × 中英 46 项断言全过（优先级 分牌 > 加倍 > 投降、不可用即消失、按钮行零移位、320px 无横向溢出、提示行不进 Tab 序、按钮 `title` 悬浮保留）；011 交互语义——品牌区改为非交互 `div` 后 Tab 首停为「Table rules」（≤760px 为静音开关）、version/corrupt 态存档面板隐藏导出与摘要且导入可用、storage 态导出保留、「关于」返回焦点对称（中英）。Vitest 64/64、typecheck、format:check、build 全绿。完整证据见各归档需求文档的"验收记录"小节。

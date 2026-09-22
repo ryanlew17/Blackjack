@@ -166,52 +166,63 @@ export function ControlDeck({
           </button>
         </div>
       ) : (
-        <div className="play-actions">
-          <button
-            className="secondary"
-            title={t.helpSplit}
-            disabled={!can("split")}
-            onClick={() => send({ type: "split" })}
-          >
-            {t.split}
-          </button>
-          <button
-            className="primary"
-            aria-label={t.hit}
-            disabled={!can("hit")}
-            onClick={() => send({ type: "hit" })}
-          >
-            <span>＋</span>
-            {t.hit}
-          </button>
-          <button
-            className="secondary"
-            aria-label={t.stand}
-            disabled={!can("stand")}
-            onClick={() => send({ type: "stand" })}
-          >
-            <span>−</span>
-            {t.stand}
-          </button>
-          <button
-            className="secondary double-button"
-            aria-label={t.double}
-            title={t.helpDouble}
-            disabled={!can("double")}
-            onClick={() => send({ type: "double" })}
-          >
-            <span>×2</span>
-            {t.double}
-          </button>
-          <button
-            className="secondary"
-            title={t.helpSurrender}
-            disabled={!can("surrender")}
-            onClick={() => send({ type: "surrender" })}
-          >
-            {t.surrender}
-          </button>
-        </div>
+        <>
+          <div className="play-actions">
+            <button
+              className="secondary"
+              title={t.helpSplit}
+              disabled={!can("split")}
+              onClick={() => send({ type: "split" })}
+            >
+              {t.split}
+            </button>
+            <button
+              className="primary"
+              aria-label={t.hit}
+              disabled={!can("hit")}
+              onClick={() => send({ type: "hit" })}
+            >
+              <span>＋</span>
+              {t.hit}
+            </button>
+            <button
+              className="secondary"
+              aria-label={t.stand}
+              disabled={!can("stand")}
+              onClick={() => send({ type: "stand" })}
+            >
+              <span>−</span>
+              {t.stand}
+            </button>
+            <button
+              className="secondary double-button"
+              aria-label={t.double}
+              title={t.helpDouble}
+              disabled={!can("double")}
+              onClick={() => send({ type: "double" })}
+            >
+              <span>×2</span>
+              {t.double}
+            </button>
+            <button
+              className="secondary"
+              title={t.helpSurrender}
+              disabled={!can("surrender")}
+              onClick={() => send({ type: "surrender" })}
+            >
+              {t.surrender}
+            </button>
+          </div>
+          <p className="action-hint">
+            {can("split")
+              ? t.helpSplit
+              : can("double")
+                ? t.helpDouble
+                : can("surrender")
+                  ? t.helpSurrender
+                  : null}
+          </p>
+        </>
       )}
     </section>
   );
