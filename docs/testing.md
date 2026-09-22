@@ -69,3 +69,4 @@ v2 全场景清单（Chromium 全量、Firefox 基础矩阵同集）：
 - 2026-09-22 v1 修订：存档校验取消 10^12 固定上限改为非负安全整数（Vitest 31）；`App.tsx` 拆分组件、规则参数化 `standSoft17`/`blackjackPayout`（Vitest 33）；修复 `.dealer-zone` 绝对定位遮挡 `.table-meta` 历史按钮（`z-index: 1`，浏览器实测前后对照）。
 - 2026-09-22 v1 浏览器矩阵：Chrome 完整对局/存档导入导出/无效文件/跨标签/双击防护/动画中刷新/弹窗焦点/存储禁用、WebKit 加倍与刷新、中文与 320px、390px 截图，均通过；桌面复验含五个面板开合与 Esc（Kimi 桌面浏览器；文件选择不支持处以代码审查核对 `closePanel` 清空 `pending`）。
 - 2026-09-22 规则 v2：开发自测（Vitest 60 项、内置浏览器 320px 中文冒烟，期间修复状态标签与下注区重叠）→ 独立最终验收通过（Chromium 100 / WebKit 53 / Firefox 93，零产品缺陷，含质量门槛复跑全绿），REQ-2026-003–006 归档并合入 main；完整证据与提交前复核已提炼进各归档需求文档的"验收记录"小节。
+- 2026-09-22 v0.1.0 首次发布：main 打 tag `v0.1.0`，发布产物为生产 `dist/` 静态包（`The-Green-Room-v0.1.0.zip`），质量门槛全绿（Vitest 63 项）；版本迭代规则见 [roadmap.md](./roadmap.md) 流程小节。
