@@ -34,6 +34,13 @@ export const defaultSettings = (): Settings => ({
   volume: 0.3,
   motion: "system",
 });
+// @req REQ-2026-008 revision only needs uniqueness, not cryptographic strength.
+// crypto.randomUUID exists only in secure contexts; plain-http (LAN IP) hosting
+// must fall back or readSave()'s fallback envelope throws again and whitescreens.
+const newRevision = (): string =>
+  typeof crypto.randomUUID === "function"
+    ? crypto.randomUUID()
+    : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
 export const envelope = (
   game: GameState,
   settings: Settings,
@@ -41,7 +48,7 @@ export const envelope = (
   version: 2,
   rulesVersion: 2,
   savedAt: new Date().toISOString(),
-  revision: crypto.randomUUID(),
+  revision: newRevision(),
   game,
   settings,
 });

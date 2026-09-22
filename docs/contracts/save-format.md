@@ -2,14 +2,14 @@
 
 > 适用范围：v2 存档文件与自动存档契约。
 > 何时读取：改 save.ts、导入导出或版本兼容时。
-> 关联需求：REQ-2026-003–006。
+> 关联需求：REQ-2026-003–006、REQ-2026-008。
 > 最后更新：2026-09-22
 
 ## 外层与兼容
 
 UTF-8 JSON，最大 128 KiB；建议文件名 `green-room-YYYY-MM-DD.blackjack.json`。
 
-`SaveEnvelope`：`version: 2`、`rulesVersion: 2`、`savedAt`（可解析日期）、`revision`（非空字符串，写入时生成 UUID）、`game`、`settings`（language: en/zh，muted，volume: 0–1，motion: system/reduce/full）。仅支持默认桌规。
+`SaveEnvelope`：`version: 2`、`rulesVersion: 2`、`savedAt`（可解析日期）、`revision`（非空字符串，写入时生成唯一 ID：安全上下文为 UUID，非安全上下文降级为时间戳+随机串 @req REQ-2026-008）、`game`、`settings`（language: en/zh，muted，volume: 0–1，motion: system/reduce/full）。仅支持默认桌规。
 
 **存储键继续为 `green-room.blackjack.v1`**：这是稳定的存储位置，不是负载格式版本。沿用该键可以发现旧档并保留跨标签冲突检测；不另起新键跳过旧档。
 

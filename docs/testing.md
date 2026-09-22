@@ -25,13 +25,16 @@ npm run build         # tsc -b + vite build → dist/
 
 发布验收必须补做 **`file://` 双击场景**（自 v0.1.1 起）：在干净目录解压发布包后以 `file://` 打开 `index.html`，至少 Chromium/WebKit 其一须取得零控制台错误的渲染证据。v0.1.0 的教训：全部走查经 `http://127.0.0.1` preview 进行，未覆盖用户双击路径，Chromium/WebKit 的 CORS 白屏漏检流出（根因与决策见 [ADR-002](./adr/ADR-002-singlefile-release-build.md)）。
 
+发布验收必须补做 **明文 `http` + 局域网 IP 场景**（自 REQ-2026-008 起）：以 `http://<局域网IP>:<端口>` 直接访问生产产物（非安全上下文，`crypto.randomUUID` 不存在），验证渲染、完整对局、动画中刷新恢复与导出/导入往返，零控制台/页面错误。v0.1.1 的教训：单文件修复只覆盖了 `file://` 变体，非安全上下文白屏漏检流出（见验证历史 2026-09-22 REQ-2026-008 条目）。
+
 当前覆盖（规则 v2 最终验收，2026-09-22，结论与证据见 `requirements/archive/` 各需求文档的"验收记录"小节）：
 
-| 引擎                               | 覆盖                                            |
-| ---------------------------------- | ----------------------------------------------- |
-| Chromium（Playwright 1.63）        | 100/100，零控制台/页面错误                      |
-| WebKit 26.6                        | 代表性子集 53/53，零控制台错误                  |
-| Firefox（Playwright 捆绑版 155.0） | 基础矩阵 93/93，零控制台错误；另 7 项见已知边界 |
+| 引擎                                 | 覆盖                                                                                             |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| Chromium（Playwright 1.63）          | 100/100，零控制台/页面错误                                                                       |
+| WebKit 26.6                          | 代表性子集 53/53，零控制台错误                                                                   |
+| Firefox（Playwright 捆绑版 155.0）   | 基础矩阵 93/93，零控制台错误；另 7 项见已知边界                                                  |
+| 明文 http（局域网 IP，非安全上下文） | Chromium 桌面 Chrome：完整对局、动画中刷新恢复、导出/导入往返，零控制台/页面错误（REQ-2026-008） |
 
 v2 全场景清单（Chromium 全量、Firefox 基础矩阵同集）：
 
@@ -75,3 +78,4 @@ v2 全场景清单（Chromium 全量、Firefox 基础矩阵同集）：
 - 2026-09-22 v0.1.1 紧急热修复：修复 v0.1.0 双击 `index.html`（`file://`）在 Chromium/WebKit 白屏（发布包多文件 ES module 被 CORS 拦截，Firefox 放行故漏检；全部既有验收经 http preview，见 ADR-002）。修复为单文件构建（`vite-plugin-singlefile`），`start-game` 启动脚本保留为源码运行用途。质量门槛全绿（Vitest 63/63、typecheck、format:check、build）；沙箱 `file://` 矩阵：v0.1.0 于 Chromium/WebKit 复现白屏、v0.1.1 三引擎零错误渲染；真实 Chrome 经 macOS `open`（等效双击）实机验收通过。
 
 - 2026-09-22 v0.1.2 / REQ-2026-007：关于页验收通过，质量门槛全绿（63/63 测试、typecheck、format:check、build）。Chrome 生产 preview 覆盖键盘入口、返回、Esc/关闭/重开、版本与三个链接、中英文 320px 及桌面；实际发布包干净解压后 `file://` 关于页、下注发牌通过，零控制台/页面错误。本次未重跑其他引擎，完整证据见 [REQ-2026-007](./requirements/archive/REQ-2026-007-about-panel.md)。
+- 2026-09-22 REQ-2026-008：第三方 UX 审查发现明文 `http` + 局域网 IP（非安全上下文）访问白屏——`envelope()` 的 `crypto.randomUUID()` 在该上下文不存在，首次渲染抛错且 catch 兜底再次抛错，`#root` 为空（v0.1.1 单文件修复未覆盖此变体）。修复为 `save.ts` 内封装 revision 生成：有 `crypto.randomUUID` 则用，否则降级为时间戳+随机串（revision 仅需唯一性）。验收：Vitest 64/64（新增降级用例模拟 `randomUUID` 缺失，验证 50 次生成唯一且过 parseSave）；Chromium（桌面 Chrome）经 `http://192.168.31.26` 实测 `isSecureContext: false`、`randomUUID` 缺失下正常渲染，完成下注→发牌→结算→下一局、发牌动画中刷新恢复、导出→清空→导入往返，零控制台/页面错误；`file://`、localhost http、https 回归零错误。ADR-002 表述同步修订。
