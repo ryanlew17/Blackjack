@@ -32,7 +32,7 @@ v0.1.0 首次发布后，玩家在游戏内无法获知项目仓库地址、当�
 
 ## 验收记录
 
-- 2026-09-22，Codex 开发并验收：通过，随 v0.1.2 交付。
+- 2026-09-22 验收：通过，随 v0.1.2 交付。
 - 自动门槛：Vitest 63/63、严格 TypeScript、Prettier、生产构建通过。
 - Chrome（Playwright CLI，生产 preview）：Tab 聚焦关于入口并 Enter 打开；同一 dialog 内切换标题与内容，返回设置、中英文切换、Esc / 关闭、重开恢复设置首页均通过。代码复核关闭仍统一调用 `closePanel()`。
 - 三个链接的完整目标地址、`target="_blank"` 与 `rel="noopener"` 已断言；显示版本 0.1.2 与 package.json 一致。Vite 从 package.json 注入版本，不维护第二份版本常量。

@@ -3,8 +3,8 @@
 > 适用范围：技术选型、分层边界、目录结构、构建与部署。
 > 何时读取：新建/移动模块、调整构建或部署方式前。
 > 关联需求：无。
-> 最后更新：2026-09-22
-> 来源：2026-09-22 文档架构升级新建（原 AGENTS.md 与 README 结构章节整合）
+> 最后更新：2026-09-23
+> 来源：2026-09-22 文档架构升级新建（原 AGENTS.md 与 README 结构章节整合）；2026-09-23 竞赛模式立项（ADR-003 三库结构）
 
 ## 1. 技术栈
 
@@ -33,11 +33,14 @@ presentation/  ──▶  application/  ──▶  domain/
 
 规则引擎主要入口：`transition(state, command, random?, rules?)`（唯一状态推进）、`legalActions(state, rules?)`（可用命令）、`score(cards)`。另提供逐手结算、历史汇总等纯函数供内部复用与存档校验。界面层禁止绕过 `transition` 自算结果。
 
+**双模式（规划，[ADR-003](./adr/ADR-003-contest-mode-engine.md)）**：S1 起 `domain/` 重组为三库——`shared/`（两模式共用原语）、`classic/`（现 `game.ts` 平移，行为与测试零改动）、`contest/`（竞赛模式独立状态机、权重牌靴与卡牌目录）。竞赛模式拥有独立的 `transition`/`legalActions` 入口、事件类型与独立存档系统（`contracts/contest-save-format.md`），不经经典引擎的 rules 参数分支。首页提供模式选择（经典 / 竞赛 → 难度选择页，S3 起；S1–S2 固定标准难度直接开局），任何模式可随时中断返回首页；竞赛对局不持久化，中断即放弃。`application/` 的动画队列、存储生命周期与跨标签冲突检测抽为共享基建，两模式各挂薄封装；"先提交后渲染"约束对两引擎同样适用。
+
 ## 3. 目录结构
 
 ```text
 src/
   domain/             # 纯规则、命令、事件，同目录 *.test.ts 与确定性测试助手
+                      # （S1 起重组为 shared/ classic/ contest/ 三库，见 ADR-003；contest 为规划）
   application/        # useGame：状态协调、动画队列、存档生命周期
   presentation/
     components/       # Icon/Card/Chip/Modal/GameTable/ControlDeck 与 panels/ 五个面板

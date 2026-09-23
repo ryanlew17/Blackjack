@@ -22,7 +22,7 @@
 | [REQ-2026-010](./archive/REQ-2026-010-touch-action-hints.md)            | 玩家动作提示触屏可达                    | done | 用户（UX 审查） | src/presentation/                                                     | docs/design/ui.md                                                                                                        | 2026-09-23 |
 | [REQ-2026-011](./archive/REQ-2026-011-interaction-semantics.md)         | 交互语义修缮（品牌区/旧档导出/焦点）    | done | 用户（UX 审查） | src/presentation/                                                     | docs/design/ui.md                                                                                                        | 2026-09-23 |
 
-REQ-2026-001–011 全部完成并归档（[archive/](./archive/)）；REQ-2026-007 随 v0.1.2 交付，REQ-2026-008–011 于 bug-fix 分支交付（REQ-008 版本号不变，009–011 验收通过后合并并随下一版本发布）。
+REQ-2026-001–011 全部完成并归档（[archive/](./archive/)）；REQ-2026-007 随 v0.1.2 交付，REQ-2026-008–011 于 bug-fix 分支交付并随 v0.1.3 发布（REQ-008 版本号不变）。竞赛模式 S1–S5 各自立项时登记独立需求，编号自 REQ-2026-012 起顺延（见 ../roadmap.md）。
 
 ## 状态流转
 

@@ -6,16 +6,17 @@ Local-first, single-player Blackjack web game (React 19 + TypeScript strict + Vi
 
 Always read this file first, then route by task type — read ONLY the listed docs plus the related code/tests:
 
-| Task type                                              | Read                                                                                                                      |
-| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
-| Requirement work                                       | `docs/requirements/index.md` → locate the REQ/Issue → that requirement file + its linked design docs + related code/tests |
-| Architecture / module boundaries / build               | `docs/architecture.md` (+ related ADRs in `docs/adr/`)                                                                    |
-| Rules / payouts / commands / rule variants             | `docs/design/game-rules.md` + `src/domain/`                                                                               |
-| State, animation queue, refresh recovery, tab conflict | `docs/design/state-and-animation.md` + `src/application/useGame.ts`                                                       |
-| Save validation / import-export / migration            | `docs/design/persistence.md` + `docs/contracts/save-format.md` + `src/infrastructure/save.ts`                             |
-| UI / visuals / copy / i18n                             | `docs/design/ui.md` + `src/presentation/`                                                                                 |
-| Testing / verification before submit or release        | `docs/testing.md`                                                                                                         |
-| Roadmap / "is X planned?"                              | `docs/roadmap.md`                                                                                                         |
+| Task type                                              | Read                                                                                                                                                         |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Requirement work                                       | `docs/requirements/index.md` → locate the REQ/Issue → that requirement file + its linked design docs + related code/tests                                    |
+| Architecture / module boundaries / build               | `docs/architecture.md` (+ related ADRs in `docs/adr/`)                                                                                                       |
+| Rules / payouts / commands / rule variants             | `docs/design/game-rules.md` + `src/domain/`                                                                                                                  |
+| Contest mode design / implementation                   | `docs/design/contest-rules.md` + `docs/adr/ADR-003-contest-mode-engine.md` + `docs/contracts/contest-save-format.md` (+ `src/domain/contest/` once S1 lands) |
+| State, animation queue, refresh recovery, tab conflict | `docs/design/state-and-animation.md` + `src/application/useGame.ts`                                                                                          |
+| Save validation / import-export / migration            | `docs/design/persistence.md` + `docs/contracts/save-format.md` + `src/infrastructure/save.ts`                                                                |
+| UI / visuals / copy / i18n                             | `docs/design/ui.md` + `src/presentation/`                                                                                                                    |
+| Testing / verification before submit or release        | `docs/testing.md`                                                                                                                                            |
+| Roadmap / "is X planned?"                              | `docs/roadmap.md`                                                                                                                                            |
 
 Do NOT read all of `docs/` by default. Product scope conflicts resolve to `docs/prd.md`.
 
@@ -59,9 +60,9 @@ No lint script — Prettier is the style gate. `start-game.bat` / `start-game.co
 - `docs/prd.md` — positioning / users / non-goals (authoritative for scope).
 - `docs/architecture.md` — stack, layers, directory layout, build & deploy.
 - `docs/design/` — per-module behavior snapshots (start from its README index).
-- `docs/contracts/save-format.md` — save format v2 fields and validation rules.
+- `docs/contracts/save-format.md` — classic save format v2 fields and validation rules; `docs/contracts/contest-save-format.md` — contest save (unlocks + codex, S0 draft).
 - `docs/requirements/` — incremental requirements (`index.md` + `active/` + `archive/`); each requirement ends as exactly one document (background / approach / acceptance criteria / acceptance record / change log) — intermediate artifacts (acceptance reports, handoffs, implementation plans) are distilled into the requirement document and then deleted; template included.
-- `docs/adr/` — decision records. `docs/roadmap.md` — rules v2 milestones and unscheduled candidates (incl. LAN two-player).
+- `docs/adr/` — decision records. `docs/roadmap.md` — rules v2 history, the Contest Mode program (S0–S5, v0.2.0 line), and retired candidates (LAN/online/cloud removed as explicit non-goals, multi-deck dropped — 2026-09-23).
 - `docs/testing.md` — quality gate, browser acceptance table, known boundaries, past verification records.
 
 ## Deliberate Quirks — do not "clean up"

@@ -2,7 +2,7 @@
 
 **English** | [简体中文](./README.zh-CN.md)
 
-A local-first, single-player Blackjack game for the browser, built with **React + TypeScript + Vite**. A green-felt table, animated cards and chips, and optional sound bring classic Blackjack to desktop and mobile screens. All wagers use virtual chips.
+A local-first, single-player Blackjack game for the browser, built with **React + TypeScript + Vite**. The green-felt **Classic Mode** brings animated cards and chips, optional sound, and virtual-chip wagers to desktop and mobile screens. A second mode, **Contest Mode** — a roguelike point-race duel with item cards inspired by the blackjack game in _Resident Evil 7_ — is in development; see the [roadmap](./docs/roadmap.md).
 
 [PRD](./docs/prd.md) · [Architecture](./docs/architecture.md) · [Design snapshots](./docs/design/) · [Save format](./docs/contracts/save-format.md) · [Testing & verification](./docs/testing.md) · [Contributor guide](./AGENTS.md)
 
@@ -91,7 +91,7 @@ vite.config.ts        # React plugin + single-file inlining (vite-plugin-singlef
 
 The engine commits the authoritative state before the presentation queue runs. Animation callbacks never deduct wagers or settle payouts. Money uses integer hundredths of a chip.
 
-## Table Rules
+## Table Rules (Classic Mode)
 
 - Start with **2,000 virtual chips**. Each hand uses a freshly shuffled 52-card deck.
 - Face cards count as 10; aces count as 1 or 11. The computer is always the dealer.
@@ -134,7 +134,7 @@ Splitting, insurance, and late surrender are implemented and independently accep
 
 Milestones have no calendar commitments; M1–M3 are development checkpoints, not separate releases. v2 rejects v1 and unknown saves without migration. Existing automatic saves must not be silently overwritten; starting over requires an explicit user choice.
 
-LAN two-player play, multiple decks, online deployment, and accounts/cloud saves remain unscheduled candidates; cloud and multiplayer work require separate architectural review.
+The roadmap was refocused on 2026-09-23: this is a pure local-first single-player project — LAN play, online deployment, and accounts/cloud saves were removed and are explicit non-goals. The active program is **Contest Mode** (S0–S5, first shipping as v0.2.0): point-race matches (BO3/BO5/BO7/BO9 by difficulty) built from first-to-5 games whose target extends on ties (4:4 → first to 7, 6:6 → first to 9, and so on), a coin flip for the first dealer, alternating dealers, item cards that count as hits, a difficulty unlock chain, and a collection codex. Classic Mode stays unchanged (rules and saves remain v2).
 
 See [AGENTS.md](./AGENTS.md) before contributing. Keep documentation in both languages aligned when changing behavior or setup commands.
 
