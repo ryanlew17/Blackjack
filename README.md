@@ -134,8 +134,8 @@ See [AGENTS.md](./AGENTS.md) before contributing. Keep documentation in both lan
 
 Released under the [MIT License](./LICENSE).
 
-REQ-012 and REQ-013 independently deliver the S1 module foundation and S2 codex data preparation; both have passed acceptance and are archived. Gameplay algorithms, new pages and persistence integration remain future work. This batch does not build, change versions or release.
+REQ-012 and REQ-013 delivered the module foundation and codex data preparation; both are accepted and archived. Their preparation batch skipped builds and releases. REQ-014 subsequently validated the classic-only production build against the actual v0.1.3 Release, with unchanged gameplay, UI, rules/save v2 and no active codex integration.
 
-S1 is now planned as active requirements REQ-014–020: first verify the classic-only build against the latest formal Release, then implement the contest engine, match lifecycle, coordination, basic UI and multi-card prototype. The final S1 task establishes the simple Hit/Stay AI baseline; trump-combination AI is deferred to the final S2 task. This registration changes documentation only; nothing new is playable yet.
+REQ-014 has passed independent acceptance and is archived; v0.1.4 publication is in progress. See the [acceptance and release record](./docs/requirements/archive/REQ-2026-014-classic-build-compatibility.md). Contest gameplay remains unimplemented.
 
-Branch and version plan: implement REQ-014 directly on main and release 0.1.4 with architecture migration only, no new features and no active codex integration. Start a new contest development branch from that release for REQ-015 onward, using the 0.2.x version line. This documentation commit does not build, bump the version or publish a release.
+REQ-015–020 remain active and unimplemented. Start their contest development branch from main after v0.1.4 is released, using the 0.2.x version line. The final S1 task establishes the simple Hit/Stay AI baseline; trump-combination AI remains the final S2 task.

@@ -88,6 +88,55 @@ describe("module architecture", () => {
       }
     }
   });
+  // @req REQ-2026-014: trace the real entry, including transitive/dynamic imports.
+  it("keeps the production entry classic-only and excludes test helpers", () => {
+    const pending = ["./main.tsx"];
+    const visited = new Set<string>();
+    while (pending.length) {
+      const file = pending.pop()!;
+      if (visited.has(file)) continue;
+      visited.add(file);
+      expect(file).not.toMatch(/\/contest\/|\.test\.|\/testHelpers\./);
+      const module = modules.find((entry) => entry.file === file);
+      if (!module) {
+        expect(file).toMatch(/\.css$/);
+        continue;
+      }
+      const visit = (node: ts.Node) => {
+        let spec: ts.Expression | undefined;
+        if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node))
+          spec = node.moduleSpecifier;
+        if (ts.isCallExpression(node)) {
+          if (node.expression.kind === ts.SyntaxKind.ImportKeyword) {
+            expect(node.arguments).toHaveLength(1);
+            spec = node.arguments[0];
+          }
+          // Non-literal/glob imports cannot be proven isolated by this check.
+          expect(node.expression.getText(module.ast)).not.toMatch(
+            /^import\.meta\.glob/,
+          );
+        }
+        if (spec) {
+          expect(ts.isStringLiteral(spec)).toBe(true);
+          if (ts.isStringLiteral(spec) && spec.text.startsWith(".")) {
+            const path = resolveImport(file, spec.text);
+            const resolved = [
+              path,
+              `${path}.ts`,
+              `${path}.tsx`,
+              `${path}/index.ts`,
+            ].find((candidate) => Object.hasOwn(sources, candidate));
+            expect(resolved, `${file}: ${spec.text}`).toBeDefined();
+            pending.push(resolved!);
+          }
+        }
+        ts.forEachChild(node, visit);
+      };
+      visit(module.ast);
+    }
+    expect(visited).toContain("./application/classic/useGame.ts");
+    expect(visited).toContain("./infrastructure/classic/save.ts");
+  });
   it("keeps research rows aligned with the data directory without declaring admission", async () => {
     const { TRUMP_CATALOG } = await import("./domain/contest/trumps/catalog");
     const { CANDIDATE_AVAILABILITY } =
