@@ -1,4 +1,74 @@
 export const en = {
+  // @req REQ-2026-013: catalog copy; no codex page is mounted yet.
+  "contest.trump.draw-2.name": "Draw 2",
+  "contest.trump.draw-2.description":
+    "Draw the number 2. If it is unavailable, this trump is still consumed without effect.",
+  "contest.trump.draw-3.name": "Draw 3",
+  "contest.trump.draw-3.description":
+    "Draw the number 3. If it is unavailable, this trump is still consumed without effect.",
+  "contest.trump.draw-4.name": "Draw 4",
+  "contest.trump.draw-4.description":
+    "Draw the number 4. If it is unavailable, this trump is still consumed without effect.",
+  "contest.trump.draw-5.name": "Draw 5",
+  "contest.trump.draw-5.description":
+    "Draw the number 5. If it is unavailable, this trump is still consumed without effect.",
+  "contest.trump.draw-6.name": "Draw 6",
+  "contest.trump.draw-6.description":
+    "Draw the number 6. If it is unavailable, this trump is still consumed without effect.",
+  "contest.trump.draw-7.name": "Draw 7",
+  "contest.trump.draw-7.description":
+    "Draw the number 7. If it is unavailable, this trump is still consumed without effect.",
+  "contest.trump.return.name": "Return",
+  "contest.trump.return.description":
+    "Return your last face-up number card to the pool. Requires a face-up card.",
+  "contest.trump.remove.name": "Remove",
+  "contest.trump.remove.description":
+    "Return your opponent’s last face-up number card to the pool. Requires a face-up card and may rescue a bust.",
+  "contest.trump.exchange.name": "Exchange",
+  "contest.trump.exchange.description":
+    "Swap both players’ last face-up number cards. Both must have a face-up card; this does not trigger draw rewards.",
+  "contest.trump.destroy.name": "Dispel",
+  "contest.trump.destroy.description":
+    "Remove your opponent’s most recently placed trump still on the table. Requires an opposing table trump; completed effects are not undone.",
+  "contest.trump.destroy-all.name": "Sweep",
+  "contest.trump.destroy-all.description":
+    "Remove all opposing table trumps. Requires at least one; completed effects are not undone.",
+  "contest.trump.best-draw.name": "Best Draw",
+  "contest.trump.best-draw.description":
+    "Draw the highest remaining number that keeps your total within the target, or the lowest if all would exceed it. Consumed even if the pool is empty.",
+  "contest.trump.pressure.name": "Pressure",
+  "contest.trump.pressure.description":
+    "While in play, gain 1 bonus point if you win this round, subject to defenses and the bonus cap. Does not benefit your opponent if you lose.",
+  "contest.trump.pressure-supply.name": "Prepared Pressure",
+  "contest.trump.pressure-supply.description":
+    "Gain up to 1 trump. While in play, gain 1 bonus point if you win, subject to defenses and the cap. Requires table space; supply and hand capacity limit the draw.",
+  "contest.trump.shield.name": "Cushion",
+  "contest.trump.shield.description":
+    "While in play, cancel 1 opposing bonus point if you lose this round. Does not reduce the base point.",
+  "contest.trump.shared-supply.name": "Shared Supply",
+  "contest.trump.shared-supply.description":
+    "You gain up to 1 trump, then your opponent gains up to 1. Each uses their own supply and hand capacity.",
+  "contest.trump.resource-swap.name": "Refit",
+  "contest.trump.resource-swap.description":
+    "Choose and discard another trump from your hand, then gain up to 2. Pay the cost first; limited supply or capacity does not refund it.",
+  "contest.trump.harvest.name": "Reserve",
+  "contest.trump.harvest.description":
+    "While in play, gain up to 1 trump after consuming another trump, at most twice, then discard this card. Does not trigger itself or trigger from grants; supply and capacity apply.",
+  "contest.trump.target-17.name": "Target 17",
+  "contest.trump.target-17.description":
+    "While in play, set both players’ target to 17, replacing any existing target trump. Removing it restores 21. Requires table space.",
+  "contest.trump.target-24.name": "Target 24",
+  "contest.trump.target-24.description":
+    "While in play, set both players’ target to 24, replacing any existing target trump. Removing it restores 21. Requires table space.",
+  "contest.trump.target-27.name": "Target 27",
+  "contest.trump.target-27.description":
+    "While in play, set both players’ target to 27, replacing any existing target trump. Removing it restores 21. Requires table space.",
+  "contest.codex.title": "Codex",
+  "contest.codex.locked": "???",
+  "contest.codex.new": "New",
+  "contest.codex.viewed": "Viewed",
+  "contest.codex.experimental": "Experimental candidate; not admitted",
+
   split: "Split",
   surrender: "Surrender",
   surrenderSub: "Half of your main wager is returned.",
@@ -158,6 +228,76 @@ export const en = {
 };
 export type Copy = typeof en;
 export const zh: Copy = {
+  // @req REQ-2026-013: catalog copy; no codex page is mounted yet.
+  "contest.trump.draw-2.name": "指定抽牌·2",
+  "contest.trump.draw-2.description":
+    "抽取数字2。若已不在牌堆中，道具仍会消耗且不产生效果。",
+  "contest.trump.draw-3.name": "指定抽牌·3",
+  "contest.trump.draw-3.description":
+    "抽取数字3。若已不在牌堆中，道具仍会消耗且不产生效果。",
+  "contest.trump.draw-4.name": "指定抽牌·4",
+  "contest.trump.draw-4.description":
+    "抽取数字4。若已不在牌堆中，道具仍会消耗且不产生效果。",
+  "contest.trump.draw-5.name": "指定抽牌·5",
+  "contest.trump.draw-5.description":
+    "抽取数字5。若已不在牌堆中，道具仍会消耗且不产生效果。",
+  "contest.trump.draw-6.name": "指定抽牌·6",
+  "contest.trump.draw-6.description":
+    "抽取数字6。若已不在牌堆中，道具仍会消耗且不产生效果。",
+  "contest.trump.draw-7.name": "指定抽牌·7",
+  "contest.trump.draw-7.description":
+    "抽取数字7。若已不在牌堆中，道具仍会消耗且不产生效果。",
+  "contest.trump.return.name": "收回",
+  "contest.trump.return.description":
+    "将自己最后一张明牌放回数字牌堆。需要自己有明牌。",
+  "contest.trump.remove.name": "驱离",
+  "contest.trump.remove.description":
+    "将对手最后一张明牌放回数字牌堆。需要对手有明牌，也可能帮助对手解除爆牌。",
+  "contest.trump.exchange.name": "易位",
+  "contest.trump.exchange.description":
+    "交换双方最后一张明牌。双方都必须有明牌；不触发抽牌奖励。",
+  "contest.trump.destroy.name": "拆解",
+  "contest.trump.destroy.description":
+    "清除对手最近放置且仍在场的一张道具。需要对手有留场道具；不撤销已执行的效果。",
+  "contest.trump.destroy-all.name": "清场",
+  "contest.trump.destroy-all.description":
+    "清除对手全部留场道具。需要对手有留场道具；不撤销已执行的效果。",
+  "contest.trump.best-draw.name": "精准抽牌",
+  "contest.trump.best-draw.description":
+    "抽取不会令自己超过当前目标的最大剩余数字；若全部会超出则抽最小数字。空堆时仍消耗道具。",
+  "contest.trump.pressure.name": "施压",
+  "contest.trump.pressure.description":
+    "留场期间，本回合获胜时额外获得1分；受防御与额外加分上限影响。失败时不替对手加分。",
+  "contest.trump.pressure-supply.name": "战备施压",
+  "contest.trump.pressure-supply.description":
+    "补充最多1张道具。留场期间，本回合获胜额外获得1分，受防御与上限影响。桌面满时不能使用；补牌受库存和手牌容量限制。",
+  "contest.trump.shield.name": "缓冲",
+  "contest.trump.shield.description":
+    "留场期间，自己输掉本回合时抵消对手1点额外加分，不抵消基础分。",
+  "contest.trump.shared-supply.name": "共同补给",
+  "contest.trump.shared-supply.description":
+    "自己先补充最多1张道具，再由对手补充最多1张。各自使用自己的库存，受手牌容量限制。",
+  "contest.trump.resource-swap.name": "整备",
+  "contest.trump.resource-swap.description":
+    "选择并弃掉另一张道具手牌，再补充最多2张。必须先支付弃牌费用；领取不足时不返还。",
+  "contest.trump.harvest.name": "余粮",
+  "contest.trump.harvest.description":
+    "留场后，每消耗一张其他道具补充最多1张，最多触发2次后离场。自身不触发，补牌不递归触发；受库存与容量限制。",
+  "contest.trump.target-17.name": "目标17",
+  "contest.trump.target-17.description":
+    "留场期间，双方目标点数改为17，替换已有目标牌。清除后恢复21；桌面满时不能使用。",
+  "contest.trump.target-24.name": "目标24",
+  "contest.trump.target-24.description":
+    "留场期间，双方目标点数改为24，替换已有目标牌。清除后恢复21；桌面满时不能使用。",
+  "contest.trump.target-27.name": "目标27",
+  "contest.trump.target-27.description":
+    "留场期间，双方目标点数改为27，替换已有目标牌。清除后恢复21；桌面满时不能使用。",
+  "contest.codex.title": "图鉴",
+  "contest.codex.locked": "???",
+  "contest.codex.new": "未查看",
+  "contest.codex.viewed": "已查看",
+  "contest.codex.experimental": "实验候选，尚未准入",
+
   split: "分牌",
   surrender: "投降",
   surrenderSub: "主注的一半已返还。",

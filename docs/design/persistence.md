@@ -1,6 +1,6 @@
 # design/persistence — 存档生命周期行为快照
 
-> 适用范围：`src/infrastructure/save.ts` 与 useGame 协作实现的存档行为——自动保存、校验、导入导出、损坏恢复。字段与版本细节在 `../contracts/save-format.md`。
+> 适用范围：`src/infrastructure/classic/save.ts` 与 useGame 协作实现的存档行为——自动保存、校验、导入导出、损坏恢复。字段与版本细节在 `../contracts/save-format.md`。
 > 何时读取：改 save.ts、导入导出流程、版本迁移前。
 > 关联需求：REQ-2026-003–006。
 > 最后更新：2026-09-22

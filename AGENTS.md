@@ -6,17 +6,17 @@ Local-first, single-player Blackjack web game (React 19 + TypeScript strict + Vi
 
 Always read this file first, then route by task type — read ONLY the listed docs plus the related code/tests:
 
-| Task type                                              | Read                                                                                                                                                         |
-| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Requirement work                                       | `docs/requirements/index.md` → locate the REQ/Issue → that requirement file + its linked design docs + related code/tests                                    |
-| Architecture / module boundaries / build               | `docs/architecture.md` (+ related ADRs in `docs/adr/`)                                                                                                       |
-| Rules / payouts / commands / rule variants             | `docs/design/game-rules.md` + `src/domain/`                                                                                                                  |
-| Contest mode design / implementation                   | `docs/design/contest-rules.md` + `docs/adr/ADR-003-contest-mode-engine.md` + `docs/contracts/contest-save-format.md` (+ `src/domain/contest/` once S1 lands) |
-| State, animation queue, refresh recovery, tab conflict | `docs/design/state-and-animation.md` + `src/application/useGame.ts`                                                                                          |
-| Save validation / import-export / migration            | `docs/design/persistence.md` + `docs/contracts/save-format.md` + `src/infrastructure/save.ts`                                                                |
-| UI / visuals / copy / i18n                             | `docs/design/ui.md` + `src/presentation/`                                                                                                                    |
-| Testing / verification before submit or release        | `docs/testing.md`                                                                                                                                            |
-| Roadmap / "is X planned?"                              | `docs/roadmap.md`                                                                                                                                            |
+| Task type                                              | Read                                                                                                                                                                                                |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Requirement work                                       | `docs/requirements/index.md` → locate the REQ/Issue → that requirement file + its linked design docs + related code/tests                                                                           |
+| Architecture / module boundaries / build               | `docs/architecture.md` (+ related ADRs in `docs/adr/`)                                                                                                                                              |
+| Rules / payouts / commands / rule variants             | `docs/design/game-rules.md` + `src/domain/`                                                                                                                                                         |
+| Contest mode design / implementation                   | `docs/design/contest-rules.md` + `docs/adr/ADR-004-contest-turns-and-shared-boundaries.md` + `docs/contracts/contest-save-format.md` (+ `src/domain/contest/` for data; ADR-003 is partial history) |
+| State, animation queue, refresh recovery, tab conflict | `docs/design/state-and-animation.md` + `src/application/classic/useGame.ts`                                                                                                                         |
+| Save validation / import-export / migration            | `docs/design/persistence.md` + `docs/contracts/save-format.md` + `src/infrastructure/classic/save.ts`                                                                                               |
+| UI / visuals / copy / i18n                             | `docs/design/ui.md` + `src/presentation/`                                                                                                                                                           |
+| Testing / verification before submit or release        | `docs/testing.md`                                                                                                                                                                                   |
+| Roadmap / "is X planned?"                              | `docs/roadmap.md`                                                                                                                                                                                   |
 
 Do NOT read all of `docs/` by default. Product scope conflicts resolve to `docs/prd.md`.
 
@@ -31,7 +31,7 @@ GitHub Issue > `docs/requirements/active/*.md` > design docs. Register every new
 3. **Money is integer hundredths of a chip** (100 = one chip); main wagers are positive multiples of 100; insurance is half the original wager and may be a multiple of 50 → `docs/design/game-rules.md` §4
 4. **Validate imported saves before replacing progress**; unsupported versions are rejected, never guessed — format changes bump versions and update `docs/contracts/save-format.md`
 5. **Every user-visible string goes into BOTH dictionaries** in `src/presentation/i18n.ts` (en + zh-CN); no hardcoded copy → `docs/design/ui.md`
-6. **Rule variants only via the `rules` parameter** of `transition`; pinned `RuleSet` literal fields mean "not implemented" — changing one = implement the rule + bump `rulesVersion` → `docs/adr/ADR-001-ruleset-parameterization.md`
+6. **Classic rule variants only via the `rules` parameter** of classic `transition`; pinned `RuleSet` literal fields mean "not implemented" — changing one = implement the rule + bump `rulesVersion` → `docs/adr/ADR-001-ruleset-parameterization.md`. Contest has independent `transition`/`legalActions` with one frozen rules snapshot per Match → `docs/adr/ADR-004-contest-turns-and-shared-boundaries.md`
 7. Keep both READMEs (en + zh-CN) in sync when behavior or setup commands change; run the full gate in `docs/testing.md` before considering work done.
 
 ## Commands
@@ -52,7 +52,7 @@ No lint script — Prettier is the style gate. `start-game.bat` / `start-game.co
 ## Architecture Boundaries (strict)
 
 - **Four layers**: `domain/` (pure rules) ← `application/` (`useGame` coordination) ← `presentation/` (React UI); `infrastructure/` (save, audio) is used by application/presentation. The UI never bypasses `transition` to compute results, and never touches localStorage directly — only through the `useGame` API → `docs/architecture.md` §2
-- Tests live beside implementation as `*.test.ts` with injected fixed card sequences (`src/domain/testHelpers.ts`); no separate test tree.
+- Tests live beside implementation as `*.test.ts` with injected fixed card sequences (`src/domain/classic/testHelpers.ts`); no separate test tree.
 - `vite.config.ts` pins relative asset paths (`base: "./"`) and builds a **single-file dist** via `vite-plugin-singlefile`, so the release works when opened directly over `file://` — subdirectory static hosting still works. Don't change either; the rationale is [ADR-002](docs/adr/ADR-002-singlefile-release-build.md).
 
 ## Docs Pointers
@@ -62,7 +62,7 @@ No lint script — Prettier is the style gate. `start-game.bat` / `start-game.co
 - `docs/design/` — per-module behavior snapshots (start from its README index).
 - `docs/contracts/save-format.md` — classic save format v2 fields and validation rules; `docs/contracts/contest-save-format.md` — contest save (unlocks + codex, S0 draft).
 - `docs/requirements/` — incremental requirements (`index.md` + `active/` + `archive/`); each requirement ends as exactly one document (background / approach / acceptance criteria / acceptance record / change log) — intermediate artifacts (acceptance reports, handoffs, implementation plans) are distilled into the requirement document and then deleted; template included.
-- `docs/adr/` — decision records. `docs/roadmap.md` — rules v2 history, the Contest Mode program (S0–S5, v0.2.0 line), and retired candidates (LAN/online/cloud removed as explicit non-goals, multi-deck dropped — 2026-09-23).
+- `docs/adr/` — decision records; ADR-004 partially supersedes ADR-003 for Contest turns, shared boundaries, and AI information. `docs/roadmap.md` — rules v2 history, the Contest Mode program (S0–S5, v0.2.0 line; S0 revised 2026-10-04, implementation pending), and retired candidates (LAN/online/cloud are non-goals; multi-deck stays dropped).
 - `docs/testing.md` — quality gate, browser acceptance table, known boundaries, past verification records.
 
 ## Deliberate Quirks — do not "clean up"
@@ -71,3 +71,7 @@ No lint script — Prettier is the style gate. `start-game.bat` / `start-game.co
 - `effectId` is a monotonically increasing counter, not an event index — identical consecutive events must still retrigger animations.
 - Saves have **no fixed balance cap** (only non-negative safe integers): any reachable game state must round-trip through export/import.
 - The `dealer` phase is a synchronous internal transient — never persisted, rejected on import; this is intentional, not a missing state.
+
+## 前置模块开发（REQ-012/013）
+
+图鉴数据任务读取 `docs/design/codex-data.md` 与对应需求；完整竞赛玩法仍按上表读取。REQ-012、REQ-013 已分别验收归档。该前置批次按用户要求未构建、未版本迭代、未 release，已执行测试、类型、格式与静态导入/迁移自审；后续任务仍按各自要求及测试门槛执行。目录迁移后的职责见 `docs/architecture.md`，新目录只有 README 时代表预留而非实现。

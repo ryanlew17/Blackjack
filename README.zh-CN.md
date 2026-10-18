@@ -2,9 +2,9 @@
 
 [English](./README.md) | **简体中文**
 
-一款基于 **React + TypeScript + Vite** 的本地优先单人 Web Blackjack 游戏。**经典模式**的绿色绒面牌桌、纸牌与筹码动画、可选音效适配桌面和手机屏幕，下注均使用虚拟筹码。第二个模式——**竞赛模式**（受《生化危机7》21 点启发、带道具卡的积分制 roguelike 对弈）正在开发中，见[技术路线图](./docs/roadmap.md)。
+一款基于 **React + TypeScript + Vite** 的本地优先单人 Web Blackjack 游戏。**经典模式**的绿色绒面牌桌、纸牌与筹码动画、可选音效适配桌面和手机屏幕，下注均使用虚拟筹码。第二个模式——**竞赛模式**（受《生化危机7》21 点启发、允许连续使用道具联动的积分制对弈）处于设计阶段，尚未提供可玩版本，见[技术路线图](./docs/roadmap.md)。
 
-[产品需求](./docs/prd.md) · [架构](./docs/architecture.md) · [模块设计快照](./docs/design/) · [存档格式](./docs/contracts/save-format.md) · [测试与验收](./docs/testing.md) · [贡献指南](./AGENTS.md)
+[产品需求](./docs/prd.md) · [架构](./docs/architecture.md) · [模块设计快照](./docs/design/) · [存档格式](./docs/contracts/save-format.md) · [测试与验收](./docs/testing.md) · [贡献指南](./AGENTS.md) · [道具卡研究](./docs/contest-research/)
 
 ## 功能特性
 
@@ -63,24 +63,16 @@ npm run preview       # 预览 dist/，默认端口为 4173
 
 ```text
 src/
-  domain/             # 纯规则、命令、事件，以及同目录的 *.test.ts
-  application/        # 状态协调、动画队列与存档生命周期
-  presentation/       # React 界面（components/、format、i18n、styles）
-  infrastructure/     # 存档校验、浏览器存储、音效与测试
-  main.tsx            # 应用入口
-public/               # 网站图标等静态资源
-docs/                 # prd、architecture、design/、contracts/、requirements/、adr/、roadmap、testing
-start-game.bat        # Windows 启动脚本（环境检查、首装依赖、启动并打开浏览器）
-start-game.command    # macOS / Linux 启动脚本
-AGENTS.md             # 贡献指南（上下文路由 + 硬约束）
-LICENSE               # MIT 许可证
-README.md             # 英文项目说明
-README.zh-CN.md       # 简体中文项目说明
-index.html            # Vite HTML 入口
-package.json          # 依赖与开发命令
-package-lock.json     # 可复现的 npm 依赖版本
-tsconfig.json         # 严格 TypeScript 配置
-vite.config.ts        # React 插件 + 单文件内联（vite-plugin-singlefile），base "./"
+  domain/
+    classic/          # 原有规则及同目录测试
+    contest/          # 候选道具、预设与图鉴数据；引擎/AI 预留
+    shared/           # 待实际复用后提取
+  application/        # classic 协调；contest/shared 职责预留
+  infrastructure/     # classic 存档、shared 音效；contest 存储预留
+  presentation/       # classic/shared 组件、i18n；竞赛页面预留
+  main.tsx            # 原有入口
+public/               # 静态资源
+docs/                 # 架构、设计、契约、需求与 contest-research 资料
 ```
 
 `node_modules/`、`dist/`、`output/` 为生成内容，已加入忽略规则。测试与实现放在同一目录，无需额外维护重复的测试目录或运行器。
@@ -126,10 +118,12 @@ vite.config.ts        # React 插件 + 单文件内联（vite-plugin-singlefile�
 
 里程碑不承诺日历日期；M1–M3 是开发检查点，不单独发布。v2 拒绝 v1 与未知版本存档，不提供迁移；旧自动存档不得静默覆盖，重新开始须由用户明确选择。
 
-2026-09-23 路线裁定：本项目定位为纯本地单机——局域网双人、线上部署、账号/云存档已从路线图移除，列为明确非目标。当前主线为**竞赛模式**（S0–S5，首个交付版本 v0.2.0）：按难度 BO3/BO5/BO7/BO9 的积分制比赛，局内先得 5 分（4:4 递延为先得 7、6:6 先得 9，以此类推）、开局抛硬币轮流坐庄、计入要牌的道具卡、难度解锁链与图鉴收集；经典模式保持不变（规则与存档维持 v2）。
+2026-09-23 确立纯本地单机范围：局域网双人、线上部署、账号/云存档列为明确非目标。2026-10-04 修订**竞赛模式**基线（S0–S5，首个交付版本 v0.2.0）：保留按难度 BO3/BO5/BO7/BO9、局内先得 5 分与平分递延（4:4→先得 7、6:6→先得 9）。每回合共享 1–11 各一张数字牌，抛硬币决定首个先手、逐回合轮换；一方可连续用道具，最后要牌或停牌才换人，停牌后可重新决策。道具获取独立于数字牌堆，概率、卡池与积分道具映射待验证；保留难度解锁与图鉴，仅元进度存档，刷新放弃比赛。S0 为设计、S1–S5 未实现；经典模式规则与存档维持 v2。
 
 贡献前请阅读 [AGENTS.md](./AGENTS.md)。调整行为或启动命令时，请同步更新中英文说明。
 
 ## 许可证
 
 基于 [MIT 许可证](./LICENSE) 开源。
+
+REQ-012 与 REQ-013 分别完成 S1 文件架构和 S2 图鉴数据前置工作，均已验收归档；玩法算法、新页面和持久化接线仍待后续完成。本批不构建、不版本迭代、不发布。

@@ -2,9 +2,9 @@
 
 **English** | [简体中文](./README.zh-CN.md)
 
-A local-first, single-player Blackjack game for the browser, built with **React + TypeScript + Vite**. The green-felt **Classic Mode** brings animated cards and chips, optional sound, and virtual-chip wagers to desktop and mobile screens. A second mode, **Contest Mode** — a roguelike point-race duel with item cards inspired by the blackjack game in _Resident Evil 7_ — is in development; see the [roadmap](./docs/roadmap.md).
+A local-first, single-player Blackjack game for the browser, built with **React + TypeScript + Vite**. The green-felt **Classic Mode** brings animated cards and chips, optional sound, and virtual-chip wagers to desktop and mobile screens. A second mode, **Contest Mode** — a point-race duel with consecutive item-card combos inspired by _Resident Evil 7_ — is in the design stage and is not playable yet; see the [roadmap](./docs/roadmap.md).
 
-[PRD](./docs/prd.md) · [Architecture](./docs/architecture.md) · [Design snapshots](./docs/design/) · [Save format](./docs/contracts/save-format.md) · [Testing & verification](./docs/testing.md) · [Contributor guide](./AGENTS.md)
+[PRD](./docs/prd.md) · [Architecture](./docs/architecture.md) · [Design snapshots](./docs/design/) · [Save format](./docs/contracts/save-format.md) · [Testing & verification](./docs/testing.md) · [Contributor guide](./AGENTS.md) · [Card research](./docs/contest-research/)
 
 ## Features
 
@@ -67,24 +67,16 @@ npm run preview       # Serve dist/, normally on port 4173
 
 ```text
 src/
-  domain/             # Pure rules, commands, events, and colocated *.test.ts
-  application/        # State coordination, animation queue, and save lifecycle
-  presentation/       # React UI (components/, format, i18n, styles)
-  infrastructure/     # Save validation, browser storage, audio, and tests
-  main.tsx            # Application entry point
-public/               # Static assets, including the favicon
-docs/                 # prd, architecture, design/, contracts/, requirements/, adr/, roadmap, testing
-start-game.bat        # Windows launcher (Node check, first-run npm ci, dev server, browser)
-start-game.command    # macOS / Linux launcher
-AGENTS.md             # Contributor guidelines (context routing + hard constraints)
-LICENSE               # MIT
-README.md             # English project guide
-README.zh-CN.md       # Simplified Chinese project guide
-index.html            # Vite HTML entry
-package.json          # Dependencies and development commands
-package-lock.json     # Reproducible npm dependency versions
-tsconfig.json         # Strict TypeScript configuration
-vite.config.ts        # React plugin + single-file inlining (vite-plugin-singlefile), base "./"
+  domain/
+    classic/          # Existing rules and colocated tests
+    contest/          # Candidate cards, presets, codex data; engine/AI reserved
+    shared/           # Reserved until actual reuse
+  application/        # classic coordinator; contest/shared responsibilities reserved
+  infrastructure/     # classic save, shared audio; contest persistence reserved
+  presentation/       # classic/shared components, i18n; contest pages reserved
+  main.tsx            # Existing entry
+public/               # Static assets
+docs/                 # Architecture, design, contracts, requirements, contest-research
 ```
 
 `node_modules/`, `dist/`, and `output/` are generated and ignored. Tests remain next to their implementation; no separate test runner or duplicated test tree is required.
@@ -134,10 +126,12 @@ Splitting, insurance, and late surrender are implemented and independently accep
 
 Milestones have no calendar commitments; M1–M3 are development checkpoints, not separate releases. v2 rejects v1 and unknown saves without migration. Existing automatic saves must not be silently overwritten; starting over requires an explicit user choice.
 
-The roadmap was refocused on 2026-09-23: this is a pure local-first single-player project — LAN play, online deployment, and accounts/cloud saves were removed and are explicit non-goals. The active program is **Contest Mode** (S0–S5, first shipping as v0.2.0): point-race matches (BO3/BO5/BO7/BO9 by difficulty) built from first-to-5 games whose target extends on ties (4:4 → first to 7, 6:6 → first to 9, and so on), a coin flip for the first dealer, alternating dealers, item cards that count as hits, a difficulty unlock chain, and a collection codex. Classic Mode stays unchanged (rules and saves remain v2).
+The local single-player scope was established on 2026-09-23: LAN play, online deployment, and accounts/cloud saves are explicit non-goals. The **Contest Mode** baseline was revised on 2026-10-04 (S0–S5, first shipping as v0.2.0): BO3/BO5/BO7/BO9 matches by difficulty retain first-to-5 games with an extending target (4:4 → first to 7, 6:6 → first to 9). Each round shares one number card of each value 1–11; a coin flip sets the initial first player, then first play alternates each round. A player may use consecutive item cards before drawing or staying to end their turn, and staying allows later decisions. Item acquisition is separate from the number deck; probabilities, card pools, and scoring effects await validation. The difficulty chain and codex remain, only meta-progress is saved, and refreshing abandons the match. S0 is design work; S1–S5 are not implemented. Classic rules and saves remain v2.
 
 See [AGENTS.md](./AGENTS.md) before contributing. Keep documentation in both languages aligned when changing behavior or setup commands.
 
 ## License
 
 Released under the [MIT License](./LICENSE).
+
+REQ-012 and REQ-013 independently deliver the S1 module foundation and S2 codex data preparation; both have passed acceptance and are archived. Gameplay algorithms, new pages and persistence integration remain future work. This batch does not build, change versions or release.

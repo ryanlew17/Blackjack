@@ -55,3 +55,7 @@ App.tsx                     # 组装层：useGame 接线、面板开关（panel 
 存档面板在存档版本不受支持（version）或内容损坏（corrupt）时不显示导出按钮与存档摘要——该状态下内存快照是全新占位档，导出会误导玩家覆盖真实备份；导入入口保持可用。存储不可用（storage）时导出保留，作为设计上的逃生通道。
 
 关于页显示 package.json 的当前发布版本（Vite 构建时注入 `__APP_VERSION__`）、项目仓库、MIT 许可与 GitHub Issues 反馈说明。三个外部链接均新标签页打开且设置 `rel="noopener"`。文案完整进入双语字典，长仓库地址允许换行，320px 无横向溢出；无网络版本探测或遥测。
+
+## REQ-012/013 文件与文案前置工作
+
+现有组件移入 `src/presentation/classic/components/`（含 panels），Icon/Modal 移入 `src/presentation/shared/`，format 移入 classic。App、样式及渲染逻辑不变。i18n 增加候选图鉴双语数据，目前不挂载任何图鉴页面。后续页面目录与责任见 [architecture.md](../architecture.md)。

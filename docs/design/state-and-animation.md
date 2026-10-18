@@ -1,6 +1,6 @@
 # design/state-and-animation — 状态协调与动画队列行为快照
 
-> 适用范围：`src/application/useGame.ts` 当前实现的协调行为——权威状态、动画队列、刷新恢复、跨标签冲突。
+> 适用范围：`src/application/classic/useGame.ts` 当前实现的协调行为——权威状态、动画队列、刷新恢复、跨标签冲突。
 > 何时读取：改 useGame、动画节奏、持久化时机、冲突处理前。
 > 关联需求：REQ-2026-003–006。
 > 最后更新：2026-09-22
