@@ -31,7 +31,7 @@
 | [REQ-2026-019](./active/REQ-2026-019-contest-trump-prototype.md)        | S1 多卡联动与效果入口原型               | active | 用户            | src/domain/contest/engine/、trumps/ 的最小原型及同目录测试            | docs/roadmap.md、docs/design/contest-rules.md                                                                            | 2026-10-18 |
 | [REQ-2026-020](./active/REQ-2026-020-contest-basic-ai.md)               | S1 末项：无道具 AI 基线与隔离验收       | active | 用户            | src/domain/contest/ai/、application/contest/ 策略适配及测试           | docs/roadmap.md、docs/design/contest-rules.md                                                                            | 2026-10-18 |
 
-REQ-2026-001–014 已验收归档。REQ-014 经独立验收绿灯，main 上 0.1.4 发布收尾中，仅交付架构迁移兼容性，无新增 feature，图鉴不生效；实际 Release 证据见归档需求。REQ-015–020 保持 active、尚未开始实现，须在 0.1.4 发布后从 main 新建竞赛开发分支，按 0.2.x 迭代。实施顺序和依赖见 [roadmap.md](../roadmap.md)；S2 后续拆分时将 AI 组合决策安排为末项，后续编号自 REQ-2026-021 起顺延。
+REQ-2026-001–014 已验收归档。REQ-014 经独立验收绿灯，main 上 v0.1.4 已正式发布并完成上传资产回读复验，仅交付架构迁移兼容性，无新增 feature，图鉴不生效；实际 Release 证据见归档需求。REQ-015–020 保持 active、尚未开始实现，须在 0.1.4 发布后从 main 新建竞赛开发分支，按 0.2.x 迭代。实施顺序和依赖见 [roadmap.md](../roadmap.md)；S2 后续拆分时将 AI 组合决策安排为末项，后续编号自 REQ-2026-021 起顺延。
 
 ## 状态流转
 

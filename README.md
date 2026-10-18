@@ -136,6 +136,6 @@ Released under the [MIT License](./LICENSE).
 
 REQ-012 and REQ-013 delivered the module foundation and codex data preparation; both are accepted and archived. Their preparation batch skipped builds and releases. REQ-014 subsequently validated the classic-only production build against the actual v0.1.3 Release, with unchanged gameplay, UI, rules/save v2 and no active codex integration.
 
-REQ-014 has passed independent acceptance and is archived; v0.1.4 publication is in progress. See the [acceptance and release record](./docs/requirements/archive/REQ-2026-014-classic-build-compatibility.md). Contest gameplay remains unimplemented.
+REQ-014 has passed independent acceptance and is archived; [v0.1.4 is released](https://github.com/ryanlew17/Blackjack/releases/tag/v0.1.4), with the uploaded ZIP re-downloaded and verified over file:// and plain LAN HTTP. See the [acceptance and release record](./docs/requirements/archive/REQ-2026-014-classic-build-compatibility.md). Contest gameplay remains unimplemented.
 
 REQ-015–020 remain active and unimplemented. Start their contest development branch from main after v0.1.4 is released, using the 0.2.x version line. The final S1 task establishes the simple Hit/Stay AI baseline; trump-combination AI remains the final S2 task.

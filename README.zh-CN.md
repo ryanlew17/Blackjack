@@ -128,6 +128,6 @@ docs/                 # 架构、设计、契约、需求与 contest-research �
 
 REQ-012 与 REQ-013 已交付文件架构和图鉴数据前置工作，均已验收归档；该前置批次未构建、未发布。后续 REQ-014 已将仅经典模式的生产构建与实际 v0.1.3 Release 对照，保持玩法、界面及规则／存档 v2，图鉴未接线。
 
-REQ-014 已通过独立验收并归档，v0.1.4 发布收尾中，详见[验收与发布记录](./docs/requirements/archive/REQ-2026-014-classic-build-compatibility.md)。竞赛玩法仍未实现。
+REQ-014 已通过独立验收并归档，[v0.1.4 已正式发布](https://github.com/ryanlew17/Blackjack/releases/tag/v0.1.4)，实际上传 ZIP 回读后通过 file:// 与局域网明文 HTTP 复验，详见[验收与发布记录](./docs/requirements/archive/REQ-2026-014-classic-build-compatibility.md)。竞赛玩法仍未实现。
 
 REQ-015–020 保持 active、尚未实施，须在 v0.1.4 发布后从 main 新建竞赛开发分支，进入 0.2.x 版本线。S1 末项固化最简要牌／停牌 AI，S2 末项再开发道具组合 AI。
