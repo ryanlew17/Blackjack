@@ -2,8 +2,8 @@
 
 > 适用范围：技术选型、分层边界、目录结构、构建与部署。
 > 何时读取：新建/移动模块、调整构建或部署方式前。
-> 关联需求：REQ-2026-012（文件架构）、REQ-2026-013（图鉴数据）、REQ-2026-014（经典构建兼容）。
-> 最后更新：2026-10-18
+> 关联需求：REQ-2026-012（文件架构）、REQ-2026-013（图鉴数据）、REQ-2026-014（经典构建兼容）、REQ-2026-015（单回合引擎）。
+> 最后更新：2026-10-20
 > 来源：2026-09-22 文档架构升级新建（原 AGENTS.md 与 README 结构章节整合）；2026-09-23 竞赛模式立项（ADR-003 三库结构）；2026-10-04 竞赛基线文档修订
 
 ## 1. 技术栈
@@ -33,7 +33,7 @@ presentation/  ──▶  application/  ──▶  domain/
 
 经典规则引擎当前主要入口：`transition(state, command, random?, rules?)`（唯一状态推进）、`legalActions(state, rules?)`（可用命令）、`score(cards)`。另提供逐手结算、历史汇总等纯函数供内部复用与存档校验。界面层禁止绕过 `transition` 自算结果。
 
-**双模式（文件边界已建立，玩法仍待实现，[ADR-004](./adr/ADR-004-contest-turns-and-shared-boundaries.md)）**：REQ-012 已将经典模块移入各层 `classic/`，只调整路径。`domain/contest/` 已有 REQ-013 图鉴数据；引擎和 AI 目录目前仅有职责说明。`domain/shared/` 待双方实际消费时才提取工具。竞赛拥有独立 Match/Game/Round/Turn、唯一数字牌、道具获取/效果、积分与 AI，以及独立 `transition`/`legalActions` 和规则快照，不经经典 rules 的 mode 分支。经典扑克 ID、A 点数、52 张牌堆包装、金额及下注测试助手不直接共享；泛型洗牌和随机接口可共享，牌面通过 presentation 适配器复用。
+**双模式（文件边界已建立，玩法仍待实现，[ADR-004](./adr/ADR-004-contest-turns-and-shared-boundaries.md)）**：REQ-012 已将经典模块移入各层 `classic/`，只调整路径。`domain/contest/` 已有 REQ-013 图鉴数据；REQ-015 已实现独立的单回合引擎和信息投影，AI 目录仍为职责说明。`domain/shared/` 待双方实际消费时才提取工具。竞赛拥有独立 Match/Game/Round/Turn、唯一数字牌、道具获取/效果、积分与 AI，以及独立 `transition`/`legalActions` 和规则快照，不经经典 rules 的 mode 分支。经典扑克 ID、A 点数、52 张牌堆包装、金额及下注测试助手不直接共享；泛型洗牌和随机接口可共享，牌面通过 presentation 适配器复用。
 
 首页模式选择与竞赛基础界面随 S1 实现；S1–S2 固定标准难度，难度页随 S3 实现。竞赛用卡不换人，Hit/Stay 才结束 Turn；动画输入锁解除后依据权威行动方继续，不能沿用经典庄家自动补牌。S1 最小多卡原型先验证这一边界，详见 [roadmap.md](./roadmap.md)。
 
@@ -54,7 +54,7 @@ src/
       trumps/                # ID、结构化定义、21 张实验候选卡及测试
       presets/               # 独立实验库存与 F1/P0 元数据
       codex/                 # 查询、进度更新、负载校验、公开入口与测试
-      engine/                # S1 引擎文件职责预留
+      engine/                # REQ-015 单回合引擎、投影及测试；赛制待实现
       ai/                    # S1/S2 策略与搜索职责预留
   application/
     classic/useGame.ts       # 原有权威状态、动画与存档协调，行为不变
@@ -117,9 +117,9 @@ REQ-012/013 前置批次按用户要求未运行构建、未改版本、未发�
 
 ## 7. S1 实施顺序与经典兼容验证
 
-S1 的 [REQ-014–020](./roadmap.md) 已登记，014 已独立验收归档，015–020 保持 active。014 先收敛迁移后经典入口与正常构建兼容性，不接图鉴或竞赛 feature；015–019 才实现竞赛回合、赛制、协调、界面和测试原型。017 对手策略只是确定的 Hit/Stay 占位，020 最后固化无道具基线；S2 末项再开发组合 AI。
+S1 的 [REQ-014–020](./roadmap.md) 已登记，014/015 已独立验收归档，016–020 保持 active。014 先收敛迁移后经典入口与正常构建兼容性，不接图鉴或竞赛 feature；015–019 才实现竞赛回合、赛制、协调、界面和测试原型。017 对手策略只是确定的 Hit/Stay 占位，020 最后固化无道具基线；S2 末项再开发组合 AI。
 
-REQ-014 已通过独立验收并归档，v0.1.4 已正式发布并完成上传资产回读复验；015–020 仍待实施。第 3 节的玩法边界保持不变，前置批次的免构建约定未沿用至 014。
+REQ-014 已通过独立验收并归档，v0.1.4 已正式发布并完成上传资产回读复验。REQ-015 已在新分支实现单回合引擎并通过独立验收归档（2026-10-20）；016–020 仍待实施。前置批次的免构建约定不延续。
 
 REQ-014 实施分支为 main，目标发布 0.1.4，仅架构迁移且图鉴不生效；REQ-015 起从该发布基线新建竞赛开发分支，进入 0.2.x 版本线。REQ-014 已在 main 同步项目和锁文件版本 0.1.4，并取得独立验收绿灯；提交、tag 和 Release 证据归入需求发布记录。
 
@@ -128,3 +128,9 @@ REQ-014 实施分支为 main，目标发布 0.1.4，仅架构迁移且图鉴不�
 生产入口仍为 `main.tsx → App → classic`，实际 Vite 模块图仅包含 21 个 src 模块，未加载 domain/application/presentation 的 contest 模块。图鉴候选双语字符串仍静态存在于共享 i18n 中，未调用图鉴查询、进度、实验预设或竞赛存储。经典迁移路径已正确，本次没有再次调整产品模块。
 
 `src/architecture.test.ts` 递归追踪真实入口的静态、再导出及字面量动态导入，阻止竞赛和测试助手接入；无法静态证明隔离的动态导入／glob 直接失败。正常生产构建仍使用 `base: "./"` 与 singlefile，分发包仍为 HTML、favicon 和 LICENSE。与正式 v0.1.3 的功能、视觉及三种运行路径对照证据见 [REQ-014](./requirements/archive/REQ-2026-014-classic-build-compatibility.md)；独立验收与实际发布资产核验均已通过，结果见同一归档需求。
+
+## 9. REQ-015 单回合引擎（2026-10-20）
+
+竞赛开发分支 `codex/contest-round-engine` 从发布后的 main 创建，项目与锁文件进入 0.2.0 开发版本，尚未发布。实现仅位于 `domain/contest/engine/`，未改 classic 或抽取 shared 工具，生产入口继续由既有架构测试约束为 classic-only。
+
+`createRound` 接收先手和注入随机源；`transition` 返回权威终态及有序事件。状态保存冻结规则快照，`legalActions` 消费同一快照所在的观察视图；UI／策略后续只接 `RoundObservation` 和 `RoundEventView`，协调层保管完整状态。`projectRoundTransition` 显式重建每个事件和快照，禁止把完整事件直接透传。类型、牌堆、比较、规则快照、Turn 接缝与投影分文件维护，Match/Game 和积分尚未实现。行为与接口见 [contest-rules.md](./design/contest-rules.md) 的已实现范围及引擎目录 README。

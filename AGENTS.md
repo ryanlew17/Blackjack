@@ -24,6 +24,11 @@ Do NOT read all of `docs/` by default. Product scope conflicts resolve to `docs/
 
 GitHub Issue > `docs/requirements/active/*.md` > design docs. Register every new requirement first (Issue or `docs/requirements/`); never write requirement bodies into the PRD. Implemented behavior is described by design docs; tag related code/test comments with `@req REQ-YYYY-NNN` or `@issue #123`.
 
+## Acceptance and Documentation Workflow
+
+- From REQ-016 onward, self-review plus the applicable gates in `docs/testing.md` completes requirement acceptance. Record the evidence, mark done, and archive the requirement; do not wait for a separate per-requirement review. S1 ends with one overall external review, to be arranged separately.
+- READMEs describe the product, usage, setup, and high-level roadmap. Keep development progress, acceptance records, branch/commit status, and release verification in the appropriate `docs/` files, not in README appendices.
+
 ## Hard Constraints
 
 1. **`src/domain/` stays pure TypeScript** — no React, no browser APIs; randomness is injected → `docs/design/game-rules.md`

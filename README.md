@@ -2,7 +2,7 @@
 
 **English** | [简体中文](./README.zh-CN.md)
 
-A local-first, single-player Blackjack game for the browser, built with **React + TypeScript + Vite**. The green-felt **Classic Mode** brings animated cards and chips, optional sound, and virtual-chip wagers to desktop and mobile screens. A second mode, **Contest Mode** — a point-race duel with consecutive item-card combos inspired by _Resident Evil 7_ — is in the design stage and is not playable yet; see the [roadmap](./docs/roadmap.md).
+A local-first, single-player Blackjack game for the browser, built with **React + TypeScript + Vite**. The green-felt **Classic Mode** brings animated cards and chips, optional sound, and virtual-chip wagers to desktop and mobile screens. A second mode, **Contest Mode** — a point-race duel with consecutive item-card combos inspired by _Resident Evil 7_ — is under development and is not playable yet; see the [roadmap](./docs/roadmap.md).
 
 [PRD](./docs/prd.md) · [Architecture](./docs/architecture.md) · [Design snapshots](./docs/design/) · [Save format](./docs/contracts/save-format.md) · [Testing & verification](./docs/testing.md) · [Contributor guide](./AGENTS.md) · [Card research](./docs/contest-research/)
 
@@ -69,7 +69,7 @@ npm run preview       # Serve dist/, normally on port 4173
 src/
   domain/
     classic/          # Existing rules and colocated tests
-    contest/          # Candidate cards, presets, codex data; engine/AI reserved
+    contest/          # Candidate data and standalone round engine; AI reserved
     shared/           # Reserved until actual reuse
   application/        # classic coordinator; contest/shared responsibilities reserved
   infrastructure/     # classic save, shared audio; contest persistence reserved
@@ -126,16 +126,10 @@ Splitting, insurance, and late surrender are implemented and independently accep
 
 Milestones have no calendar commitments; M1–M3 are development checkpoints, not separate releases. v2 rejects v1 and unknown saves without migration. Existing automatic saves must not be silently overwritten; starting over requires an explicit user choice.
 
-The local single-player scope was established on 2026-09-23: LAN play, online deployment, and accounts/cloud saves are explicit non-goals. The **Contest Mode** baseline was revised on 2026-10-04 (S0–S5, first shipping as v0.2.0): BO3/BO5/BO7/BO9 matches by difficulty retain first-to-5 games with an extending target (4:4 → first to 7, 6:6 → first to 9). Each round shares one number card of each value 1–11; a coin flip sets the initial first player, then first play alternates each round. A player may use consecutive item cards before drawing or staying to end their turn, and staying allows later decisions. Item acquisition is separate from the number deck; probabilities, card pools, and scoring effects await validation. The difficulty chain and codex remain, only meta-progress is saved, and refreshing abandons the match. S0 is design work; S1–S5 are not implemented. Classic rules and saves remain v2.
+The local single-player scope was established on 2026-09-23: LAN play, online deployment, and accounts/cloud saves are explicit non-goals. The **Contest Mode** baseline was revised on 2026-10-04 (S0–S5, first shipping as v0.2.0): BO3/BO5/BO7/BO9 matches by difficulty retain first-to-5 games with an extending target (4:4 → first to 7, 6:6 → first to 9). Each round shares one number card of each value 1–11; a coin flip sets the initial first player, then first play alternates each round. A player may use consecutive item cards before drawing or staying to end their turn, and staying allows later decisions. Item acquisition is separate from the number deck; probabilities, card pools, and scoring effects await validation. The difficulty chain and codex remain, only meta-progress is saved, and refreshing abandons the match. Contest Mode remains under development and is not available in the playable interface. Classic rules and saves remain v2.
 
 See [AGENTS.md](./AGENTS.md) before contributing. Keep documentation in both languages aligned when changing behavior or setup commands.
 
 ## License
 
 Released under the [MIT License](./LICENSE).
-
-REQ-012 and REQ-013 delivered the module foundation and codex data preparation; both are accepted and archived. Their preparation batch skipped builds and releases. REQ-014 subsequently validated the classic-only production build against the actual v0.1.3 Release, with unchanged gameplay, UI, rules/save v2 and no active codex integration.
-
-REQ-014 has passed independent acceptance and is archived; [v0.1.4 is released](https://github.com/ryanlew17/Blackjack/releases/tag/v0.1.4), with the uploaded ZIP re-downloaded and verified over file:// and plain LAN HTTP. See the [acceptance and release record](./docs/requirements/archive/REQ-2026-014-classic-build-compatibility.md). Contest gameplay remains unimplemented.
-
-REQ-015–020 remain active and unimplemented. Start their contest development branch from main after v0.1.4 is released, using the 0.2.x version line. The final S1 task establishes the simple Hit/Stay AI baseline; trump-combination AI remains the final S2 task.
