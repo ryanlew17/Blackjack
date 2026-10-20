@@ -64,3 +64,7 @@ S1 已登记 REQ-014–020，首项只验证新目录下经典产物与最新正
 ## 2026-10-20 REQ-016 实现进展
 
 标准无道具 BO5 已由独立 Match 层组合 Round 引擎，积分递延、单次结算、胜局／胜场和跨 Game 先手轮换均在 transitionMatch 内确定。MatchRules 整场冻结，trumpDealing 固定 false；NextRound 继续发牌，结束 Match 不再接收命令。Match 观察与每个事件快照复用 Round 投影，未建立额外共享规则或存档接口。Round/Game 清理位置保留给 REQ-019/S2，当前不启用道具；应用、UI、AI 与元进度仍待后续需求。
+
+## 2026-10-20 REQ-017 实现进展
+
+竞赛应用协调已接通私有权威内存提交、投影事件回放、输入锁与取消代次，useContest 仅公开观察及控制方法；占位对手只在自己的 Turn 从观察和合法 Hit/Stay 决策，没有策略随机源。暂停／回放结束读取权威行动方，不在动画中计算积分或切换 Turn。经典 useGame 和存储未改，本项未强行抽取 shared 调度；UI、正式 AI、PlayTrump 和元进度仍由后续需求承接。

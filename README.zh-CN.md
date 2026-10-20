@@ -67,7 +67,7 @@ src/
     classic/          # 原有规则及同目录测试
     contest/          # 候选数据与独立回合引擎；AI 预留
     shared/           # 待实际复用后提取
-  application/        # classic 协调；contest/shared 职责预留
+  application/        # classic 与 contest 协调；shared 职责预留
   infrastructure/     # classic 存档、shared 音效；contest 存储预留
   presentation/       # classic/shared 组件、i18n；竞赛页面预留
   main.tsx            # 原有入口

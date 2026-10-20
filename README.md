@@ -71,7 +71,7 @@ src/
     classic/          # Existing rules and colocated tests
     contest/          # Candidate data and standalone round engine; AI reserved
     shared/           # Reserved until actual reuse
-  application/        # classic coordinator; contest/shared responsibilities reserved
+  application/        # Classic and contest coordinators; shared responsibilities reserved
   infrastructure/     # classic save, shared audio; contest persistence reserved
   presentation/       # classic/shared components, i18n; contest pages reserved
   main.tsx            # Existing entry

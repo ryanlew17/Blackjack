@@ -11,7 +11,7 @@
 | 文档                                               | 模块                                                                                                     | 何时读取                                                      |
 | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
 | [game-rules.md](./game-rules.md)                   | 规则引擎：RuleSet、阶段机、命令、结算、事件                                                              | 改 `src/domain/`、赔付、规则变体                              |
-| [state-and-animation.md](./state-and-animation.md) | useGame：权威状态、动画队列、刷新恢复、跨标签冲突                                                        | 改 `src/application/classic/useGame.ts`、动画节奏、持久化时机 |
+| [state-and-animation.md](./state-and-animation.md) | useGame／useContest：权威状态、队列、恢复、冲突与竞赛取消                                                | 改 `src/application/classic/useGame.ts`、动画节奏、持久化时机 |
 | [persistence.md](./persistence.md)                 | 存档生命周期：自动保存、校验入口、导入确认、损坏恢复                                                     | 改 `src/infrastructure/classic/save.ts`、导入导出流程         |
 | [ui.md](./ui.md)                                   | 界面：组件结构、i18n、响应式、动效与音效约定                                                             | 改 `src/presentation/` 任何组件、样式、文案                   |
 | [contest-rules.md](./contest-rules.md)             | 竞赛模式：数字牌、连续用卡、AI、赛制与元进度——单回合与标准 BO5 已实现，其余为 S0 基线（数值/卡池待验证） | 规划/实现竞赛模式任何部分、评估设计变更                       |
