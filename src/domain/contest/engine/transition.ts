@@ -1,4 +1,6 @@
 // @req REQ-2026-015: every command commits its full outcome before replay.
+import { playTrump } from "./effects";
+import type { TrumpState } from "./effectTypes";
 import { freezeData } from "../immutable";
 import type { PlayerId } from "../types";
 import { compareHands } from "./comparison";
@@ -23,12 +25,14 @@ export function createRound(
   firstPlayer: PlayerId,
   random: RandomSource,
   rules: RoundRules = DEFAULT_ROUND_RULES,
+  trumps?: TrumpState,
 ): RoundTransition {
   if (firstPlayer !== "human" && firstPlayer !== "ai")
     throw new RangeError("Invalid first player");
   const snapshot = snapshotRoundRules(rules);
   let state: RoundState = freezeData({
     rules: snapshot,
+    ...(trumps ? { trumps } : {}),
     firstPlayer,
     phase: "dealing",
     hands: { human: [], ai: [] },
@@ -71,6 +75,8 @@ export function transition(
   )
     return { state: original, events: [] };
 
+  if (command.type === "PlayTrump")
+    return playTrump(original, command, observeRound(original, command.player));
   const turn = original.turn!;
   if (command.type === "Hit") {
     const card = original.deck[0];

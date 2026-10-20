@@ -11,7 +11,7 @@ A local-first, single-player Blackjack game for the browser, built with **React 
 - **Two tables**: Classic restores your saved table; Contest starts a fresh standard BO5 with alternating turns, round points, and an extending game target.
 - **Classic rules**: hit, stand, double down, undo or clear wagers, and all in.
 - **Action hints**: when split, double, or surrender is available, a one-line explainer appears under the action buttons — reachable on touch screens, with desktop tooltips kept.
-- **Responsive 2D table**: custom SVG cards and chips, Motion animations, keyboard controls, and reduced-motion support.
+- **Responsive 2D table**: custom SVG cards and chips, Motion animations, keyboard controls, and reduced-motion support. Contest actions fit short desktop/mobile screens for ordinary hands; longer hands scroll.
 - **Bilingual interface**: English and Simplified Chinese, with browser-language detection and a saved language preference.
 - **Optional sound**: synthesized card and chip sounds, volume control, and mute.
 - **Classic resume**: refresh opens the home screen; entering Classic restores the current decision point or completed result, including after an animation interruption. Contest matches stay in memory and are abandoned on leaving or refresh.

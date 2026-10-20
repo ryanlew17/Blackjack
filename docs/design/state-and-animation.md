@@ -52,3 +52,11 @@
 useContest 通过参数只读既有设置中的 motion、muted、volume，复用音效模块；设置更新仍由既有 API 负责。回到可见时跳过正在回放的帧，卸载时移除 visibilitychange 监听并退出；竞赛不监听存储冲突、不写任何对局或元进度。应用公共 API 仅含观察、投影事件、输入状态及控制方法。
 
 本项测试覆盖控制器与真实引擎的异步时序和 React 服务端闲置初始化。客户端挂载、卸载／可见性事件分发和实际音效未做浏览器验收，随 REQ-018 的 UI 接线验证；不能把服务端渲染测试视为浏览器证据。
+
+## 7. REQ-019 多卡原型的应用验证
+
+原控制器的提交、队列、取消与策略调度提取至 application/contest/coordinator.ts，由生产 controller 及测试中的双方受控消费者复用；没有抽成跨模式 shared，也没有改经典 useGame。coordinator 的构造端口可显式注入 RoundRules／私有 TrumpSetup 与 controlledPlayers，sendCommand 接受受控方命令并添加当前 roundNumber。该端口不是页面设置，未接 query／storage／全局调试开关。生产 controller 只构造默认协调器，并保留 human-only 的 send(Hit／Stay／NextRound)，不暴露 sendCommand。
+
+同 Turn 的每张道具经同一 transitionMatch 先提交完整终态，再回放 human 投影，busy 期间拒绝重复输入。每段回放完读取权威行动方：用卡后恢复同一方，Hit／Stay 后才换方；显式受控 AI 由测试提交命令，不调用自动策略。正常策略仍只从观察和合法 Hit／Stay 决策，即使内部注入手牌也不会主动用卡。
+
+原回放节奏未改：发牌／Hit 220ms、其余 300ms、减少动态 35ms，AI 思考 300ms。原型事件沿用其余事件节奏；正式音效／道具动效尚未接生产。真实浏览器复核思考→行动回放→玩家可操作各约 302ms，保持原来的自然节奏。页面现在区分发牌、行动回放、思考与揭牌状态，按钮可用性即时呈现，避免用禁用透明度渐变模糊输入锁。

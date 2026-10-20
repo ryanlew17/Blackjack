@@ -1,4 +1,5 @@
 // @req REQ-2026-015: UI and strategies receive ONLY these projected values.
+import { observeTrumps } from "./effects";
 import { freezeData } from "../immutable";
 import type { PlayerId } from "../types";
 import { numberTotal } from "./numbers";
@@ -50,6 +51,7 @@ export function observeRound(
     turn: state.turn,
     quietStays: state.quietStays,
     result: state.result,
+    ...(state.trumps ? { trumps: observeTrumps(state.trumps, viewer) } : {}),
   });
 }
 
@@ -59,6 +61,16 @@ export function projectRoundEvent(
 ): RoundEventView {
   const state = observeRound(event.state, viewer);
   switch (event.type) {
+    case "trump":
+      return freezeData({
+        type: event.type,
+        player: event.player,
+        instance: event.instance,
+        effect: event.effect,
+        ...(event.card !== undefined ? { card: event.card } : {}),
+        ...(event.targetId ? { targetId: event.targetId } : {}),
+        state,
+      });
     case "deal":
       return freezeData({
         type: event.type,

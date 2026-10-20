@@ -1,4 +1,4 @@
-// @req REQ-2026-015: internal seam for REQ-019, not a public player command.
+// @req REQ-2026-015: internal consumption seam for REQ-019, not a public player command.
 import { freezeData } from "../immutable";
 import type { PlayerId } from "../types";
 import type { RoundState, TurnState } from "./types";
@@ -12,7 +12,7 @@ export const nextTurn = (turn: TurnState): TurnState => ({
   usedTrump: false,
 });
 
-/** Call only AFTER a future trump executor validates and consumes its resource.
+/** Call only AFTER the trump executor validates and consumes its resource.
  * Resolution failure still counts as consumption; illegal attempts never call it.
  * This helper grants no card, performs no effect, and never hands over the turn.
  */

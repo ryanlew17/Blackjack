@@ -90,7 +90,7 @@ export default function App() {
   };
   return (
     <MotionConfig reducedMotion={reduced ? "always" : "never"}>
-      <div className="app-shell">
+      <div className={`app-shell${mode === "contest" ? " contest-shell" : ""}`}>
         <header className="topbar">
           <div className="brand">
             <span className="brand-mark">♠</span>

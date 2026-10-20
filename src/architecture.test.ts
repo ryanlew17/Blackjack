@@ -97,7 +97,7 @@ describe("module architecture", () => {
       if (visited.has(file)) continue;
       visited.add(file);
       expect(file).not.toMatch(
-        /\/contest\/(codex|presets|trumps|ai)\/|\.test\.|\/testHelpers\./,
+        /\/contest\/(codex|presets|trumps|ai)\/|\/prototype[/.]|\.test\.|\/testHelpers\./,
       );
       const module = modules.find((entry) => entry.file === file);
       if (!module) {

@@ -72,6 +72,9 @@ export function ContestTable({
                     ? `${hand.visibleTotal} + ?`
                     : hand.total}
                 </span>
+                <span className="hand-turn-note">
+                  {active ? t.currentActor : "\u00a0"}
+                </span>
               </div>
               <div className="number-hand">
                 {hand.cards.map((card, index) => (
@@ -83,9 +86,6 @@ export function ContestTable({
                   />
                 ))}
               </div>
-              <p className="hand-turn-note">
-                {active ? t.currentActor : "\u00a0"}
-              </p>
             </section>
           );
         })}
@@ -125,7 +125,12 @@ export function ContestStatus({ view, t }: { view: ContestView; t: Copy }) {
   if (view.paused) title = t.contestPaused;
   else if (view.thinking) title = t.opponentThinking;
   else if (view.busy)
-    title = m?.phase === "resolving" ? t.contestRevealing : t.contestDealing;
+    title =
+      m?.phase === "resolving" || m?.round.phase === "revealing"
+        ? t.contestRevealing
+        : view.event?.type === "round" && view.event.event.type === "deal"
+          ? t.contestDealing
+          : t.contestReplaying;
   else if (m?.phase === "complete") {
     title = m.winner === "human" ? t.matchWon : t.matchLost;
     detail = t.matchFinishedHint;

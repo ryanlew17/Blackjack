@@ -44,3 +44,16 @@ export type {
   MatchEventView,
   MatchTransitionView,
 } from "./types";
+
+// @req REQ-2026-019: generic effects only; fixed prototype definitions stay isolated.
+export { legalTrumpCommands } from "./effects";
+export type {
+  PlayTrumpCommand,
+  TrumpEffect,
+  TrumpDefinition,
+  TrumpRules,
+  TrumpInstance,
+  TrumpSetup,
+  TrumpState,
+  TrumpObservation,
+} from "./effectTypes";

@@ -1,7 +1,9 @@
 // @req REQ-2026-016: compose round results into a standard BO5 in memory.
+import { createTrumpState } from "./effects";
+import type { TrumpSetup } from "./effectTypes";
 import { freezeData } from "../immutable";
 import { legalActions } from "./legalActions";
-import { cleanupRound } from "./lifecycle";
+import { cleanupRound, cleanupGame } from "./lifecycle";
 import type { RandomSource } from "./numbers";
 import { observeMatch } from "./matchObservation";
 import { createMatchRules } from "./rules";
@@ -36,13 +38,28 @@ function liftRoundEvents(
 export function createMatch(
   random: RandomSource,
   roundRules?: RoundRules,
+  trumpSetup?: TrumpSetup,
 ): MatchTransition {
   const rules = createMatchRules(roundRules);
   // The only coin flip in a Match. Later starts alternate, including ties.
   const firstPlayer = random() < 0.5 ? "human" : "ai";
-  const round = createRound(firstPlayer, random, rules.round);
+  if (trumpSetup && !rules.round.trumps)
+    throw new RangeError("Trump setup requires explicit rules");
+  const setup = trumpSetup
+    ? freezeData({
+        human: trumpSetup.human.map((t) => ({ ...t })),
+        ai: trumpSetup.ai.map((t) => ({ ...t })),
+      })
+    : undefined;
+  const round = createRound(
+    firstPlayer,
+    random,
+    rules.round,
+    setup ? createTrumpState(rules.round.trumps!, setup) : undefined,
+  );
   const state: MatchState = freezeData({
     rules,
+    ...(setup ? { trumpSetup: setup } : {}),
     phase: "playing",
     wins: { human: 0, ai: 0 },
     game: createContestGame(1, rules),
@@ -79,6 +96,9 @@ export function transitionMatch(
       opponentOf(original.round.firstPlayer),
       random,
       original.rules.round,
+      original.phase === "game-complete" && original.trumpSetup
+        ? createTrumpState(original.rules.round.trumps!, original.trumpSetup)
+        : original.round.trumps,
     );
     const state: MatchState = freezeData({
       ...original,
@@ -132,11 +152,11 @@ export function transitionMatch(
       wins[game.winner] >= state.rules.gamesToWin ? game.winner : null;
     state = freezeData({ ...state, game, wins });
     events.push({ type: "game-won", winner: game.winner, state });
-    // The no-trump path has no hand/inventory to clear. This is the future
-    // executor's game cleanup boundary; score display is retained until NextRound.
+    // Retain scores for presentation; private hand/resources clear only here.
     state = freezeData({
       ...state,
       phase: matchWinner ? "resolving" : "game-complete",
+      round: cleanupGame(state.round),
     });
     events.push({ type: "game-cleanup", state });
     if (matchWinner) {

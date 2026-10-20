@@ -1,9 +1,18 @@
 // @req REQ-2026-015: authoritative round data stays inside the engine boundary.
+import type {
+  PlayTrumpCommand,
+  TrumpEventPayload,
+  TrumpRules,
+  TrumpState,
+  TrumpObservation,
+  TrumpSetup,
+} from "./effectTypes";
 import type { NumberValue, PlayerId } from "../types";
 
 export interface RoundRules {
   readonly version: 1;
   readonly pointTarget: number;
+  readonly trumps?: TrumpRules;
 }
 export interface TurnState {
   readonly player: PlayerId;
@@ -28,12 +37,16 @@ export interface RoundState {
   readonly quietStays: 0 | 1 | 2;
   readonly revealed: readonly PlayerId[];
   readonly result: RoundResult | null;
+  readonly trumps?: TrumpState;
 }
-export interface RoundCommand {
-  readonly type: "Hit" | "Stay";
-  readonly player: PlayerId;
-}
+export type RoundCommand =
+  | {
+      readonly type: "Hit" | "Stay";
+      readonly player: PlayerId;
+    }
+  | PlayTrumpCommand;
 export type RoundEvent = (
+  | TrumpEventPayload
   | {
       readonly type: "deal";
       readonly player: PlayerId;
@@ -83,8 +96,10 @@ export interface RoundObservation {
   readonly turn: TurnState | null;
   readonly quietStays: 0 | 1 | 2;
   readonly result: RoundResult | null;
+  readonly trumps?: TrumpObservation;
 }
 export type RoundEventView = (
+  | TrumpEventPayload
   | {
       readonly type: "deal";
       readonly player: PlayerId;
@@ -142,6 +157,8 @@ export interface MatchState {
   /** Global, increasing across games; identifies the command's current round. */
   readonly roundNumber: number;
   readonly round: RoundState;
+  /** Private, fixed setup for the next Game; never part of an observation. */
+  readonly trumpSetup?: TrumpSetup;
   readonly winner: PlayerId | null;
 }
 export type MatchCommand = (RoundCommand | { readonly type: "NextRound" }) & {

@@ -12,7 +12,7 @@ export function Card({
   reduced: boolean;
   t: Copy;
 }) {
-  const red = Math.floor(card / 13) % 2 === 1;
+  const red = !hidden && Math.floor(card / 13) % 2 === 1;
   return (
     <motion.div
       className="card-slot"
@@ -25,33 +25,37 @@ export function Card({
     >
       <motion.div
         className="card-flipper"
+        initial={false}
         animate={{ rotateY: hidden ? 180 : 0 }}
         transition={{ duration: reduced ? 0 : 0.3 }}
       >
-        <div
-          className={`playing-card card-front ${red ? "red" : ""}`}
-          aria-hidden="true"
-        >
-          <span className="card-corner">
-            {rank(card)}
-            <small>{suit(card)}</small>
-          </span>
-          <svg className="card-suit" viewBox="0 0 100 110">
-            <text
-              x="50"
-              y="80"
-              textAnchor="middle"
-              fontSize="80"
-              fill="currentColor"
-            >
-              {suit(card)}
-            </text>
-          </svg>
-          <span className="card-corner bottom">
-            {rank(card)}
-            <small>{suit(card)}</small>
-          </span>
-        </div>
+        {/* @req REQ-2026-019: mount the true front only after legal revelation. */}
+        {!hidden && (
+          <div
+            className={`playing-card card-front ${red ? "red" : ""}`}
+            aria-hidden="true"
+          >
+            <span className="card-corner">
+              {rank(card)}
+              <small>{suit(card)}</small>
+            </span>
+            <svg className="card-suit" viewBox="0 0 100 110">
+              <text
+                x="50"
+                y="80"
+                textAnchor="middle"
+                fontSize="80"
+                fill="currentColor"
+              >
+                {suit(card)}
+              </text>
+            </svg>
+            <span className="card-corner bottom">
+              {rank(card)}
+              <small>{suit(card)}</small>
+            </span>
+          </div>
+        )}
         <div className="playing-card card-back" aria-hidden="true">
           <div className="back-border">
             <span>♠</span>

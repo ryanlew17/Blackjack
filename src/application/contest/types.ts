@@ -6,7 +6,7 @@ import type {
   RandomSource,
 } from "../../domain/contest/engine";
 
-export type ContestAction = MatchCommand["type"];
+export type ContestAction = Exclude<MatchCommand["type"], "PlayTrump">;
 export type OpponentAction = Extract<ContestAction, "Hit" | "Stay">;
 export type OpponentPolicy = (
   observation: MatchObservation,
@@ -19,7 +19,7 @@ export interface ContestView {
   readonly paused: boolean;
   readonly event: MatchEventView | null;
   readonly effectId: number;
-  readonly actions: readonly ContestAction[];
+  readonly actions: readonly MatchCommand["type"][];
 }
 export interface ContestControllerOptions {
   readonly random?: RandomSource;

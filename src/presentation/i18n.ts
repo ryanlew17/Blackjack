@@ -38,6 +38,7 @@ export const en = {
   firstToPoints: "Target",
   targetExtended: "Deuce · target extended",
   firstPlayer: "First to act",
+  contestReplaying: "Playing the action…",
   contestDealing: "Cards in motion…",
   contestTurnHint:
     "Hit or stay ends your turn. Two consecutive stays reveal both hands.",
@@ -348,6 +349,7 @@ export const zh: Copy = {
   firstToPoints: "胜局目标分",
   targetExtended: "平分递延 · 目标提高",
   firstPlayer: "本回合先手",
+  contestReplaying: "正在回放行动…",
   contestDealing: "正在发牌…",
   contestTurnHint: "要牌或停牌结束本次行动。连续两次停牌后，双方揭牌结算。",
   contestPaused: "比赛已暂停",
