@@ -7,13 +7,15 @@
 > 关联需求：[REQ-2026-009](../requirements/archive/REQ-2026-009-css-patch-consolidation.md)
 > 关联需求：[REQ-2026-010](../requirements/archive/REQ-2026-010-touch-action-hints.md)
 > 关联需求：[REQ-2026-011](../requirements/archive/REQ-2026-011-interaction-semantics.md)
-> 最后更新：2026-09-23
+> 最后更新：2026-10-20
 > 来源：2026-09-22 重构定稿（App.tsx 拆分为 components/）
 
 ## 1. 组件结构
 
 ```text
-App.tsx                     # 组装层：useGame 接线、面板开关（panel state）、键盘快捷键
+App.tsx                     # useGame/useContest、内存模式选择与统一面板开关
+  shell/ModeSelect.tsx      # 首页经典／竞赛入口
+  contest/table/            # 投影数字牌桌、操作、结果与竞赛规则
   GameTable.tsx             # 桌面区：庄家/玩家手牌、筹码、计分（score 单次计算后分发）
   ControlDeck.tsx           # 控制区：下注筹码、操作按钮（合法性来自 legalActions）
   Modal.tsx                 # 原生弹层：焦点限制、Esc 关闭
@@ -46,7 +48,7 @@ App.tsx                     # 组装层：useGame 接线、面板开关（panel 
 - **`.table-meta` 的 `z-index: 1` 不得移除**：`.dealer-zone` 是 `top: 30px` 的绝对定位层，缺少该层级会遮挡历史按钮使其无法点击（2026-09-22 浏览器实测确认的存量修复，无视觉变化）。
 - 动效：遵循系统/用户减少动态效果设置（设置项 `motion`）；动画只读事件快照，不回写状态（见 `state-and-animation.md`）。
 - 音效：Web Audio 合成，首次用户交互时 `unlockAudio()` 解锁；遵循静音与音量设置，无音频资源文件。
-- 键盘操作：按钮使用原生 Tab/Enter/Space；弹层 Esc 关闭、焦点限制在弹层内。品牌区为非交互元素（`div`，无 href/onClick/aria-label），Tab 序首停为顶栏「Table rules」（≤760px 该链接隐藏，首停为静音开关）。
+- 键盘操作：按钮使用原生 Tab/Enter/Space；弹层 Esc 关闭、焦点限制在弹层内。品牌区为非交互元素（`div`，无 href/onClick/aria-label），首页 Tab 首停为静音开关；牌桌页首停为顶栏规则（≤760px 隐藏后首停为静音开关）。切换模式时焦点移到新页标题，牌桌内均有「返回首页」按钮。
 
 ## 4. 设置与关于
 
@@ -59,3 +61,13 @@ App.tsx                     # 组装层：useGame 接线、面板开关（panel 
 ## REQ-012/013 文件与文案前置工作
 
 现有组件移入 `src/presentation/classic/components/`（含 panels），Icon/Modal 移入 `src/presentation/shared/`，format 移入 classic。App、样式及渲染逻辑不变。i18n 增加候选图鉴双语数据，目前不挂载任何图鉴页面。后续页面目录与责任见 [architecture.md](../architecture.md)。
+
+## REQ-018 模式入口与无道具竞赛（2026-10-20，用户页面测试通过并归档）
+
+App 持有不落盘的 home/classic/contest 模式，首次访问与刷新均进入首页。useGame 始终保留经典权威状态和设置信封；进入经典复用原组件、存档、历史与规则。设置／音效／关于共用；首页设置不提供重开，竞赛设置的「新比赛」只重开竞赛。
+
+进入竞赛通过 useContest.start 新开固定标准无道具 BO5，不展示难度／图鉴／自定义／道具入口。ContestTable 只读回放的 MatchObservation，独立显示胜局比分、局内积分、当前胜局目标、牌面目标、剩余数字牌与先手／行动方。NumberCard 收到 null 时只生成牌背与「暗牌」名称，不挂载数值正面；自己的未公开首牌显示「仅你可见」。结果标题读取投影中的 winner，不在组件判胜或计分。
+
+Hit／Stay／继续按钮只采用应用 actions、busy 与 paused；回合和局结束后手动继续，场结束后可新开或返回首页。打开竞赛弹层先 pause，关闭统一 closePanel 并 resume；返回首页和中途重开需确认，取消／Esc／背景关闭继续原比赛，确认离场调用 exit 取消旧队列和对手任务。已结束比赛可直接返回首页或新开。刷新丢弃比赛，不恢复竞赛牌面，不写竞赛存档。
+
+竞赛数字牌采用可换行布局；所有新增文案进入两字典，按钮均为原生可聚焦控件。Motion 与协调器共同遵守用户／系统减少动态设置；共享 useSystemReducedMotion 使用 matchMedia 订阅系统偏好实时变化，不依赖 Motion 只读初始偏好的钩子。开发自测与四项用户人工页面测试均已通过，记录已汇入归档 REQ-018，中间产物按授权清理。短视口操作可达性、经典暗牌 DOM 隐藏一致性与行动反馈复核已登记到 REQ-019，尚未实施。

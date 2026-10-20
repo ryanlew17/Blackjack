@@ -88,15 +88,17 @@ describe("module architecture", () => {
       }
     }
   });
-  // @req REQ-2026-014: trace the real entry, including transitive/dynamic imports.
-  it("keeps the production entry classic-only and excludes test helpers", () => {
+  // @req REQ-2026-014/018: trace real imports; playable contest is now intentional.
+  it("keeps unimplemented contest features and test helpers outside the production entry", () => {
     const pending = ["./main.tsx"];
     const visited = new Set<string>();
     while (pending.length) {
       const file = pending.pop()!;
       if (visited.has(file)) continue;
       visited.add(file);
-      expect(file).not.toMatch(/\/contest\/|\.test\.|\/testHelpers\./);
+      expect(file).not.toMatch(
+        /\/contest\/(codex|presets|trumps|ai)\/|\.test\.|\/testHelpers\./,
+      );
       const module = modules.find((entry) => entry.file === file);
       if (!module) {
         expect(file).toMatch(/\.css$/);
@@ -136,6 +138,10 @@ describe("module architecture", () => {
     }
     expect(visited).toContain("./application/classic/useGame.ts");
     expect(visited).toContain("./infrastructure/classic/save.ts");
+    expect(visited).toContain("./application/contest/useContest.ts");
+    expect(visited).toContain("./application/contest/controller.ts");
+    expect(visited).toContain("./presentation/shell/ModeSelect.tsx");
+    expect(visited).toContain("./presentation/contest/table/ContestTable.tsx");
   });
   it("keeps research rows aligned with the data directory without declaring admission", async () => {
     const { TRUMP_CATALOG } = await import("./domain/contest/trumps/catalog");

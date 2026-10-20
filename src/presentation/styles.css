@@ -1007,6 +1007,517 @@ dialog::backdrop {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
+/* @req REQ-2026-018 Mode entrance and independent contest number-card table. */
+h1[tabindex="-1"]:focus {
+  outline: none;
+}
+.home-intro {
+  padding: 64px 0 40px;
+  max-width: 720px;
+}
+.home-intro h1 {
+  font:
+    400 clamp(36px, 4vw, 56px)/1.16 Georgia,
+    "Songti SC",
+    serif;
+  letter-spacing: -1px;
+  margin: 21px 0 17px;
+  color: #f0eadb;
+}
+.home-intro p {
+  font-size: 14px;
+  color: #a6b2a5;
+  line-height: 1.8;
+  margin: 0;
+}
+.mode-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+.mode-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #9caf8b30;
+  border-radius: 18px;
+  padding: 30px 32px 26px;
+  background: linear-gradient(140deg, #22352a, #17251e 78%);
+}
+.contest-entry {
+  border-color: #d9ba7852;
+  background:
+    radial-gradient(ellipse at 90% 0, #53644255, transparent 65%), #1d3025;
+}
+.mode-card h2 {
+  font:
+    400 33px/1.3 Georgia,
+    "Songti SC",
+    serif;
+  margin: 15px 0;
+}
+.mode-card p {
+  max-width: 370px;
+  min-height: 66px;
+  font-size: 13px;
+  line-height: 1.9;
+  color: #b5c1ad;
+  margin: 0 0 25px;
+}
+.mode-card > button {
+  width: 100%;
+  justify-content: space-between;
+}
+.mode-card > small {
+  display: block;
+  min-height: 30px;
+  margin-top: 16px;
+  font-size: 10px;
+  color: #8fa58c;
+  line-height: 1.7;
+}
+.mode-art {
+  height: 135px;
+  margin-bottom: 24px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.art-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 106px;
+  border-radius: 7px;
+  background: #e9e4d4;
+  color: #233a2b;
+  border: 1px solid #fcf7e6;
+  font:
+    28px Georgia,
+    serif;
+  box-shadow: 0 8px 16px #0003;
+  transform: rotate(-14deg);
+}
+.art-card small {
+  font:
+    35px Georgia,
+    serif;
+}
+.art-card + .art-card {
+  transform: rotate(13deg) translateY(2px);
+  margin-left: -10px;
+}
+.art-orbit {
+  position: absolute;
+  width: 168px;
+  height: 130px;
+  border: 1px solid #d9ba7840;
+  border-radius: 50%;
+  transform: rotate(-28deg);
+}
+.art-number {
+  font:
+    58px Georgia,
+    serif;
+  color: #e5cf99;
+  width: 105px;
+  height: 105px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #d9ba7880;
+  border-radius: 50%;
+  background: #1b3026;
+  box-shadow: 0 8px 25px #0002;
+}
+.art-number-small {
+  position: absolute;
+  left: calc(50% + 38px);
+  top: 66px;
+  width: 40px;
+  height: 50px;
+  border: 1px solid #a2b69a66;
+  border-radius: 5px;
+  display: grid;
+  place-items: center;
+  font:
+    24px Georgia,
+    serif;
+  background: #344d37;
+  color: #e1dbbd;
+  transform: rotate(15deg);
+}
+.home-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  color: #7f937d;
+  font-size: 10px;
+  letter-spacing: 0.7px;
+  padding: 34px 0;
+}
+.home-footer > span {
+  color: var(--gold);
+  font-size: 20px;
+}
+.mode-breadcrumb {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0 0;
+  color: #82967f;
+  font-size: 10px;
+}
+.mode-breadcrumb button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  color: #b8c6ad;
+  font-size: 11px;
+}
+.contest-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 15px;
+  padding: 12px 0 24px;
+}
+.contest-heading h1 {
+  margin: 10px 0 0;
+  font:
+    400 31px Georgia,
+    "Songti SC",
+    serif;
+}
+.contest-heading > button {
+  padding: 0;
+  color: #a8b79b;
+  font-size: 11px;
+}
+.match-scoreboard {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 28px;
+  padding: 18px 36px;
+  margin-bottom: 16px;
+  border: 1px solid #b4c29f22;
+  background: #ffffff03;
+  border-radius: 12px;
+}
+.match-side {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 28px;
+}
+.match-side > span {
+  color: #b8c7ad;
+  font-size: 12px;
+}
+.match-side > strong {
+  font:
+    400 40px/1 Manrope,
+    sans-serif;
+  color: #e5ce96;
+  min-width: 28px;
+  text-align: center;
+}
+.opponent-score {
+  justify-content: flex-start;
+}
+.match-format {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  text-align: center;
+}
+.match-format b {
+  font-size: 12px;
+  font-weight: 500;
+}
+.match-format small {
+  font-size: 10px;
+  color: #8eaa89;
+}
+.contest-table {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto auto auto auto;
+  padding: 22px 32px 18px;
+  border: 1px solid #8da47c55;
+  border-radius: 28px;
+  background: radial-gradient(ellipse at 50% 40%, #2d5b3c, #1e422f 75%);
+  box-shadow:
+    inset 0 0 0 7px #10291c50,
+    0 20px 50px #0002;
+}
+.contest-game-strip {
+  grid-row: 1;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #adbf9e;
+  font-size: 10px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #d5e0b71a;
+}
+.contest-game-strip b {
+  color: #e0d9ba;
+  font-weight: 500;
+  margin-left: 5px;
+}
+.contest-game-strip i {
+  font-style: normal;
+  opacity: 0.5;
+  margin: 0 10px;
+}
+.contest-hand {
+  min-width: 0;
+  text-align: center;
+  padding: 17px 12px 0;
+  border: 1px solid transparent;
+  border-radius: 14px;
+}
+.contest-hand-ai {
+  grid-row: 2;
+}
+.contest-hand-human {
+  grid-row: 4;
+}
+.contest-hand-heading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  min-height: 27px;
+  margin-bottom: 10px;
+}
+.contest-hand-heading h2 {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 500;
+  color: #d8e0c9;
+}
+.contest-total {
+  border-radius: 4px;
+  padding: 4px 9px;
+  color: #f0e0ac;
+  border: 1px solid #c2d4aa40;
+  background: #173b2766;
+  font:
+    500 13px Manrope,
+    sans-serif;
+}
+.acting-hand .contest-hand-heading h2 {
+  color: #f0d28d;
+}
+.hand-turn-note {
+  color: #c6d5b4;
+  font-size: 9px;
+  min-height: 14px;
+  margin: 8px 0 0;
+}
+.number-hand {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 9px;
+  min-height: 108px;
+}
+.number-card {
+  position: relative;
+  width: 75px;
+  height: 106px;
+  border-radius: 7px;
+  border: 1px solid #f9f1d9;
+  background: linear-gradient(140deg, #f4efdc, #dfd8c2);
+  color: #25402e;
+  box-shadow: 0 4px 10px #0d291c55;
+  flex-shrink: 0;
+}
+.number-card > div {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+}
+.number-card strong {
+  font:
+    400 43px/1 Georgia,
+    serif;
+}
+.number-corner {
+  position: absolute;
+  top: 6px;
+  left: 8px;
+  font:
+    14px Georgia,
+    serif;
+}
+.number-card-private {
+  border-color: #dabb75;
+}
+.private-mark {
+  position: absolute;
+  bottom: 7px;
+  font-size: 8px;
+  color: #566047;
+}
+.number-card-back {
+  background: repeating-linear-gradient(
+    45deg,
+    #4a6845 0,
+    #4a6845 2px,
+    #365538 2px,
+    #365538 7px
+  );
+  border: 1px solid #a6b77d;
+  padding: 6px;
+}
+.number-card-back > div {
+  border: 1px solid #adbf8977;
+  border-radius: 3px;
+}
+.number-back-mark {
+  font:
+    32px Georgia,
+    serif;
+  color: #c7d1a2;
+  background: #375638;
+  border: 1px solid #92aa7177;
+  border-radius: 50%;
+  width: 43px;
+  height: 43px;
+  display: grid;
+  place-items: center;
+}
+.contest-center {
+  grid-row: 3;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 22px;
+  align-items: center;
+  justify-content: center;
+  max-width: 350px;
+  width: 100%;
+  margin: 12px auto 0;
+  padding: 15px 0 10px;
+  border-top: 1px solid #d4e3b31a;
+  border-bottom: 1px solid #d4e3b31a;
+}
+.card-target {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.card-target > span,
+.game-points > span {
+  color: #b8c8a8;
+  font-size: 8px;
+  letter-spacing: 1px;
+}
+.card-target > strong {
+  font:
+    400 43px/1.2 Georgia,
+    serif;
+  color: #dec78c;
+}
+.game-points {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  border-left: 1px solid #d4e3b330;
+}
+.game-points > strong {
+  font:
+    400 27px/1.2 Manrope,
+    sans-serif;
+  display: flex;
+  gap: 20px;
+  color: #e7dfbc;
+}
+.game-points b {
+  font-weight: 500;
+}
+.game-points i {
+  font-style: normal;
+  color: #91a682;
+}
+.game-points > small {
+  font-size: 10px;
+  color: #acbe9c;
+}
+.game-points > small b {
+  color: #f4dda1;
+  margin-left: 5px;
+}
+.game-points > em {
+  font-size: 9px;
+  font-style: normal;
+  color: #efcf83;
+  text-align: center;
+}
+.contest-center > p {
+  grid-column: 1/-1;
+  text-align: center;
+  font-size: 9px;
+  color: #9bb58f;
+  margin: 12px 0 0;
+}
+.contest-controls {
+  text-align: center;
+  padding: 24px 0 14px;
+}
+.contest-status h2 {
+  margin: 0;
+  color: #e1cf9c;
+  font:
+    400 24px/1.4 Georgia,
+    "Songti SC",
+    serif;
+}
+.contest-status p {
+  margin: 8px 0 19px;
+  font-size: 11px;
+  color: #94aa8e;
+  line-height: 1.7;
+}
+.contest-action-row {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+.contest-action-row button {
+  min-width: 150px;
+}
+.contest-action-row button > span {
+  font-size: 20px;
+  font-weight: 400;
+}
+.contest-restart-link {
+  margin-top: 10px;
+  padding: 0 10px;
+  color: #9eaf94;
+  font-size: 10px;
+}
+.contest-footer {
+  border-top: 1px solid #a4b8911a;
+  color: #7f9679;
+  text-align: center;
+  font-size: 10px;
+  line-height: 1.7;
+  padding: 20px 0 26px;
+}
+
 @media (min-width: 1500px) {
   .app-shell {
     padding-top: 15px;
@@ -1061,6 +1572,102 @@ dialog::backdrop {
   }
 }
 @media (max-width: 760px) {
+  .home-intro {
+    padding: 40px 0 28px;
+  }
+  .mode-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .mode-card {
+    padding: 24px;
+  }
+  .mode-card p {
+    min-height: 0;
+    max-width: none;
+  }
+  .mode-card > small {
+    min-height: 0;
+  }
+  .mode-art {
+    height: 100px;
+    margin-bottom: 20px;
+  }
+  .art-card {
+    width: 61px;
+    height: 90px;
+    font-size: 24px;
+  }
+  .art-orbit {
+    width: 140px;
+    height: 100px;
+  }
+  .art-number {
+    width: 85px;
+    height: 85px;
+    font-size: 48px;
+  }
+  .art-number-small {
+    top: 48px;
+  }
+  .contest-heading {
+    padding-bottom: 18px;
+  }
+  .contest-heading h1 {
+    font-size: 27px;
+  }
+  .match-scoreboard {
+    gap: 12px;
+    padding: 16px 14px;
+  }
+  .match-side {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .opponent-score {
+    flex-direction: column-reverse;
+  }
+  .match-side > strong {
+    font-size: 32px;
+  }
+  .match-format b {
+    font-size: 10px;
+  }
+  .match-format .eyebrow {
+    font-size: 8px;
+    letter-spacing: 1px;
+  }
+  .contest-table {
+    padding: 20px 18px 17px;
+    border-radius: 22px;
+  }
+  .contest-game-strip {
+    font-size: 9px;
+  }
+  .contest-hand {
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .number-card {
+    width: 61px;
+    height: 90px;
+  }
+  .number-card strong {
+    font-size: 36px;
+  }
+  .number-hand {
+    gap: 7px;
+    min-height: 92px;
+  }
+  .contest-status h2 {
+    font-size: 22px;
+  }
+  .contest-action-row button {
+    min-width: 0;
+    flex: 1;
+    max-width: 210px;
+  }
+
   .app-shell {
     padding: 0 20px;
   }
@@ -1239,6 +1846,75 @@ dialog::backdrop {
   }
 }
 @media (max-width: 420px) {
+  .home-intro h1 {
+    font-size: 32px;
+    letter-spacing: -0.5px;
+  }
+  .home-intro p {
+    font-size: 12px;
+  }
+  .mode-card {
+    padding: 22px;
+  }
+  .mode-card h2 {
+    font-size: 29px;
+  }
+  .mode-card p {
+    font-size: 12px;
+  }
+  .home-footer {
+    font-size: 9px;
+    letter-spacing: 0;
+  }
+  .contest-heading h1 {
+    font-size: 24px;
+  }
+  .contest-heading > button {
+    font-size: 10px;
+  }
+  .match-scoreboard {
+    gap: 9px;
+    padding: 14px 10px;
+  }
+  .match-side > span {
+    font-size: 10px;
+  }
+  .match-format b {
+    font-size: 9px;
+  }
+  .contest-table {
+    padding: 18px 13px 15px;
+  }
+  .contest-game-strip i {
+    margin: 0 4px;
+  }
+  .number-card {
+    width: 55px;
+    height: 82px;
+  }
+  .number-card strong {
+    font-size: 32px;
+  }
+  .number-corner {
+    font-size: 12px;
+    left: 6px;
+    top: 5px;
+  }
+  .private-mark {
+    font-size: 7px;
+    bottom: 5px;
+  }
+  .number-hand {
+    min-height: 84px;
+    gap: 6px;
+  }
+  .contest-center {
+    column-gap: 12px;
+  }
+  .contest-status p {
+    font-size: 10px;
+  }
+
   .app-shell {
     padding: 0 14px;
   }

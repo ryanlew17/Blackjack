@@ -10,13 +10,15 @@ export function SettingsPanel({
   updateSettings,
   onNewGame,
   onAbout,
+  newGameLabel,
 }: {
   t: Copy;
   settings: Settings;
   conflict: boolean;
   focusAbout: boolean;
   updateSettings: (patch: Partial<Settings>) => void;
-  onNewGame: () => void;
+  onNewGame?: () => void;
+  newGameLabel?: string;
   onAbout: () => void;
 }) {
   const aboutEntry = useRef<HTMLButtonElement>(null);
@@ -79,9 +81,11 @@ export function SettingsPanel({
         {t.about}
         <span aria-hidden="true">→</span>
       </button>
-      <button className="danger-link" disabled={conflict} onClick={onNewGame}>
-        {t.newGame}
-      </button>
+      {onNewGame && (
+        <button className="danger-link" disabled={conflict} onClick={onNewGame}>
+          {newGameLabel ?? t.newGame}
+        </button>
+      )}
     </div>
   );
 }
