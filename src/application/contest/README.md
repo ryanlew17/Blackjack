@@ -1,8 +1,8 @@
 # 竞赛应用协调（S1）
 
-@req REQ-2026-017 @req REQ-2026-019
+@req REQ-2026-017 @req REQ-2026-019 @req REQ-2026-020
 
-`coordinator.ts` 持有私有权威 Match，`controller.ts` 包装生产玩家 API，`useContest.ts` 是 React 适配；`placeholderOpponent.ts` 仅提供确定占位。生产无道具界面已接，未接正式 AI、图鉴或存储。
+`coordinator.ts` 持有私有权威 Match，`controller.ts` 包装生产玩家 API，`useContest.ts` 是 React 适配；默认对手使用 domain/contest/ai/policy.ts 的独立无道具基线。生产无道具界面已接，未接组合 AI、图鉴或存储。
 
 ## 接口与时序
 
@@ -21,4 +21,10 @@
 
 ## REQ-019 双方受控验证
 
-提交／投影回放／定时器代码提取到 coordinator.ts，生产 controller 只包装 human-only 的三动作 API。测试构造同一协调器，显式传入 frozen 规则、固定手牌与 controlledPlayers，并通过 sendCommand 提交双方实际命令；界面无该端口或调试开关。多张卡分别回放后恢复同一方，Hit／Stay 才换人；busy、pause、skip 与取消仍绑定已提交终态。占位策略继续只 Hit／Stay。
+提交／投影回放／定时器代码提取到 coordinator.ts，生产 controller 只包装 human-only 的三动作 API。测试构造同一协调器，显式传入 frozen 规则、固定手牌与 controlledPlayers，并通过 sendCommand 提交双方实际命令；界面无该端口或调试开关。多张卡分别回放后恢复同一方，Hit／Stay 才换人；busy、pause、skip 与取消仍绑定已提交终态。无道具基线继续只 Hit／Stay。
+
+## REQ-020 策略收敛
+
+应用 types.ts 的 OpponentPolicy／OpponentAction 沿用纯领域 BaselinePolicy／BaselineAction，不另造策略状态或随机接口。coordinator 每次等待结束时从权威终态重新 observeMatch(current, "ai")，过滤合法 Hit／Stay 后调用；玩家 Turn、回放中、暂停、回合间隙及终局不调度。策略迁移保留原阈值与 300ms 延迟，未改提交／取消逻辑。
+
+受控测试强制投递 pause／exit／restart 后的过期回调，验证不提交；重复 resume、跳过回放不重复行动。原型目标变更后再次调度，传入新的已提交观察，AI 保留持有道具并仍只 Hit／Stay。S2 推断和多卡搜索未实现。

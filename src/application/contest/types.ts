@@ -1,4 +1,4 @@
-// @req REQ-2026-017: public coordination ports contain projected data only.
+// @req REQ-2026-017/020: public coordination ports contain projected data only.
 import type {
   MatchCommand,
   MatchEventView,
@@ -6,12 +6,15 @@ import type {
   RandomSource,
 } from "../../domain/contest/engine";
 
+import type {
+  BaselineAction,
+  BaselinePolicy,
+} from "../../domain/contest/ai/policy";
+
 export type ContestAction = Exclude<MatchCommand["type"], "PlayTrump">;
-export type OpponentAction = Extract<ContestAction, "Hit" | "Stay">;
-export type OpponentPolicy = (
-  observation: MatchObservation,
-  actions: readonly OpponentAction[],
-) => OpponentAction;
+// The adapter exposes only the domain baseline contract, with no deal RNG port.
+export type OpponentAction = BaselineAction;
+export type OpponentPolicy = BaselinePolicy;
 export interface ContestView {
   readonly match: MatchObservation | null;
   readonly busy: boolean;

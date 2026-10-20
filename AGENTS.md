@@ -26,7 +26,7 @@ GitHub Issue > `docs/requirements/active/*.md` > design docs. Register every new
 
 ## Acceptance and Documentation Workflow
 
-- From REQ-016 onward, self-review plus the applicable task-level checks in `docs/testing.md` completes requirement acceptance. Record the evidence, mark done, and archive the requirement; do not wait for a separate per-requirement review. S1 ends with one overall external review, to be arranged separately.
+- From REQ-016 onward, self-review plus the applicable task-level checks in `docs/testing.md` completes requirement acceptance. Record the evidence, mark done, and archive the requirement; do not wait for a separate per-requirement review. S1's overall external review and final user acceptance completed on 2026-10-21; the cycle is closed. Evidence is archived in REQ-2026-020.
 - READMEs describe the product, usage, setup, and high-level roadmap. Keep development progress, acceptance records, branch/commit status, and release verification in the appropriate `docs/` files, not in README appendices.
 
 ## Hard Constraints
@@ -67,7 +67,7 @@ No lint script — Prettier is the style gate. `start-game.bat` / `start-game.co
 - `docs/design/` — per-module behavior snapshots (start from its README index).
 - `docs/contracts/save-format.md` — classic save format v2 fields and validation rules; `docs/contracts/contest-save-format.md` — contest save (unlocks + codex, S0 draft).
 - `docs/requirements/` — incremental requirements (`index.md` + `active/` + `archive/`); each requirement ends as exactly one document (background / approach / acceptance criteria / acceptance record / change log) — intermediate artifacts (acceptance reports, handoffs, implementation plans) are distilled into the requirement document and then deleted; template included.
-- `docs/adr/` — decision records; ADR-004 partially supersedes ADR-003 for Contest turns, shared boundaries, and AI information. `docs/roadmap.md` — rules v2 history, the Contest Mode program (S0–S5, v0.2.0 line; S0 revised 2026-10-04, implementation pending), and retired candidates (LAN/online/cloud are non-goals; multi-deck stays dropped).
+- `docs/adr/` — decision records; ADR-004 partially supersedes ADR-003 for Contest turns, shared boundaries, and AI information. `docs/roadmap.md` — rules v2 history, the Contest Mode program (S0–S5, v0.2.0 line; S0 revised 2026-10-04; S1 complete, S2–S5 pending), and retired candidates (LAN/online/cloud are non-goals; multi-deck stays dropped).
 - `docs/testing.md` — check cadence (during work / task finish / release), browser acceptance, known boundaries, past verification records.
 
 ## Deliberate Quirks — do not "clean up"

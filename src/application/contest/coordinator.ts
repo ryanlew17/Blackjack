@@ -12,7 +12,7 @@ import {
   type RoundRules,
   type TrumpSetup,
 } from "../../domain/contest/engine";
-import { placeholderOpponent } from "./placeholderOpponent";
+import { baselinePolicy } from "../../domain/contest/ai/policy";
 import type {
   ContestControllerOptions,
   ContestView,
@@ -29,7 +29,7 @@ export function createContestCoordinator(
   options: ContestCoordinatorOptions = {},
 ) {
   const random = options.random ?? Math.random;
-  const opponent = options.opponent ?? placeholderOpponent;
+  const opponent = options.opponent ?? baselinePolicy;
   const controlled = options.controlledPlayers ?? ["human"];
   const listeners = new Set<() => void>();
   let current: MatchState | null = null;

@@ -1,5 +1,5 @@
 // @req REQ-2026-019: all outcomes use real transitions, not patched states.
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   createMatch,
   observeMatch,
@@ -18,6 +18,7 @@ import type { NumberValue, PlayerId } from "../types";
 import { PROTOTYPE_RULES, prototypeSetup } from "./prototype";
 import { fixedRandom } from "./testHelpers";
 import { cleanupRound, cleanupGame } from "./lifecycle";
+import { observeTrumps } from "./effects";
 
 const noRandom = () => {
   throw new Error("Commands cannot consume deal randomness");
@@ -459,4 +460,55 @@ it("copies mutable nested rules and private setup while reusing one frozen snaps
   expect(state.rules.round).toBe(snapshot);
   expect(state.round.rules).toBe(snapshot);
   expect(state.trumpSetup!.human[0].instanceId).toBe("held");
+});
+
+// @req REQ-2026-020: initialization errors leave the deal stream untouched.
+describe("review fixes at setup and observation boundaries", () => {
+  it.each([
+    {
+      name: "missing explicit rules",
+      rules: undefined,
+      setup: prototypeSetup(["test-draw-2"]),
+    },
+    {
+      name: "unknown definition",
+      rules: PROTOTYPE_RULES,
+      setup: prototypeSetup(["unknown"]),
+    },
+    {
+      name: "duplicate instance IDs",
+      rules: PROTOTYPE_RULES,
+      setup: {
+        human: [{ instanceId: "same", definitionId: "test-draw-2" }],
+        ai: [{ instanceId: "same", definitionId: "test-target-24" }],
+      },
+    },
+    {
+      name: "empty instance ID",
+      rules: PROTOTYPE_RULES,
+      setup: {
+        human: [{ instanceId: "", definitionId: "test-draw-2" }],
+        ai: [],
+      },
+    },
+  ])("rejects $name before the opening coin flip", ({ rules, setup }) => {
+    const random = vi.fn(() => 0.25);
+    expect(() => createMatch(random, rules, setup)).toThrow(RangeError);
+    expect(random).not.toHaveBeenCalled();
+  });
+
+  it("returns a frozen trump observation without relying on observeRound", () => {
+    const { state } = fixture(["test-draw-2"], ["test-return"]);
+    const observation = observeTrumps(state.round.trumps!, "human");
+    expect(observation.ownHand).toHaveLength(1);
+    expect(observation.opponentHandCount).toBe(1);
+    expect(Object.isFrozen(observation)).toBe(true);
+    expect(Object.isFrozen(observation.ownHand)).toBe(true);
+    expect(Object.isFrozen(observation.ownHand[0])).toBe(true);
+    expect(Object.isFrozen(observation.table)).toBe(true);
+    expect(Object.isFrozen(observation.discarded)).toBe(true);
+    expect(() => Object.assign(observation, { opponentHandCount: 0 })).toThrow(
+      TypeError,
+    );
+  });
 });

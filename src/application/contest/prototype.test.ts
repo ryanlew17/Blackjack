@@ -2,6 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createContestCoordinator } from "./coordinator";
 import { createContestController } from "./controller";
+import { baselinePolicy } from "../../domain/contest/ai/policy";
 import {
   PROTOTYPE_RULES,
   prototypeSetup,
@@ -178,7 +179,7 @@ describe("scripted multi-trump replay", () => {
   });
 });
 
-it("the automatic placeholder keeps its held trumps and uses only Hit/Stay", () => {
+it("the automatic baseline keeps its held trumps and uses only Hit/Stay", () => {
   const shuffle = fixedRandom([8, 10, 9, 11]);
   let coin = true;
   const random = () => {
@@ -230,4 +231,55 @@ it("restart replaces the prototype match and invalidates its pending mixed-effec
   expect(api.snapshot()?.round.trumps?.ownHand).toHaveLength(1);
   expect(api.snapshot()?.round.trumps?.table).toEqual([]);
   expect(api.snapshot()?.game.points).toEqual({ human: 0, ai: 0 });
+});
+
+// @req REQ-2026-020: reevaluate the committed observation after a target change.
+it("calls the same baseline again after a trump without playing its held cards", () => {
+  const shuffle = fixedRandom([8, 10, 9, 11]);
+  let coin = true;
+  const random = vi.fn(() => {
+    if (coin) {
+      coin = false;
+      return 0.75;
+    }
+    return shuffle();
+  });
+  const opponent = vi.fn(baselinePolicy);
+  const api = createContestCoordinator({
+    random,
+    opponent,
+    roundRules: PROTOTYPE_RULES,
+    trumpSetup: prototypeSetup(["test-target-24"], ["test-draw-2"]),
+  });
+  api.start();
+  vi.runAllTimers();
+  expect(opponent).toHaveBeenCalledTimes(1);
+  api.sendCommand({
+    type: "PlayTrump",
+    player: "human",
+    instanceId: "human-0",
+  });
+  vi.runAllTimers();
+  expect(opponent).toHaveBeenCalledTimes(1);
+  api.sendCommand({ type: "Stay", player: "human" });
+  vi.runAllTimers();
+  expect(api.snapshot()?.round.turn?.player).toBe("human");
+  expect(opponent).toHaveBeenCalledTimes(2);
+  expect(opponent.mock.calls.map(([view]) => view.round.pointTarget)).toEqual([
+    21, 24,
+  ]);
+  expect(
+    opponent.mock.calls.every(
+      ([, legal]) => !legal.includes("PlayTrump" as never),
+    ),
+  ).toBe(true);
+  expect(opponent.mock.results.map((result) => result.value)).toEqual([
+    "Stay",
+    "Stay",
+  ]);
+  api.sendCommand({ type: "Stay", player: "human" });
+  vi.runAllTimers();
+  expect(api.snapshot()?.phase).toBe("round-complete");
+  expect(api.snapshot()?.round.trumps?.opponentHandCount).toBe(1);
+  expect(random).toHaveBeenCalledTimes(11);
 });

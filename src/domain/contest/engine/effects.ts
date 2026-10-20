@@ -42,12 +42,13 @@ export function observeTrumps(
   state: TrumpState,
   viewer: PlayerId,
 ): TrumpObservation {
-  return {
+  // @req REQ-2026-020: the helper owns its observation's freeze guarantee.
+  return freezeData({
     ownHand: state.hands[viewer],
     opponentHandCount: state.hands[opponentOf(viewer)].length,
     table: state.table,
     discarded: state.discarded,
-  };
+  });
 }
 /** Uses public preconditions only. In particular, draw availability is NOT queried. */
 export function legalTrumpCommands(

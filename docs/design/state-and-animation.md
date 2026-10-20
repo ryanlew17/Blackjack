@@ -1,9 +1,9 @@
 # design/state-and-animation — 状态协调与动画队列行为快照
 
-> 适用范围：经典 useGame 的权威状态、队列、恢复与冲突；竞赛 controller/useContest 的内存提交、投影回放、占位对手与取消。
+> 适用范围：经典 useGame 的权威状态、队列、恢复与冲突；竞赛 controller/useContest 的内存提交、投影回放、无道具 AI 与取消。
 > 何时读取：改经典／竞赛协调、动画节奏、内存或持久化提交、取消及冲突处理前。
 > 关联需求：REQ-2026-003–006、REQ-2026-017。
-> 最后更新：2026-10-20
+> 最后更新：2026-10-21
 > 来源：2026-09-22 重构定稿（effectId 单调计数器）
 
 以下 §1–5 为经典模式，竞赛见 §6。
@@ -47,7 +47,7 @@
 
 发牌和 Hit 220ms，其余 300ms；减少动态效果为 35ms，effectId 跨事件及重开单调递增。skipAnimations 取消回放并落定已提交状态。回放／思考等待使用同一取消代次，exit/restart/pause/skip 会使滞后回调失效；暂停结束按权威行动方恢复，不能把一次事件回放等同于 Turn 结束。PlayTrump 尚未实现，其实际同 Turn 联动随 REQ-019 验证。
 
-队列结束后若权威状态是 AI 的 Turn，等待 300ms，再调用占位策略；只输入 ai 观察和合法 Hit/Stay，不传完整状态或真实随机源。自身总和 <17 且 Hit 合法时 Hit，否则 Stay。对手此前 Stay 后重新获得行动权时会再次决策；玩家 Turn、回合／Game 间隙和 Match 终态均不触发 AI。
+队列结束后若权威状态是 AI 的 Turn，等待 300ms，再调用 domain/contest/ai/policy.ts 的无道具基线（REQ-020）；只输入 ai 观察和合法 Hit/Stay，不传完整状态或真实随机源。自身总和 <17 且 Hit 合法时 Hit，否则 Stay。对手此前 Stay 后重新获得行动权时会再次决策；玩家 Turn、回合／Game 间隙和 Match 终态均不触发 AI。
 
 useContest 通过参数只读既有设置中的 motion、muted、volume，复用音效模块；设置更新仍由既有 API 负责。回到可见时跳过正在回放的帧，卸载时移除 visibilitychange 监听并退出；竞赛不监听存储冲突、不写任何对局或元进度。应用公共 API 仅含观察、投影事件、输入状态及控制方法。
 

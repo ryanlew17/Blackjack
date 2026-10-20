@@ -97,8 +97,11 @@ describe("module architecture", () => {
       if (visited.has(file)) continue;
       visited.add(file);
       expect(file).not.toMatch(
-        /\/contest\/(codex|presets|trumps|ai)\/|\/prototype[/.]|\.test\.|\/testHelpers\./,
+        /\/contest\/(codex|presets|trumps)\/|\/prototype[/.]|\.test\.|\/testHelpers\./,
       );
+      // @req REQ-2026-020: admit only the completed no-trump baseline.
+      if (file.includes("/contest/ai/"))
+        expect(file).toBe("./domain/contest/ai/policy.ts");
       const module = modules.find((entry) => entry.file === file);
       if (!module) {
         expect(file).toMatch(/\.css$/);
@@ -140,6 +143,7 @@ describe("module architecture", () => {
     expect(visited).toContain("./infrastructure/classic/save.ts");
     expect(visited).toContain("./application/contest/useContest.ts");
     expect(visited).toContain("./application/contest/controller.ts");
+    expect(visited).toContain("./domain/contest/ai/policy.ts");
     expect(visited).toContain("./presentation/shell/ModeSelect.tsx");
     expect(visited).toContain("./presentation/contest/table/ContestTable.tsx");
   });

@@ -9,7 +9,7 @@ import {
 import type { NumberValue, PlayerId } from "../../domain/contest/types";
 import { fixedRandom } from "../../domain/contest/engine/testHelpers";
 import { createContestController } from "./controller";
-import { placeholderOpponent } from "./placeholderOpponent";
+import { baselinePolicy } from "../../domain/contest/ai/policy";
 import type { ContestView, OpponentPolicy } from "./types";
 
 function samplesForRound(prefix: readonly NumberValue[]) {
@@ -111,7 +111,7 @@ describe("private authority and projected replay", () => {
       expect(view.round.hands.human.cards[0].value).toBeNull();
       expect(view.round.hands.human.total).toBeNull();
       expect(actions).toEqual(["Hit", "Stay"]);
-      return placeholderOpponent(view, actions);
+      return baselinePolicy(view, actions);
     });
     const controller = createContestController({
       random,
@@ -170,7 +170,7 @@ describe("private authority and projected replay", () => {
 
 describe("opponent scheduling and decisions", () => {
   it("waits until replay finishes and the opponent delay expires", () => {
-    const opponent = vi.fn(placeholderOpponent);
+    const opponent = vi.fn(baselinePolicy);
     const controller = createContestController({ random: aiRound(), opponent });
     controller.start();
     expect(controller.send("Stay")).toBe(false);
@@ -190,7 +190,7 @@ describe("opponent scheduling and decisions", () => {
     expect(controller.getSnapshot().actions).toEqual(["Hit", "Stay"]);
   });
   it("does not call the opponent while the human owns the turn", () => {
-    const opponent = vi.fn(placeholderOpponent);
+    const opponent = vi.fn(baselinePolicy);
     const controller = createContestController({
       random: humanRound(),
       opponent,
@@ -202,7 +202,7 @@ describe("opponent scheduling and decisions", () => {
     expect(controller.getSnapshot().actions).toEqual(["Hit", "Stay"]);
   });
   it("lets a previous stayer decide again after the opponent Hits", () => {
-    const opponent = vi.fn(placeholderOpponent);
+    const opponent = vi.fn(baselinePolicy);
     const controller = createContestController({
       random: humanRound([10, 7, 11, 9, 1]),
       opponent,
@@ -225,7 +225,7 @@ describe("opponent scheduling and decisions", () => {
     expect(controller.snapshot()?.game.points.human).toBe(1);
   });
   it("calls a previously staying opponent again after a human Hit, even at 21 or bust", () => {
-    const opponent = vi.fn(placeholderOpponent);
+    const opponent = vi.fn(baselinePolicy);
     const controller = createContestController({
       random: aiRound([8, 10, 9, 11, 1]),
       opponent,
@@ -252,7 +252,7 @@ describe("opponent scheduling and decisions", () => {
       const state = createMatch(random).state;
       const view = observeMatch(state, "ai");
       expect(view.round.hands.ai.total).toBe(total);
-      expect(placeholderOpponent(view, ["Hit", "Stay"])).toBe(action);
+      expect(baselinePolicy(view, ["Hit", "Stay"])).toBe(action);
       expect(random).toHaveBeenCalledTimes(11);
     },
   );
@@ -272,7 +272,7 @@ describe("opponent scheduling and decisions", () => {
     const view = observeMatch(state, "ai");
     expect(view.round.hands.ai.total).toBe(22);
     expect(legalMatchActions(view)).toContain("Hit");
-    expect(placeholderOpponent(view, ["Hit", "Stay"])).toBe("Stay");
+    expect(baselinePolicy(view, ["Hit", "Stay"])).toBe("Stay");
   });
   it("Stays at 16 when the shared pile is empty", () => {
     const random = humanRound([5, 1, 7, 2, 8, 3, 9, 4, 10, 6, 11]);
@@ -287,11 +287,45 @@ describe("opponent scheduling and decisions", () => {
     expect(view.round.hands.ai.total).toBe(16);
     expect(view.round.deckCount).toBe(0);
     expect(legalMatchActions(view)).toEqual(["Stay"]);
-    expect(placeholderOpponent(view, ["Stay"])).toBe("Stay");
+    expect(baselinePolicy(view, ["Stay"])).toBe("Stay");
   });
 });
 
 describe("cancellation, pause and restart", () => {
+  // @req REQ-2026-020: force delivery after cancellation, not just clearTimeout.
+  it.each(["pause", "exit"] as const)(
+    "rejects a stale AI decision after %s and resumes at most once",
+    (interruption) => {
+      const scheduled = vi.spyOn(globalThis, "setTimeout");
+      const opponent = vi.fn(baselinePolicy);
+      const random = aiRound();
+      const controller = createContestController({ random, opponent });
+      controller.start();
+      controller.skipAnimations();
+      const stale = scheduled.mock.calls.at(-1)![0] as () => void;
+      controller[interruption]();
+      stale();
+      vi.runAllTimers();
+      expect(opponent).not.toHaveBeenCalled();
+      expect(random).toHaveBeenCalledTimes(11);
+      if (interruption === "pause") {
+        controller.resume();
+        controller.resume();
+        vi.advanceTimersByTime(300);
+        expect(opponent).toHaveBeenCalledTimes(1);
+        const committed = controller.snapshot();
+        controller.skipAnimations();
+        stale();
+        vi.runAllTimers();
+        expect(controller.snapshot()).toEqual(committed);
+        expect(opponent).toHaveBeenCalledTimes(1);
+      } else {
+        expect(controller.snapshot()).toBeNull();
+      }
+      expect(vi.getTimerCount()).toBe(0);
+    },
+  );
+
   it("cancels replay on exit and ignores a late callback from the abandoned match", () => {
     const scheduled = vi.spyOn(globalThis, "setTimeout");
     const random = humanRound();
@@ -315,7 +349,7 @@ describe("cancellation, pause and restart", () => {
       ...samplesForRound([10, 8, 11, 9]),
     ]);
     const scheduled = vi.spyOn(globalThis, "setTimeout");
-    const opponent = vi.fn(placeholderOpponent);
+    const opponent = vi.fn(baselinePolicy);
     const controller = createContestController({ random, opponent });
     controller.start();
     controller.skipAnimations();
@@ -331,7 +365,7 @@ describe("cancellation, pause and restart", () => {
     expect(random).toHaveBeenCalledTimes(22);
   });
   it("leaves no timer when a subscriber exits during the AI notification", () => {
-    const opponent = vi.fn(placeholderOpponent);
+    const opponent = vi.fn(baselinePolicy);
     const controller = createContestController({ random: aiRound(), opponent });
     controller.subscribe(() => {
       if (controller.getSnapshot().thinking) controller.exit();
@@ -341,6 +375,44 @@ describe("cancellation, pause and restart", () => {
     expect(controller.getSnapshot().match).toBeNull();
     expect(vi.getTimerCount()).toBe(0);
     expect(opponent).not.toHaveBeenCalled();
+  });
+  // @req REQ-2026-020: interruption can occur synchronously inside publish.
+  it("pauses inside the AI notification, rejects old callbacks and resumes once", () => {
+    const scheduled = vi.spyOn(globalThis, "setTimeout");
+    const opponent = vi.fn(baselinePolicy);
+    const random = aiRound();
+    const controller = createContestController({ random, opponent });
+    controller.start();
+    const staleReplay = scheduled.mock.calls.at(-1)![0] as () => void;
+    let shouldPause = true;
+    controller.subscribe(() => {
+      if (shouldPause && controller.getSnapshot().thinking) {
+        shouldPause = false;
+        controller.pause();
+      }
+    });
+    controller.skipAnimations();
+    const committed = controller.snapshot();
+    expect(controller.getSnapshot().paused).toBe(true);
+    expect(controller.getSnapshot().thinking).toBe(false);
+    expect(vi.getTimerCount()).toBe(0);
+    expect(controller.send("Stay")).toBe(false);
+    staleReplay();
+    vi.runAllTimers();
+    expect(controller.snapshot()).toEqual(committed);
+    expect(opponent).not.toHaveBeenCalled();
+    controller.resume();
+    const staleDecision = scheduled.mock.calls.at(-1)![0] as () => void;
+    controller.pause();
+    staleDecision();
+    expect(opponent).not.toHaveBeenCalled();
+    controller.resume();
+    controller.resume();
+    vi.runAllTimers();
+    expect(opponent).toHaveBeenCalledTimes(1);
+    expect(controller.snapshot()?.round.turn?.player).toBe("human");
+    expect(random).toHaveBeenCalledTimes(11);
+    expect(vi.getTimerCount()).toBe(0);
   });
   it("leaves no replay timer when an event callback exits", () => {
     const controller = createContestController({
@@ -367,7 +439,7 @@ describe("cancellation, pause and restart", () => {
     expect(vi.getTimerCount()).toBe(0);
   });
   it("pauses AI thinking, then resumes one decision for the committed actor", () => {
-    const opponent = vi.fn(placeholderOpponent);
+    const opponent = vi.fn(baselinePolicy);
     const controller = createContestController({ random: aiRound(), opponent });
     controller.start();
     controller.skipAnimations();
@@ -383,7 +455,7 @@ describe("cancellation, pause and restart", () => {
     expect(controller.getSnapshot().actions).toEqual(["Hit", "Stay"]);
   });
   it("resumes a human-owned turn without scheduling an opponent or switching actors", () => {
-    const opponent = vi.fn(placeholderOpponent);
+    const opponent = vi.fn(baselinePolicy);
     const controller = createContestController({
       random: humanRound(),
       opponent,
@@ -444,10 +516,22 @@ describe("complete BO5 and storage isolation", () => {
         );
       }
       const random = sequence(samples);
-      const opponent = vi.fn(placeholderOpponent);
-      const getItem = vi.fn();
-      const setItem = vi.fn();
-      vi.stubGlobal("localStorage", { getItem, setItem });
+      const opponent = vi.fn(baselinePolicy);
+      // @req REQ-2026-020: cover every Storage method and the length getter.
+      const storageMethods = {
+        getItem: vi.fn(),
+        setItem: vi.fn(),
+        removeItem: vi.fn(),
+        clear: vi.fn(),
+        key: vi.fn(),
+      };
+      const readLength = vi.fn(() => 0);
+      vi.stubGlobal("localStorage", {
+        ...storageMethods,
+        get length() {
+          return readLength();
+        },
+      });
       const controller = createContestController({ random, opponent });
       controller.start();
       vi.runAllTimers();
@@ -478,8 +562,9 @@ describe("complete BO5 and storage isolation", () => {
       expect(opponent).toHaveBeenCalledTimes(15);
       expect(random).toHaveBeenCalledTimes(151);
       expect(vi.getTimerCount()).toBe(0);
-      expect(getItem).not.toHaveBeenCalled();
-      expect(setItem).not.toHaveBeenCalled();
+      for (const method of Object.values(storageMethods))
+        expect(method).not.toHaveBeenCalled();
+      expect(readLength).not.toHaveBeenCalled();
     },
   );
 });

@@ -41,8 +41,6 @@ export function createMatch(
   trumpSetup?: TrumpSetup,
 ): MatchTransition {
   const rules = createMatchRules(roundRules);
-  // The only coin flip in a Match. Later starts alternate, including ties.
-  const firstPlayer = random() < 0.5 ? "human" : "ai";
   if (trumpSetup && !rules.round.trumps)
     throw new RangeError("Trump setup requires explicit rules");
   const setup = trumpSetup
@@ -51,12 +49,13 @@ export function createMatch(
         ai: trumpSetup.ai.map((t) => ({ ...t })),
       })
     : undefined;
-  const round = createRound(
-    firstPlayer,
-    random,
-    rules.round,
-    setup ? createTrumpState(rules.round.trumps!, setup) : undefined,
-  );
+  // @req REQ-2026-020: reject invalid setup before consuming deal randomness.
+  const trumps = setup
+    ? createTrumpState(rules.round.trumps!, setup)
+    : undefined;
+  // The only coin flip in a Match. Later starts alternate, including ties.
+  const firstPlayer = random() < 0.5 ? "human" : "ai";
+  const round = createRound(firstPlayer, random, rules.round, trumps);
   const state: MatchState = freezeData({
     rules,
     ...(setup ? { trumpSetup: setup } : {}),
