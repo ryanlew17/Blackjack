@@ -23,3 +23,24 @@ export type {
   RoundEventView,
   RoundTransitionView,
 } from "./types";
+
+// @req REQ-2026-016
+export { createMatch, transitionMatch, legalMatchActions } from "./match";
+export {
+  observeMatch,
+  projectMatchEvent,
+  projectMatchTransition,
+} from "./matchObservation";
+export type {
+  PlayerScores,
+  MatchRules,
+  ContestGameState,
+  MatchPhase,
+  MatchState,
+  MatchCommand,
+  MatchEvent,
+  MatchTransition,
+  MatchObservation,
+  MatchEventView,
+  MatchTransitionView,
+} from "./types";

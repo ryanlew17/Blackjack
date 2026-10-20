@@ -1,8 +1,8 @@
-# 竞赛单回合引擎（S1）
+# 竞赛引擎（S1）
 
-@req REQ-2026-015
+@req REQ-2026-015 @req REQ-2026-016
 
-已实现独立的 Round/Turn、1–11 唯一数字牌堆、Hit/Stay、安静停牌判定、牌面比较与观察／事件投影。无 React、浏览器 API 或经典规则依赖；未接生产入口。
+已实现独立的 Match/Game/Round/Turn、标准无道具 BO5、积分递延、1–11 唯一数字牌堆、Hit/Stay、安静停牌判定、牌面比较与观察／事件投影。无 React、浏览器 API 或经典规则依赖；未接生产入口。
 
 ## 入口与边界
 
@@ -14,4 +14,16 @@
 
 状态、事件和投影视图深冻结。`NumberCardView.faceDown` 表示尚未公开：己方可知值，对手值为 null；`visibleTotal` 仅统计公开牌，`total` 在存在不可见牌时为 null。第二次安静 Stay 的事件后，按先手、后手分别揭牌，最后发布一次 settled 结果；此前不发布结果。
 
-Match/Game、积分、跨回合先手轮换、AI、道具执行、UI 和存储属于后续需求。实验卡池仍不可玩。`testHelpers.ts` 仅供同目录测试，不能进入生产依赖图。
+AI、道具执行、UI 和存储属于后续需求。实验卡池仍不可玩。`testHelpers.ts` 仅供同目录测试，不能进入生产依赖图。
+
+## Match/Game 入口（REQ-016）
+
+- `createMatch(random, roundRules?)` 固定标准 BO5、先赢 3 局、Game 初始目标 5、递延幅度 2、`trumpDealing: false`。只在开场用一次注入随机值抛硬币；每个 Round 另外消耗 10 次洗牌值。可选 RoundRules 沿用 REQ-015 的牌面目标边界，不开放其他难度或赛制配置。
+- `transitionMatch(state, command, random)` 处理带 `roundNumber` 的 Hit/Stay，以及 `{ type: "NextRound", roundNumber }`。只有当前行动方可操作；过期回合、已结束 Match 和不合阶段的命令返回同一状态、零事件、零随机。回合编号用于拒绝跨回合旧命令；跨 Match 的任务取消由后续应用层负责。
+- 连续安静 Stay 后，同一 transition 消费结果一次：赢家 +1、平局 +0，增加 Game 已完成回合数；同分到达当前目标减一才将目标 +2，然后判断 Game/Match 胜负。Game 分数与 Match 胜局分别保存，无历史或元进度。
+- 权威终态为 `round-complete`、`game-complete` 或 `complete`，保留刚结束的牌面与比分供展示。前两者通过 NextRound 发新牌；game-complete 同时建立新 Game，分数归零、目标恢复 5，Match 胜局和全局回合编号继续。每个新 Round 的先手是上个 Round 先手的另一方，平局和跨 Game 均不重新抛硬币。
+- 事件顺序：Round 的 stay → reveal → reveal → settled，随后 round-scored → 可选 target-extended → round-cleanup → 可选 game-won → game-cleanup → match-won。`resolving` 只用于中途快照，不能行动；动画不参与积分计算。
+- `lifecycle.ts` 在 round-cleanup 重置牌面目标与 Turn 临时记录，保留揭牌结果。game-cleanup 是后续道具手牌／资源清理的执行位置；当前无道具字段、发放、库存或候选卡调用，不添加空执行器或资源配置。Game 的计分数据在 NextRound 建立新局时重置。
+- `observeMatch`、`projectMatchEvent`／`projectMatchTransition` 公开比分并复用 Round 投影，嵌套事件及全部快照都过滤隐藏牌。`legalMatchActions(observation)` 仅返回该阶段可用的 Hit/Stay 或 NextRound；UI／策略不接收完整 MatchState。
+
+同一冻结 MatchRules 贯穿整场；其中 `round` 快照以同一引用传给每次发牌与观察。无新增存档字段、难度通关、图鉴更新、正式卡池或生产入口。

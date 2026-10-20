@@ -60,3 +60,7 @@ S1 已登记 REQ-014–020，首项只验证新目录下经典产物与最新正
 ## 2026-10-20 REQ-015 实现进展
 
 独立单回合引擎与观察／事件投影已落在 `domain/contest/engine/`，未接生产入口；Hit/Stay 和安静停牌遵循本决策，预留经合法消费后设置 `Turn.usedTrump` 的内部接缝，尚无道具执行器。规则快照随 Round 携带并冻结，完整状态仅供引擎／后续协调层使用，UI／策略接口只接投影视图。无需移动经典工具或创建共享规则。Match/Game、计分、协调、UI 与 AI 仍按 REQ-016–020 排期。
+
+## 2026-10-20 REQ-016 实现进展
+
+标准无道具 BO5 已由独立 Match 层组合 Round 引擎，积分递延、单次结算、胜局／胜场和跨 Game 先手轮换均在 transitionMatch 内确定。MatchRules 整场冻结，trumpDealing 固定 false；NextRound 继续发牌，结束 Match 不再接收命令。Match 观察与每个事件快照复用 Round 投影，未建立额外共享规则或存档接口。Round/Game 清理位置保留给 REQ-019/S2，当前不启用道具；应用、UI、AI 与元进度仍待后续需求。

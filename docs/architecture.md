@@ -2,7 +2,7 @@
 
 > 适用范围：技术选型、分层边界、目录结构、构建与部署。
 > 何时读取：新建/移动模块、调整构建或部署方式前。
-> 关联需求：REQ-2026-012（文件架构）、REQ-2026-013（图鉴数据）、REQ-2026-014（经典构建兼容）、REQ-2026-015（单回合引擎）。
+> 关联需求：REQ-2026-012（文件架构）、REQ-2026-013（图鉴数据）、REQ-2026-014（经典构建兼容）、REQ-2026-015（单回合引擎）、REQ-2026-016（积分与比赛生命周期）。
 > 最后更新：2026-10-20
 > 来源：2026-09-22 文档架构升级新建（原 AGENTS.md 与 README 结构章节整合）；2026-09-23 竞赛模式立项（ADR-003 三库结构）；2026-10-04 竞赛基线文档修订
 
@@ -33,7 +33,7 @@ presentation/  ──▶  application/  ──▶  domain/
 
 经典规则引擎当前主要入口：`transition(state, command, random?, rules?)`（唯一状态推进）、`legalActions(state, rules?)`（可用命令）、`score(cards)`。另提供逐手结算、历史汇总等纯函数供内部复用与存档校验。界面层禁止绕过 `transition` 自算结果。
 
-**双模式（文件边界已建立，玩法仍待实现，[ADR-004](./adr/ADR-004-contest-turns-and-shared-boundaries.md)）**：REQ-012 已将经典模块移入各层 `classic/`，只调整路径。`domain/contest/` 已有 REQ-013 图鉴数据；REQ-015 已实现独立的单回合引擎和信息投影，AI 目录仍为职责说明。`domain/shared/` 待双方实际消费时才提取工具。竞赛拥有独立 Match/Game/Round/Turn、唯一数字牌、道具获取/效果、积分与 AI，以及独立 `transition`/`legalActions` 和规则快照，不经经典 rules 的 mode 分支。经典扑克 ID、A 点数、52 张牌堆包装、金额及下注测试助手不直接共享；泛型洗牌和随机接口可共享，牌面通过 presentation 适配器复用。
+**双模式（文件边界已建立，玩法仍待实现，[ADR-004](./adr/ADR-004-contest-turns-and-shared-boundaries.md)）**：REQ-012 已将经典模块移入各层 `classic/`，只调整路径。`domain/contest/` 已有 REQ-013 图鉴数据；REQ-015/016 已实现独立单回合、标准无道具 BO5、积分与信息投影，AI 目录仍为职责说明。`domain/shared/` 待双方实际消费时才提取工具。竞赛拥有独立 Match/Game/Round/Turn、唯一数字牌、道具获取/效果、积分与 AI，以及独立 `transition`/`legalActions` 和规则快照，不经经典 rules 的 mode 分支。经典扑克 ID、A 点数、52 张牌堆包装、金额及下注测试助手不直接共享；泛型洗牌和随机接口可共享，牌面通过 presentation 适配器复用。
 
 首页模式选择与竞赛基础界面随 S1 实现；S1–S2 固定标准难度，难度页随 S3 实现。竞赛用卡不换人，Hit/Stay 才结束 Turn；动画输入锁解除后依据权威行动方继续，不能沿用经典庄家自动补牌。S1 最小多卡原型先验证这一边界，详见 [roadmap.md](./roadmap.md)。
 
@@ -54,7 +54,7 @@ src/
       trumps/                # ID、结构化定义、21 张实验候选卡及测试
       presets/               # 独立实验库存与 F1/P0 元数据
       codex/                 # 查询、进度更新、负载校验、公开入口与测试
-      engine/                # REQ-015 单回合引擎、投影及测试；赛制待实现
+      engine/                # REQ-015/016 单回合、标准 BO5、投影及测试
       ai/                    # S1/S2 策略与搜索职责预留
   application/
     classic/useGame.ts       # 原有权威状态、动画与存档协调，行为不变
@@ -117,9 +117,9 @@ REQ-012/013 前置批次按用户要求未运行构建、未改版本、未发�
 
 ## 7. S1 实施顺序与经典兼容验证
 
-S1 的 [REQ-014–020](./roadmap.md) 已登记，014/015 已独立验收归档，016–020 保持 active。014 先收敛迁移后经典入口与正常构建兼容性，不接图鉴或竞赛 feature；015–019 才实现竞赛回合、赛制、协调、界面和测试原型。017 对手策略只是确定的 Hit/Stay 占位，020 最后固化无道具基线；S2 末项再开发组合 AI。
+S1 的 [REQ-014–020](./roadmap.md) 已登记，014/015 已独立验收归档，016 已自审验收归档，017–020 保持 active。014 先收敛迁移后经典入口与正常构建兼容性，不接图鉴或竞赛 feature；015–019 才实现竞赛回合、赛制、协调、界面和测试原型。017 对手策略只是确定的 Hit/Stay 占位，020 最后固化无道具基线；S2 末项再开发组合 AI。
 
-REQ-014 已通过独立验收并归档，v0.1.4 已正式发布并完成上传资产回读复验。REQ-015 已在新分支实现单回合引擎并通过独立验收归档（2026-10-20）；016–020 仍待实施。前置批次的免构建约定不延续。
+REQ-014 已通过独立验收并归档，v0.1.4 已正式发布并完成上传资产回读复验。REQ-015 已在新分支实现单回合引擎并通过独立验收归档（2026-10-20）；REQ-016 已自审验收归档，017–020 仍待实施。当前任务检查节奏以 testing.md 为准。
 
 REQ-014 实施分支为 main，目标发布 0.1.4，仅架构迁移且图鉴不生效；REQ-015 起从该发布基线新建竞赛开发分支，进入 0.2.x 版本线。REQ-014 已在 main 同步项目和锁文件版本 0.1.4，并取得独立验收绿灯；提交、tag 和 Release 证据归入需求发布记录。
 
@@ -133,4 +133,12 @@ REQ-014 实施分支为 main，目标发布 0.1.4，仅架构迁移且图鉴不�
 
 竞赛开发分支 `codex/contest-round-engine` 从发布后的 main 创建，项目与锁文件进入 0.2.0 开发版本，尚未发布。实现仅位于 `domain/contest/engine/`，未改 classic 或抽取 shared 工具，生产入口继续由既有架构测试约束为 classic-only。
 
-`createRound` 接收先手和注入随机源；`transition` 返回权威终态及有序事件。状态保存冻结规则快照，`legalActions` 消费同一快照所在的观察视图；UI／策略后续只接 `RoundObservation` 和 `RoundEventView`，协调层保管完整状态。`projectRoundTransition` 显式重建每个事件和快照，禁止把完整事件直接透传。类型、牌堆、比较、规则快照、Turn 接缝与投影分文件维护，Match/Game 和积分尚未实现。行为与接口见 [contest-rules.md](./design/contest-rules.md) 的已实现范围及引擎目录 README。
+`createRound` 接收先手和注入随机源；`transition` 返回权威终态及有序事件。状态保存冻结规则快照，`legalActions` 消费同一快照所在的观察视图；UI／策略后续只接 `RoundObservation` 和 `RoundEventView`，协调层保管完整状态。`projectRoundTransition` 显式重建每个事件和快照，禁止把完整事件直接透传。类型、牌堆、比较、规则快照、Turn 接缝与投影分文件维护，该阶段的 Match/Game 和积分由 REQ-016 承接，见下节。行为与接口见 [contest-rules.md](./design/contest-rules.md) 的已实现范围及引擎目录 README。
+
+## 10. REQ-016 积分与比赛生命周期（2026-10-20）
+
+`engine/match.ts` 在既有 Round 引擎上组合标准无道具 BO5，Match/Game 词汇与事件定义在 types.ts，计分在 scoring.ts，Round 清理边界在 lifecycle.ts，比赛投影在 matchObservation.ts。公开入口为 createMatch、transitionMatch、legalMatchActions、observeMatch 与事件投影；原 Round API 保留，未改 classic 或提取 shared。
+
+每个完成的 Round 由 Match transition 消费一次，先积分与目标递延，再记胜局／胜场；结果和清理在返回前完成。Round/Game 结束时保留展示快照，由 NextRound 继续，只有新 Game 重置 Game 分数和目标。开场硬币只调用一次随机源，先手跨 Round/Game 轮换；同一规则快照贯穿全场。Round 清理重置目标与 Turn 临时字段，Game 清理事件标记未来道具资源的执行位置；当前显式关闭发放，没有空资源执行器。应用层后续负责输入锁和跨 Match 取消，不能从动画回调提交积分。
+
+生产入口、经典规则／存档、设置信封、依赖与构建配置均未改变；无竞赛持久化或图鉴／通关调用。该纯领域任务按最新 testing.md 执行任务收尾检查，不单独构建或做浏览器验收。

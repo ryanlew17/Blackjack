@@ -1,12 +1,12 @@
-# design/contest-rules — 竞赛模式设计基线与单回合行为快照
+# design/contest-rules — 竞赛模式设计基线与引擎行为快照
 
-> 适用范围：竞赛模式规则与架构基线；REQ-015 已实现单回合数字牌、行动权和投影，其行为快照见下文。赛制、应用／界面、道具与 AI 仍待实现，完整数值／卡池尚未定稿。
+> 适用范围：竞赛模式规则与架构基线；REQ-015/016 已实现单回合及标准无道具 BO5 引擎，其行为快照见下文。其他难度赛制、应用／界面、道具与 AI 仍待实现，完整数值／卡池尚未定稿。
 > 何时读取：规划或实现竞赛模式任何部分之前；评估设计变更时。
 > 关联需求：S1 已登记 REQ-2026-014–020；S2–S5 实现另行立项。
 > 最后更新：2026-10-20
 > 来源：2026-09-23 竞赛模式立项；2026-10-04 用户确认参照《生化危机7》21 点修订玩法与技术路线，允许连续用卡与停牌后重新决策。
 
-REQ-012/013 已建立文件架构与图鉴候选数据模块，已验收归档；见 [图鉴数据快照](./codex-data.md)。REQ-015 已实现 §3 的单回合基线；其余赛制、界面、道具执行、AI 与正式卡池仍待实现，实验数据不得据此视为定稿。
+REQ-012/013 已建立文件架构与图鉴候选数据模块，已验收归档；见 [图鉴数据快照](./codex-data.md)。REQ-015 已实现 §3 的单回合基线，REQ-016 已实现 §2 的标准无道具 BO5；其他难度、界面、道具执行、AI 与正式卡池仍待实现，实验数据不得据此视为定稿。
 
 ## REQ-015 已实现范围（2026-10-20）
 
@@ -17,6 +17,18 @@ REQ-012/013 已建立文件架构与图鉴候选数据模块，已验收归档�
 `observeRound`、`projectRoundEvent`／`projectRoundTransition` 同时过滤载荷和每个事件快照；只保留自己的数字牌、对手明牌和剩余牌数，不给出对手完整点数／爆牌或牌堆身份与顺序。自己未公开的首张牌带 `faceDown: true` 且有值，对手对应值为 null；`visibleTotal` 仅含公开牌，存在未知牌时 `total` 为 null。合法性只使用行动方、阶段和牌堆张数，不能借此查询暗牌。状态、事件、观察深冻结。
 
 为 REQ-019 保留 `Turn.usedTrump` 与内部 `recordTrumpConsumption` 接缝：经后续执行器验证并消费资源后才可调用，即使效果失败也重置安静记录且不换人；该 Turn 的 Stay 不计安静。尚无 PlayTrump 命令、资源或效果执行器。Match/Game 累计积分、AI、应用、UI、存储均不在本次范围。
+
+## REQ-016 已实现范围（2026-10-20）
+
+`createMatch(random, roundRules?)` 建立标准无道具 BO5，先赢 3 个 Game 结束；每个 Game 初始目标 5 分。MatchRules 固定 `difficulty: "standard"`、`bestOf: 5`、`gamesToWin: 3`、`trumpDealing: false`，整场冻结；同一 RoundRules 引用传入后续每个 Round。可选 RoundRules 只沿用既有牌面目标参数边界，默认 21；无其他档位、资源预设或候选卡发放。
+
+`transitionMatch` 接收带全局 `roundNumber` 的 Hit/Stay 或 NextRound。每个已完成 Round 在同一命令中结算一次：赢家 +1，平局 +0；Game 的 `roundsPlayed` 包含平局。4:4 时目标从 5 递延到 7，6:6 时到 9；8:6 时仍须达到 9，不按领先两分提前胜局。达到目标时 Match 胜局 +1，达到三局时 Match 完成；没有外部提交回合结果或积分的命令。
+
+Round 结束保留揭牌与比分，阶段为 round-complete 或 game-complete；NextRound 才开始下一次发牌，game-complete 时同时建立新 Game（分数归零、目标恢复 5、局内回合数归零）。全局 roundNumber 跨 Game 递增。开场只抛一次硬币，后续每次新 Round 均交替先手，包括平局与跨 Game；普通 Hit/Stay 和结算不消费随机，NextRound 仅消耗新回合的 10 次洗牌值。旧回合编号、错误行动方或不合阶段的命令原样返回，complete 阶段没有可用动作。
+
+Round 的 stay → 先手 reveal → 后手 reveal → settled 后，依次产生 round-scored → 可选 target-extended → round-cleanup → 可选 game-won → game-cleanup → match-won。中间 resolving 快照不能行动，完整结果在 transition 返回前确定。round-cleanup 重置牌面目标和 Turn 临时记录，保留结果；game-cleanup 为后续手牌／资源清理留出执行位置。当前无道具资源或执行器，不能据此视为 REQ-019/S2 已实现。
+
+`observeMatch` 与 Match 事件投影只暴露公开比分和 Round 观察，嵌套事件及逐事件快照均投影；`legalMatchActions` 消费该观察。规则层仍只在内存运行，不提交通关或图鉴、不写存档、不挂载 UI。跨 Match 的延迟命令取消与中断语义由 REQ-017/018 实现。
 
 ## 1. 术语与设计依据
 

@@ -15,7 +15,7 @@ Always read this file first, then route by task type — read ONLY the listed do
 | State, animation queue, refresh recovery, tab conflict | `docs/design/state-and-animation.md` + `src/application/classic/useGame.ts`                                                                                                                         |
 | Save validation / import-export / migration            | `docs/design/persistence.md` + `docs/contracts/save-format.md` + `src/infrastructure/classic/save.ts`                                                                                               |
 | UI / visuals / copy / i18n                             | `docs/design/ui.md` + `src/presentation/`                                                                                                                                                           |
-| Testing / verification before submit or release        | `docs/testing.md`                                                                                                                                                                                   |
+| Testing cadence / release gates                        | `docs/testing.md`                                                                                                                                                                                   |
 | Roadmap / "is X planned?"                              | `docs/roadmap.md`                                                                                                                                                                                   |
 
 Do NOT read all of `docs/` by default. Product scope conflicts resolve to `docs/prd.md`.
@@ -26,7 +26,7 @@ GitHub Issue > `docs/requirements/active/*.md` > design docs. Register every new
 
 ## Acceptance and Documentation Workflow
 
-- From REQ-016 onward, self-review plus the applicable gates in `docs/testing.md` completes requirement acceptance. Record the evidence, mark done, and archive the requirement; do not wait for a separate per-requirement review. S1 ends with one overall external review, to be arranged separately.
+- From REQ-016 onward, self-review plus the applicable task-level checks in `docs/testing.md` completes requirement acceptance. Record the evidence, mark done, and archive the requirement; do not wait for a separate per-requirement review. S1 ends with one overall external review, to be arranged separately.
 - READMEs describe the product, usage, setup, and high-level roadmap. Keep development progress, acceptance records, branch/commit status, and release verification in the appropriate `docs/` files, not in README appendices.
 
 ## Hard Constraints
@@ -37,7 +37,7 @@ GitHub Issue > `docs/requirements/active/*.md` > design docs. Register every new
 4. **Validate imported saves before replacing progress**; unsupported versions are rejected, never guessed — format changes bump versions and update `docs/contracts/save-format.md`
 5. **Every user-visible string goes into BOTH dictionaries** in `src/presentation/i18n.ts` (en + zh-CN); no hardcoded copy → `docs/design/ui.md`
 6. **Classic rule variants only via the `rules` parameter** of classic `transition`; pinned `RuleSet` literal fields mean "not implemented" — changing one = implement the rule + bump `rulesVersion` → `docs/adr/ADR-001-ruleset-parameterization.md`. Contest has independent `transition`/`legalActions` with one frozen rules snapshot per Match → `docs/adr/ADR-004-contest-turns-and-shared-boundaries.md`
-7. Keep both READMEs (en + zh-CN) in sync when behavior or setup commands change; run the full gate in `docs/testing.md` before considering work done.
+7. Keep both READMEs (en + zh-CN) in sync when behavior or setup commands change; follow the check cadence in `docs/testing.md` — task-level checks run once when finishing a task, and the full gate (build + browser acceptance) applies only before a release.
 
 ## Commands
 
@@ -68,7 +68,7 @@ No lint script — Prettier is the style gate. `start-game.bat` / `start-game.co
 - `docs/contracts/save-format.md` — classic save format v2 fields and validation rules; `docs/contracts/contest-save-format.md` — contest save (unlocks + codex, S0 draft).
 - `docs/requirements/` — incremental requirements (`index.md` + `active/` + `archive/`); each requirement ends as exactly one document (background / approach / acceptance criteria / acceptance record / change log) — intermediate artifacts (acceptance reports, handoffs, implementation plans) are distilled into the requirement document and then deleted; template included.
 - `docs/adr/` — decision records; ADR-004 partially supersedes ADR-003 for Contest turns, shared boundaries, and AI information. `docs/roadmap.md` — rules v2 history, the Contest Mode program (S0–S5, v0.2.0 line; S0 revised 2026-10-04, implementation pending), and retired candidates (LAN/online/cloud are non-goals; multi-deck stays dropped).
-- `docs/testing.md` — quality gate, browser acceptance table, known boundaries, past verification records.
+- `docs/testing.md` — check cadence (during work / task finish / release), browser acceptance, known boundaries, past verification records.
 
 ## Deliberate Quirks — do not "clean up"
 

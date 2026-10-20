@@ -112,3 +112,81 @@ export interface RoundTransitionView {
   readonly state: RoundObservation;
   readonly events: readonly RoundEventView[];
 }
+
+// @req REQ-2026-016: fixed standard, no-trump match lifecycle.
+export type PlayerScores = Readonly<Record<PlayerId, number>>;
+export interface MatchRules {
+  readonly version: 1;
+  readonly difficulty: "standard";
+  readonly bestOf: 5;
+  readonly gamesToWin: 3;
+  readonly initialGameTarget: 5;
+  readonly targetIncrement: 2;
+  readonly trumpDealing: false;
+  readonly round: RoundRules;
+}
+export interface ContestGameState {
+  readonly number: number;
+  readonly points: PlayerScores;
+  readonly target: number;
+  readonly roundsPlayed: number;
+  readonly winner: PlayerId | null;
+}
+export type MatchPhase =
+  "playing" | "resolving" | "round-complete" | "game-complete" | "complete";
+export interface MatchState {
+  readonly rules: MatchRules;
+  readonly phase: MatchPhase;
+  readonly wins: PlayerScores;
+  readonly game: ContestGameState;
+  /** Global, increasing across games; identifies the command's current round. */
+  readonly roundNumber: number;
+  readonly round: RoundState;
+  readonly winner: PlayerId | null;
+}
+export type MatchCommand = (RoundCommand | { readonly type: "NextRound" }) & {
+  readonly roundNumber: number;
+};
+export type MatchEvent = (
+  | { readonly type: "round"; readonly event: RoundEvent }
+  | { readonly type: "round-scored"; readonly winner: PlayerId | null }
+  | {
+      readonly type: "target-extended";
+      readonly from: number;
+      readonly to: number;
+    }
+  | { readonly type: "round-cleanup" }
+  | { readonly type: "game-won"; readonly winner: PlayerId }
+  | { readonly type: "game-cleanup" }
+  | { readonly type: "match-won"; readonly winner: PlayerId }
+) & { readonly state: MatchState };
+export interface MatchTransition {
+  readonly state: MatchState;
+  readonly events: readonly MatchEvent[];
+}
+export interface MatchObservation {
+  readonly rules: MatchRules;
+  readonly phase: MatchPhase;
+  readonly wins: PlayerScores;
+  readonly game: ContestGameState;
+  readonly roundNumber: number;
+  readonly round: RoundObservation;
+  readonly winner: PlayerId | null;
+}
+export type MatchEventView = (
+  | { readonly type: "round"; readonly event: RoundEventView }
+  | { readonly type: "round-scored"; readonly winner: PlayerId | null }
+  | {
+      readonly type: "target-extended";
+      readonly from: number;
+      readonly to: number;
+    }
+  | { readonly type: "round-cleanup" }
+  | { readonly type: "game-won"; readonly winner: PlayerId }
+  | { readonly type: "game-cleanup" }
+  | { readonly type: "match-won"; readonly winner: PlayerId }
+) & { readonly state: MatchObservation };
+export interface MatchTransitionView {
+  readonly state: MatchObservation;
+  readonly events: readonly MatchEventView[];
+}
