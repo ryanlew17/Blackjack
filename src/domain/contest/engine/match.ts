@@ -4,7 +4,9 @@ import type { TrumpSetup } from "./effectTypes";
 import { freezeData } from "../immutable";
 import { legalActions } from "./legalActions";
 import { cleanupRound, cleanupGame } from "./lifecycle";
-import type { RandomSource } from "./numbers";
+import { randomUnit } from "./numbers";
+import { numberRandom, resourceRandom } from "./resourceTypes";
+import type { ContestRandom } from "./resourceTypes";
 import { observeMatch } from "./matchObservation";
 import { createMatchRules } from "./rules";
 import { createContestGame, scoreContestRound } from "./scoring";
@@ -36,7 +38,7 @@ function liftRoundEvents(
 }
 
 export function createMatch(
-  random: RandomSource,
+  random: ContestRandom,
   roundRules?: RoundRules,
   trumpSetup?: TrumpSetup,
 ): MatchTransition {
@@ -50,12 +52,17 @@ export function createMatch(
       })
     : undefined;
   // @req REQ-2026-020: reject invalid setup before consuming deal randomness.
-  const trumps = setup
-    ? createTrumpState(rules.round.trumps!, setup)
-    : undefined;
+  if (rules.round.trumps?.resources) resourceRandom(random);
+  const dealRandom = numberRandom(random);
+  if (typeof dealRandom !== "function")
+    throw new RangeError("Missing number stream");
+  const trumps =
+    setup || rules.round.trumps?.resources
+      ? createTrumpState(rules.round.trumps!, setup)
+      : undefined;
   // The only coin flip in a Match. Later starts alternate, including ties.
-  const firstPlayer = random() < 0.5 ? "human" : "ai";
-  const round = createRound(firstPlayer, random, rules.round, trumps);
+  const firstPlayer = randomUnit(dealRandom) < 0.5 ? "human" : "ai";
+  const round = createRound(firstPlayer, random, rules.round, trumps, 1, true);
   const state: MatchState = freezeData({
     rules,
     ...(setup ? { trumpSetup: setup } : {}),
@@ -81,7 +88,7 @@ export function legalMatchActions(
 export function transitionMatch(
   original: MatchState,
   command: MatchCommand,
-  random: RandomSource,
+  random: ContestRandom,
 ): MatchTransition {
   const viewer = command.type === "NextRound" ? "human" : command.player;
   if (
@@ -95,9 +102,15 @@ export function transitionMatch(
       opponentOf(original.round.firstPlayer),
       random,
       original.rules.round,
-      original.phase === "game-complete" && original.trumpSetup
-        ? createTrumpState(original.rules.round.trumps!, original.trumpSetup)
+      original.phase === "game-complete" && original.rules.round.trumps
+        ? createTrumpState(
+            original.rules.round.trumps,
+            original.trumpSetup,
+            original.game.number + 1,
+          )
         : original.round.trumps,
+      original.roundNumber + 1,
+      original.phase === "game-complete",
     );
     const state: MatchState = freezeData({
       ...original,
@@ -112,7 +125,11 @@ export function transitionMatch(
     return freezeData({ state, events: liftRoundEvents(state, round) });
   }
 
-  const round = transition(original.round, command);
+  const round = transition(
+    original.round,
+    command,
+    typeof random === "function" ? undefined : random,
+  );
   if (round.state === original.round) return { state: original, events: [] };
   let state: MatchState = freezeData({ ...original, round: round.state });
   const events = liftRoundEvents(original, round);

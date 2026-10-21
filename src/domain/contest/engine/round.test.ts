@@ -1,3 +1,4 @@
+// @req REQ-2026-022: instance identity/resource migration preserves existing rule regressions.
 // @req REQ-2026-015
 import { describe, expect, it, vi } from "vitest";
 import {
@@ -12,11 +13,19 @@ import type { RoundCommand, RoundState } from "./types";
 import type { NumberValue, PlayerId } from "../types";
 import { NUMBER_VALUES, createNumberDeck, numberTotal } from "./numbers";
 import { recordTrumpConsumption } from "./turn";
-import { act, fixedRandom, fixedRound, settle } from "./testHelpers";
+import {
+  act,
+  fixedRandom,
+  fixedRound,
+  settle,
+  cardValues,
+  handValues,
+} from "./testHelpers";
 
 function conserve(state: RoundState) {
   const cards = [...state.hands.human, ...state.hands.ai, ...state.deck];
-  expect(cards.slice().sort((a, b) => a - b)).toEqual(NUMBER_VALUES);
+  expect(cardValues(cards).sort((a, b) => a - b)).toEqual(NUMBER_VALUES);
+  expect(new Set(cards.map((card) => card.instanceId)).size).toBe(11);
 }
 
 describe("contest number deck and round creation", () => {
@@ -24,8 +33,8 @@ describe("contest number deck and round creation", () => {
     const random = vi.fn(fixedRandom([11, 1, 10, 2, 9]));
     const result = createRound("human", random);
     expect(random).toHaveBeenCalledTimes(10);
-    expect(result.state.hands).toEqual({ human: [11, 10], ai: [1, 2] });
-    expect(result.state.deck[0]).toBe(9);
+    expect(handValues(result.state)).toEqual({ human: [11, 10], ai: [1, 2] });
+    expect(result.state.deck[0].value).toBe(9);
     expect(result.state.turn).toEqual({
       player: "human",
       number: 1,
@@ -51,7 +60,7 @@ describe("contest number deck and round creation", () => {
   });
   it("accepts the lifecycle's AI first player without a second coin flip", () => {
     const result = fixedRound([1, 2, 3, 4], "ai");
-    expect(result.state.hands).toEqual({ human: [2, 4], ai: [1, 3] });
+    expect(handValues(result.state)).toEqual({ human: [2, 4], ai: [1, 3] });
     expect(result.state.turn?.player).toBe("ai");
     expect(legalActions(observeRound(result.state, "human"))).toEqual([]);
     expect(legalActions(observeRound(result.state, "ai"))).toEqual([
@@ -125,7 +134,7 @@ describe("contest turns and quiet stays", () => {
     expect(first.state.quietStays).toBe(1);
     expect(first.state.turn?.player).toBe("ai");
     const second = act(first.state, "Hit");
-    expect(second.state.hands.ai).toEqual([2, 4, 5]);
+    expect(cardValues(second.state.hands.ai)).toEqual([2, 4, 5]);
     expect(second.state.quietStays).toBe(0);
     expect(second.state.turn).toEqual({
       player: "human",
@@ -137,11 +146,11 @@ describe("contest turns and quiet stays", () => {
       "Stay",
     ]);
     const third = act(second.state, "Hit");
-    expect(third.state.hands.human).toEqual([1, 3, 6]);
+    expect(cardValues(third.state.hands.human)).toEqual([1, 3, 6]);
     expect(third.state.turn?.player).toBe("ai");
     expect(first.events.map((event) => event.type)).toEqual(["stay"]);
     expect(second.events.map((event) => event.type)).toEqual(["hit"]);
-    expect(initial.hands.ai).toEqual([2, 4]);
+    expect(cardValues(initial.hands.ai)).toEqual([2, 4]);
     expect(initial.quietStays).toBe(0);
   });
   it("leaves ordinary 21 and busts active, allowing further Hits", () => {
@@ -154,7 +163,9 @@ describe("contest turns and quiet stays", () => {
     expect(state.phase).toBe("acting");
     expect(state.result).toBeNull();
     expect(legalActions(observeRound(state, "human"))).toContain("Hit");
-    expect(act(state, "Hit").state.hands.human).toEqual([10, 11, 7, 5]);
+    expect(cardValues(act(state, "Hit").state.hands.human)).toEqual([
+      10, 11, 7, 5,
+    ]);
   });
   it("never refills an empty pile; rejects Hit but still settles via Stay", () => {
     let state = fixedRound([]).state;
@@ -243,8 +254,12 @@ describe("contest turns and quiet stays", () => {
     const initial = fixedRound([1, 2, 3, 4]);
     const prior = JSON.stringify(initial);
     const next = act(initial.state, "Hit");
-    expect(() => (initial.state.hands.human as number[]).push(11)).toThrow();
-    expect(() => (initial.state.deck as number[]).reverse()).toThrow();
+    expect(() =>
+      (initial.state.hands.human as unknown as number[]).push(11),
+    ).toThrow();
+    expect(() =>
+      (initial.state.deck as unknown as number[]).reverse(),
+    ).toThrow();
     expect(() =>
       Object.assign(initial.state.turn!, { player: "ai" }),
     ).toThrow();

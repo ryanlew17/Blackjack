@@ -1,3 +1,5 @@
+// @req REQ-2026-023: numeric contributions, authorized information and reversible effects.
+// @req REQ-2026-022: instance identity/resource migration preserves existing rule regressions.
 // @req REQ-2026-015: authoritative round data stays inside the engine boundary.
 import type {
   PlayTrumpCommand,
@@ -6,7 +8,11 @@ import type {
   TrumpState,
   TrumpObservation,
   TrumpSetup,
+  ResourceEventPayload,
+  ResourceEventView,
+  SuddenDeathMarker,
 } from "./effectTypes";
+import type { NumberInstance, CardTransaction } from "./numberCards";
 import type { NumberValue, PlayerId } from "../types";
 
 export interface RoundRules {
@@ -29,10 +35,28 @@ export interface RoundState {
   readonly rules: RoundRules;
   readonly firstPlayer: PlayerId;
   readonly phase: RoundPhase;
-  readonly hands: Readonly<Record<PlayerId, readonly NumberValue[]>>;
+  readonly hands: Readonly<Record<PlayerId, readonly NumberInstance[]>>;
   /** Ordered draw pile, with the next card at index zero. Never project it. */
-  readonly deck: readonly NumberValue[];
+  readonly deck: readonly NumberInstance[];
+  readonly numberScope: number;
+  readonly nextNumberId: number;
+  readonly deletedNumbers: readonly NumberInstance[];
+  readonly hiddenCards: Readonly<Record<PlayerId, string | null>>;
+  readonly lastPlay: CardTransaction | null;
+  readonly hiddenMultipliers: Readonly<Record<PlayerId, 1 | 2>>;
+  readonly deckRevision: number;
+  readonly scry: Readonly<
+    Record<
+      PlayerId,
+      {
+        readonly revision: number;
+        readonly cards: readonly NumberInstance[];
+      } | null
+    >
+  >;
   readonly pointTarget: number;
+  /** REQ-022 resource hook; REQ-024 supplies card-driven modifiers. */
+  readonly hitDrawCounts: Readonly<Record<PlayerId, 1 | 2>>;
   readonly turn: TurnState | null;
   readonly quietStays: 0 | 1 | 2;
   readonly revealed: readonly PlayerId[];
@@ -47,6 +71,7 @@ export type RoundCommand =
   | PlayTrumpCommand;
 export type RoundEvent = (
   | TrumpEventPayload
+  | ResourceEventPayload
   | {
       readonly type: "deal";
       readonly player: PlayerId;
@@ -92,14 +117,25 @@ export interface RoundObservation {
   readonly phase: RoundPhase;
   readonly hands: Readonly<Record<PlayerId, RoundHandView>>;
   readonly deckCount: number;
+  readonly faceUpCardIds: Readonly<Record<PlayerId, readonly string[]>>;
+  readonly hiddenMultipliers: Readonly<Record<PlayerId, 1 | 2>>;
+  readonly peek: readonly NumberValue[] | null;
   readonly pointTarget: number;
+  /** REQ-022 resource hook; REQ-024 supplies card-driven modifiers. */
+  readonly hitDrawCounts: Readonly<Record<PlayerId, 1 | 2>>;
   readonly turn: TurnState | null;
   readonly quietStays: 0 | 1 | 2;
   readonly result: RoundResult | null;
+  readonly lastPlay: {
+    readonly type: "number" | "trump";
+    readonly player: PlayerId;
+    readonly instanceId: string;
+  } | null;
   readonly trumps?: TrumpObservation;
 }
 export type RoundEventView = (
   | TrumpEventPayload
+  | ResourceEventView
   | {
       readonly type: "deal";
       readonly player: PlayerId;
@@ -137,7 +173,7 @@ export interface MatchRules {
   readonly gamesToWin: 3;
   readonly initialGameTarget: 5;
   readonly targetIncrement: 2;
-  readonly trumpDealing: false;
+  readonly trumpDealing: boolean;
   readonly round: RoundRules;
 }
 export interface ContestGameState {
@@ -145,6 +181,8 @@ export interface ContestGameState {
   readonly points: PlayerScores;
   readonly target: number;
   readonly roundsPlayed: number;
+  /** REQ-024 supplies the actual sudden-death command semantics. */
+  readonly suddenDeath?: SuddenDeathMarker;
   readonly winner: PlayerId | null;
 }
 export type MatchPhase =

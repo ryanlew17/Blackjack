@@ -1,9 +1,10 @@
+// @req REQ-2026-022: instance identity/resource migration preserves existing rule regressions.
 // @req REQ-2026-015: noninterference includes event payloads and every snapshot.
 import { describe, expect, it } from "vitest";
 import type { NumberValue } from "../types";
 import { NUMBER_VALUES } from "./numbers";
 import { legalActions, observeRound, projectRoundTransition } from "./index";
-import { act, fixedRound, settle } from "./testHelpers";
+import { act, fixedRound, settle, cardValues } from "./testHelpers";
 
 function assertNoDeck(value: unknown) {
   if (value !== null && typeof value === "object") {
@@ -20,16 +21,16 @@ describe("round observations and projected replay", () => {
       const opponent = viewer === "human" ? "ai" : "human";
       const view = observeRound(state, viewer);
       expect(view.hands[viewer].cards[0]).toEqual({
-        value: state.hands[viewer][0],
+        value: state.hands[viewer][0].value,
         faceDown: true,
       });
       expect(view.hands[viewer].total).toBe(viewer === "human" ? 21 : 17);
       expect(view.hands[opponent]).toEqual({
         cards: [
           { value: null, faceDown: true },
-          { value: state.hands[opponent][1], faceDown: false },
+          { value: state.hands[opponent][1].value, faceDown: false },
         ],
-        visibleTotal: state.hands[opponent][1],
+        visibleTotal: state.hands[opponent][1].value,
         total: null,
       });
       expect(view.deckCount).toBe(7);
@@ -128,7 +129,7 @@ describe("round observations and projected replay", () => {
       });
       const reference = projectRoundTransition(variants[0], viewer);
       for (const variant of variants) {
-        expect(variant.state.hands[viewer]).toEqual([10, 11]);
+        expect(cardValues(variant.state.hands[viewer])).toEqual([10, 11]);
         expect(projectRoundTransition(variant, viewer)).toEqual(reference);
         expect(legalActions(observeRound(variant.state, viewer))).toEqual([
           "Hit",
@@ -149,7 +150,7 @@ describe("round observations and projected replay", () => {
         new Set(
           variants.map(
             (variant) =>
-              variant.state.hands[viewer === "human" ? "ai" : "human"][0],
+              variant.state.hands[viewer === "human" ? "ai" : "human"][0].value,
           ),
         ).size,
       ).toBe(8);
@@ -168,8 +169,8 @@ describe("round observations and projected replay", () => {
     expect(legalActions(observeRound(a, "human"))).toEqual(
       legalActions(observeRound(b, "human")),
     );
-    expect(a.hands.ai).toEqual([1, 8, 4]);
-    expect(b.hands.ai).toEqual([9, 8, 4]);
+    expect(cardValues(a.hands.ai)).toEqual([1, 8, 4]);
+    expect(cardValues(b.hands.ai)).toEqual([9, 8, 4]);
   });
   it("separates view arrays and freezes them so consumers cannot mutate authority", () => {
     const initial = fixedRound([10, 9, 11, 8]);
@@ -186,6 +187,6 @@ describe("round observations and projected replay", () => {
         faceDown: false,
       }),
     ).toThrow();
-    expect(initial.state.hands.ai).toEqual([9, 8]);
+    expect(cardValues(initial.state.hands.ai)).toEqual([9, 8]);
   });
 });

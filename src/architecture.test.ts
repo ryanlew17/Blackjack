@@ -2,7 +2,7 @@
 /// <reference types="vite/client" />
 import ts from "typescript";
 import { describe, expect, it } from "vitest";
-import research from "../docs/contest-research/candidates.md?raw";
+import research from "../docs/requirements/archive/REQ-2026-021-contest-trump-rule-contract.md?raw";
 
 const sources = import.meta.glob<string>(
   ["./**/*.ts", "./**/*.tsx", "./**/*.css", "!./**/*.test.ts", "!./**/*.d.ts"],
@@ -147,30 +147,34 @@ describe("module architecture", () => {
     expect(visited).toContain("./presentation/shell/ModeSelect.tsx");
     expect(visited).toContain("./presentation/contest/table/ContestTable.tsx");
   });
-  it("keeps research rows aligned with the data directory without declaring admission", async () => {
+  // @req REQ-2026-021: the expanded plan must not imply runtime admission.
+  it("keeps the expanded design distinct from unadmitted runtime candidates", async () => {
     const { TRUMP_CATALOG } = await import("./domain/contest/trumps/catalog");
-    const { CANDIDATE_AVAILABILITY } =
-      await import("./domain/contest/presets/experimental");
-    const { DIFFICULTIES } = await import("./domain/contest/types");
     const { isTrumpId, TRUMP_IDS } =
       await import("./domain/contest/trumps/ids");
     const rows = research
       .split("\n")
-      .filter((line) => /\d\/\d\/\d\/\d\/\d/.test(line))
       .map((line) =>
         line
           .split("|")
           .slice(1, -1)
           .map((cell) => cell.trim()),
+      )
+      .filter(
+        (cells) => cells.length === 7 && /^\x60[^\x60]+\x60$/.test(cells[0]),
       );
-    expect(rows.map((row) => row[0])).toEqual([...TRUMP_IDS]);
+    const ids = rows.map((row) => row[0].slice(1, -1));
+    expect(ids).toHaveLength(51);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(ids.slice(0, TRUMP_IDS.length)).toEqual([...TRUMP_IDS]);
+    expect(research).not.toContain("| 最早出现 |");
     for (const row of rows) {
-      const id = row[0];
-      if (!isTrumpId(id)) throw new Error(id);
-      expect(
-        DIFFICULTIES.map((d) => CANDIDATE_AVAILABILITY[id].copiesPerSide[d]),
-      ).toEqual(row[5].split("/").map(Number));
-      expect(TRUMP_CATALOG[id].playable).toBe(false);
+      const id = row[0].slice(1, -1);
+      const copies = row[3].split("/").map(Number);
+      expect(copies).toHaveLength(5);
+      expect(copies.every((n) => Number.isSafeInteger(n) && n >= 0)).toBe(true);
+      if (isTrumpId(id)) expect(TRUMP_CATALOG[id].playable).toBe(false);
+      else expect(Object.hasOwn(TRUMP_CATALOG, id)).toBe(false);
     }
   });
 });

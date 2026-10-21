@@ -45,3 +45,12 @@ export function act(state: RoundState, type: "Hit" | "Stay") {
 
 export const settle = (state: RoundState) =>
   act(act(state, "Stay").state, "Stay");
+
+// @req REQ-2026-022: tests assert face values separately from entity identity.
+export const cardValues = (
+  cards: readonly import("./numberCards").NumberInstance[],
+) => cards.map((card) => card.value);
+export const handValues = (state: RoundState) => ({
+  human: cardValues(state.hands.human),
+  ai: cardValues(state.hands.ai),
+});

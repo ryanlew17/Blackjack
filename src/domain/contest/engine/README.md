@@ -1,37 +1,33 @@
-# 竞赛引擎（S1）
+# 竞赛引擎（S1＋S2资源与数字效果）
 
-@req REQ-2026-015 @req REQ-2026-016 @req REQ-2026-019
+@req REQ-2026-015 @req REQ-2026-016 @req REQ-2026-019 @req REQ-2026-020 @req REQ-2026-022 @req REQ-2026-023
 
-已实现独立的 Match/Game/Round/Turn、标准无道具 BO5、积分递延、1–11 唯一数字牌堆、Hit/Stay、安静停牌判定、牌面比较与观察／事件投影。无 React、浏览器 API 或经典规则依赖；正常无道具路径已接生产，固定多卡原型与资源不进入生产入口。
+纯TypeScript的Match／Game／Round／Turn状态机。正常页面仍是标准无道具BO5；资源与数字效果可通过显式规则及独立随机端口使用。正式卡池／应用接线在025，页面在026；引擎入口不导入候选目录、执行定义或预设。
 
-## 入口与边界
+## 权威命令与随机
 
-- `createRound(firstPlayer, random, rules?)` 返回权威终态和四次有序发牌事件。先手由后续 Match 生命周期传入，工厂不抛硬币。数字牌从先手起交替发放，第一张保持暗牌；洗牌恰消耗 10 次注入随机值，后续 Hit 按牌堆顺序抽取，不重新洗牌。
-- `snapshotRoundRules(rules)` 校验并冻结规则快照；调用方已有冻结快照时保留同一引用，供后续 Match 跨 Round 复用。默认目标 21，`pointTarget` 为后续目标效果预留；规则版本为竞赛内部的 1，与经典 rules/save v2 无关。
-- `transition(state, { type: "Hit" | "Stay", player })` 只处理当前行动方。非法动作返回同一 state、零事件；`dealing`、`revealing` 仅存在于回放快照，不能行动。权威终态在返回前完成，事件只用于回放。
-- `observeRound(state, viewer)` 与 `projectRoundTransition(result, viewer)` 是交给 UI／策略的边界；也可单独调用 `projectRoundEvent`。观察不含牌堆身份／顺序、对手暗牌、对手完整点数或爆牌标记，事件载荷和每个快照都经过投影。`legalActions(observation)` 仅依据可见条件；transition 在权威状态上重建该观察来检查命令，不信任外部按钮。
-- `turn.ts` 的 `recordTrumpConsumption` 是未公开到 index 的引擎内部接缝，只能由 effects 执行器在验证并消费资源后调用。它保留行动方、重置安静记录、设置 `usedTrump`；不验证道具、不执行效果、不提供玩家命令。合法消费但效果失败也应调用，非法尝试不得调用。
+`createMatch(random, roundRules?, privateSetup?)`默认只需数字随机函数；开场硬币一次，每Round洗牌10次。真实资源配置与固定手牌夹具互斥，先校验再消费随机；资源模式注入numbers／trumpGate／trumpSelection三个端口，Game每方2张、初始数字后Round各补1张，普通Hit仅门控一次，效果抽数／生成／转移不触发Hit奖励。
 
-状态、事件和投影视图深冻结。`NumberCardView.faceDown` 表示尚未公开：己方可知值，对手值为 null；`visibleTotal` 仅统计公开牌，`total` 在存在不可见牌时为 null。第二次安静 Stay 的事件后，按先手、后手分别揭牌，最后发布一次 settled 结果；此前不发布结果。
+`transitionMatch`接Hit／Stay／PlayTrump／NextRound及roundNumber。用卡不交权，Hit／Stay交权，两次安静Stay才揭牌结算，爆牌仍可行动；非法或过期命令同一状态引用、零事件零随机。每个命令先完整提交，事件仅供回放。
 
-正式 AI、道具卡池／资源策略、道具 UI 和存储属于后续需求；有限执行器见下节 REQ-019。实验卡池仍不可玩。`testHelpers.ts` 仅供同目录测试，不能进入生产依赖图。
+规则／状态／事件／观察深冻结，整个Match复用同一RoundRules引用。标准BO5先赢3局，Game初始目标5、同分到目标减一时+2递延，Round基础分与局／场结果只结算一次；计分道具及赌命由024接入。
 
-## Match/Game 入口（REQ-016）
+## 数字、贡献与信息
 
-- `createMatch(random, roundRules?)` 固定标准 BO5、先赢 3 局、Game 初始目标 5、递延幅度 2、`trumpDealing: false`。只在开场用一次注入随机值抛硬币；每个 Round 另外消耗 10 次洗牌值。可选 RoundRules 沿用 REQ-015 的牌面目标边界，不开放其他难度或赛制配置。
-- `transitionMatch(state, command, random)` 处理带 `roundNumber` 的 Hit/Stay，以及 `{ type: "NextRound", roundNumber }`。只有当前行动方可操作；过期回合、已结束 Match 和不合阶段的命令返回同一状态、零事件、零随机。回合编号用于拒绝跨回合旧命令；跨 Match 的任务取消由后续应用层负责。
-- 连续安静 Stay 后，同一 transition 消费结果一次：赢家 +1、平局 +0，增加 Game 已完成回合数；同分到达当前目标减一才将目标 +2，然后判断 Game/Match 胜负。Game 分数与 Match 胜局分别保存，无历史或元进度。
-- 权威终态为 `round-complete`、`game-complete` 或 `complete`，保留刚结束的牌面与比分供展示。前两者通过 NextRound 发新牌；game-complete 同时建立新 Game，分数归零、目标恢复 5，Match 胜局和全局回合编号继续。每个新 Round 的先手是上个 Round 先手的另一方，平局和跨 Game 均不重新抛硬币。
-- 事件顺序：Round 的 stay → reveal → reveal → settled，随后 round-scored → 可选 target-extended → round-cleanup → 可选 game-won → game-cleanup → match-won。`resolving` 只用于中途快照，不能行动；动画不参与积分计算。
-- `lifecycle.ts` 在 round-cleanup 重置牌面目标与 Turn 临时记录，保留揭牌结果。game-cleanup 清空显式注入的道具手牌／桌面／弃置；默认无道具路径仍无资源字段、发放或候选卡调用。Game 的计分数据在 NextRound 建立新局时重置。
-- `observeMatch`、`projectMatchEvent`／`projectMatchTransition` 公开比分并复用 Round 投影，嵌套事件及全部快照都过滤隐藏牌。`legalMatchActions(observation)` 返回该阶段可用的 Hit/Stay、NextRound，以及仅显式注入时可用的 PlayTrump；UI／策略不接收完整 MatchState。
+数字为NumberInstance，初始1–11各一张，生成同值仍有新ID；逻辑暗牌槽位按ID保护，提前揭示不会使其可退换／绑定。contributions.ts统一计算暗牌倍率、明牌增减及结算共生；raw value不改，总点数由引擎提供，观察在结算后保留结果总和，不能在UI重新相加原值判胜。
 
-同一冻结 MatchRules 贯穿整场；其中 `round` 快照以同一引用传给每次发牌与观察。无新增存档字段、难度通关、图鉴更新或正式卡池；原型没有生产入口。
+`observeRound`／`observeMatch`和全部事件投影是UI／AI边界。NumberCardView仍提供value／faceDown；faceUpCardIds只列非逻辑暗牌目标，hiddenMultipliers公开，peek最多2张且仅本人可见。deckRevision、完整scry、撤销差量、库存实例及删除账不投影；privateCards事件片段只给合法接收者。任何堆变更使窥序位置标记过期，历史已知信息不能抹去。
 
-## REQ-019 有限效果接口
+## 道具、效果记录与悔牌
 
-RoundRules.trumps 可显式注入公开的有序 onPlay 定义与可选 table.pointTarget（null 仅供容量测试）；createMatch(random, rules?, privateSetup?) 复制冻结初始每局手牌模板，默认没有此资源。PlayTrump 携带 player／instanceId／可选 targetId，沿用原 transitionMatch 和 roundNumber；legalTrumpCommands 只依据自身观察列出具体命令，指定抽牌不存在也能合法消费。效果仅支持 draw-number、return-last、remove-table（单一对方目标）与目标留场。
+活道具只在stock／hands，出卡及费用立即销毁；destroyed是审计，不能再次领取。TableEffect以effectId作为目标，sourceInstanceId只关联已销毁来源；最多五格，自己的同类全局替换可腾己方格，对方位置不能抵扣。先校验容量／目标／费用，再消费／执行；清除不撤销已完成的即效部分。
 
-用卡不换人，合法消费重置安静记录；数字退回牌堆末尾，暗牌不可退。混合卡先校验五格，目标全局互斥，清除恢复冻结基准且不撤销即效。Round 清理留场、保留手牌；Game 清空资源，NextRound 新局按私有模板重建。投影不泄露模板、牌堆或未使用对手道具身份。
+`trumpLegality.ts`只按授权观察列举命令；effects.ts是唯一执行入口。29个数字／留场及悔牌定义在trumps/numberDefinitions.ts，须显式注入，不代表候选目录或生产白名单已准入。绑定增减统一求和后最低1，按数字ID跟随交换；回堆或删除清除绑定。共振锁定非暗牌明牌数；移花只对明确八类记录换控制方，保留来源／次数／顺序，不重放onPlay。
 
-prototype.ts 的七个 test-* 定义仅供测试，不经 index 导出或生产入口可达；marker 是容量占位，不是正式卡。正式资源、触发、计分与 AI 留到 S2，不准入研究目录。
+effectOperations.ts提供共享可逆变更，undo.ts按上一手实际差量逆转。悔牌不回滚整场快照、Turn、费用、旧卡体、库存额度或随机；撤销删除生成新ID，恢复留场生成新effectId并重映射绑定。揭牌／窥序知识不失忆；Stay不覆盖上一手，结算与非出牌变更关闭窗口，不能跨Round撤销。
+
+## 生命周期与后续边界
+
+Round清理留场、倍率、抽数修正、窥序与事务窗口，保留未用道具、库存及当前Game审计；Game结束清空旧资源，新Game用新命名空间重建。初始、生成、活牌与删除按来源核账，不以固定11活数字或每Game用卡≤2M约束所有生成玩法。
+
+prototype.ts、testHelpers.ts、numberEffectTestHelpers.ts、预设和执行定义均不在生产依赖图。025复用现有执行定义完成卡池／应用准入，026接界面，027接主动技，028最后接组合AI；没有竞赛牌面存储或经典规则耦合。

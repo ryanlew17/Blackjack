@@ -1,4 +1,4 @@
-// @req REQ-2026-013
+// @req REQ-2026-013 / REQ-2026-021
 import { describe, expect, it } from "vitest";
 import { TRUMP_CATALOG, findTrump } from "./catalog";
 import { TRUMP_IDS, isTrumpId } from "./ids";
@@ -49,7 +49,7 @@ describe("candidate data integrity", () => {
         true;
     }).toThrow();
   });
-  it("agrees on each first difficulty and the five independently specified totals", () => {
+  it("uses only per-difficulty copy limits and preserves the legacy research totals", () => {
     const totals = DIFFICULTIES.map((d) =>
       TRUMP_IDS.reduce(
         (sum, id) => sum + CANDIDATE_AVAILABILITY[id].copiesPerSide[d],
@@ -59,8 +59,9 @@ describe("candidate data integrity", () => {
     expect(totals).toEqual([16, 22, 26, 29, 30]);
     for (const id of TRUMP_IDS) {
       const data = CANDIDATE_AVAILABILITY[id];
-      expect(DIFFICULTIES.find((d) => data.copiesPerSide[d] > 0)).toBe(
-        data.earliestDifficulty,
+      expect(data).not.toHaveProperty("earliestDifficulty");
+      expect(Object.values(data.copiesPerSide).some((count) => count > 0)).toBe(
+        true,
       );
       for (const count of Object.values(data.copiesPerSide)) {
         expect(Number.isSafeInteger(count) && count >= 0).toBe(true);

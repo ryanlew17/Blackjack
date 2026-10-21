@@ -4,7 +4,7 @@
 
 一款基于 **React + TypeScript + Vite** 的本地优先单人 Web Blackjack 游戏。**经典模式**的绿色绒面牌桌、纸牌与筹码动画、可选音效适配桌面和手机屏幕，下注均使用虚拟筹码。首页可选择经典或**竞赛模式**，后者是受《生化危机7》21 点启发的共享数字牌对弈。当前源码分支提供可玩的标准无道具五局三胜；道具联动及完整竞赛计划见[技术路线图](./docs/roadmap.md)。
 
-[产品需求](./docs/prd.md) · [架构](./docs/architecture.md) · [模块设计快照](./docs/design/) · [存档格式](./docs/contracts/save-format.md) · [测试与验收](./docs/testing.md) · [贡献指南](./AGENTS.md) · [道具卡研究](./docs/contest-research/)
+[产品需求](./docs/prd.md) · [架构](./docs/architecture.md) · [模块设计快照](./docs/design/) · [存档格式](./docs/contracts/save-format.md) · [测试与验收](./docs/testing.md) · [贡献指南](./AGENTS.md) · [竞赛规则](docs/design/contest-rules.md)
 
 ## 功能特性
 
@@ -73,7 +73,7 @@ src/
   presentation/       # 模式入口、经典与竞赛牌桌、shared 组件、i18n
   main.tsx            # 应用入口
 public/               # 静态资源
-docs/                 # 架构、设计、契约、需求与 contest-research 资料
+docs/                 # 架构、设计、契约、需求与技术路线
 ```
 
 `node_modules/`、`dist/`、`output/` 为生成内容，已加入忽略规则。测试与实现放在同一目录，无需额外维护重复的测试目录或运行器。

@@ -4,7 +4,7 @@
 
 A local-first, single-player Blackjack game for the browser, built with **React + TypeScript + Vite**. The green-felt **Classic Mode** brings animated cards and chips, optional sound, and virtual-chip wagers to desktop and mobile screens. From the home screen, choose Classic or **Contest Mode**, a shared-number-deck duel inspired by _Resident Evil 7_. This source branch includes a playable standard BO5 without trumps; item-card combos and the wider contest program remain on the [roadmap](./docs/roadmap.md).
 
-[PRD](./docs/prd.md) · [Architecture](./docs/architecture.md) · [Design snapshots](./docs/design/) · [Save format](./docs/contracts/save-format.md) · [Testing & verification](./docs/testing.md) · [Contributor guide](./AGENTS.md) · [Card research](./docs/contest-research/)
+[PRD](./docs/prd.md) · [Architecture](./docs/architecture.md) · [Design snapshots](./docs/design/) · [Save format](./docs/contracts/save-format.md) · [Testing & verification](./docs/testing.md) · [Contributor guide](./AGENTS.md) · [Contest rules](docs/design/contest-rules.md)
 
 ## Features
 
@@ -77,7 +77,7 @@ src/
   presentation/       # Mode entrance, classic/contest tables, shared components, i18n
   main.tsx            # App entry
 public/               # Static assets
-docs/                 # Architecture, design, contracts, requirements, contest-research
+docs/                 # Architecture, design, contracts, requirements, roadmap
 ```
 
 `node_modules/`, `dist/`, and `output/` are generated and ignored. Tests remain next to their implementation; no separate test runner or duplicated test tree is required.

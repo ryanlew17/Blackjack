@@ -1,3 +1,4 @@
+// @req REQ-2026-022: table targets use effect IDs; destroyed cards remain unusable.
 // @req REQ-2026-019: explicit two-player commands through the real coordinator.
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createContestCoordinator } from "./coordinator";
@@ -97,7 +98,10 @@ describe("scripted multi-trump replay", () => {
         type: "PlayTrump",
         player: "ai",
         instanceId: "ai-1",
-        targetId: "human-2",
+        targetId: api
+          .snapshot()!
+          .round.trumps!.table.find((t) => t.sourceInstanceId === "human-2")!
+          .effectId,
       }),
     ).toBe(true);
     expect(api.snapshot()?.round.pointTarget).toBe(21);
@@ -198,7 +202,7 @@ it("the automatic baseline keeps its held trumps and uses only Hit/Stay", () => 
   vi.runAllTimers();
   expect(api.snapshot()?.round.turn?.player).toBe("human");
   expect(api.snapshot()?.round.trumps?.opponentHandCount).toBe(1);
-  expect(api.snapshot()?.round.trumps?.discarded).toEqual([]);
+  expect(api.snapshot()?.round.trumps?.destroyed).toEqual([]);
   expect(api.snapshot()?.round.hands.ai.cards).toHaveLength(2);
 });
 

@@ -51,10 +51,10 @@ src/
     contest/
       types.ts               # 难度、参与者与数字牌词汇
       immutable.ts           # 竞赛静态数据冻结工具
-      trumps/                # ID、结构化定义、21 张实验候选卡及测试
+      trumps/                # 21候选目录＋023的29个执行定义；生产准入待025
       presets/               # 独立实验库存与 F1/P0 元数据
       codex/                 # 查询、进度更新、负载校验、公开入口与测试
-      engine/                # 回合／BO5、有限效果、投影；prototype 固定定义隔离
+      engine/                # 回合／BO5、资源、数字／留场与悔牌、投影；夹具隔离
       ai/                    # S1 无道具基线；S2 搜索待实现
   application/
     classic/useGame.ts       # 原有权威状态、动画与存档协调，行为不变
@@ -76,10 +76,10 @@ src/
       custom/                # S5 自定义页职责预留
     i18n.ts                  # 现有双语字典 + 图鉴候选文案
     styles.css               # 经典／首页／竞赛响应式样式
-  architecture.test.ts       # 导入解析、分层和研究表一致性检查
+  architecture.test.ts       # 导入解析、分层和归档道具计划边界检查
   main.tsx                   # 原有入口，未改动
 public/                      # 静态资源
-docs/contest-research/       # 纯研究资料，不独立登记需求
+docs/requirements/archive/  # REQ-021统一保留道具规则、原版资料与实验
 ```
 
 `node_modules/`、`dist/`、`output/` 为生成内容，已加入 `.gitignore`。测试与实现同目录，无独立测试树。
@@ -176,3 +176,11 @@ application/contest/coordinator.ts 由已有控制器提取，生产 controller 
 初版只移动策略职责并补充接口／信息／随机和过期回调证明，未改规则、协调提交顺序、300ms 调度延迟或页面。入口守卫显式准入该策略，原型、候选卡与未来搜索保持隔离。S1 各需求实现及验收收尾完成，整体外审已完成，Codex 技术验收及用户最终验收通过，S1 周期已结束；按用户要求保留 [S1 周期归档记录](./requirements/archive/REQ-2026-020-contest-basic-ai.md)。版本仍为 0.2.0 开发版，不自动合并 main、打 tag 或发布。
 
 REQ-020 后经用户要求在原需求内修整外审观察：显式资源校验先于初始化随机，observeTrumps 自身保证深冻结；既有测试补齐 Storage 全部方法／length 与通知内暂停，经典 All-in 主操作统一 49px。没有新增模块、文件或依赖，未修改经典规则／存档。外审初版基线与本轮 248 项自审分开记录；后续条件复查在现有 roadmap 中承接。
+
+## S2实例生命周期与主动技（资源及数字效果已实现，其余待024–028）
+
+S1原型的table／discarded活实例结构已成为历史；[REQ-022](./requirements/archive/REQ-2026-022-contest-trump-resources.md)已统一迁移为“库存／手牌活实例＋销毁审计＋独立留场效果”。生成／删除／转移在现有纯TS引擎完成，初始1–11与后续同值新ID分开核账，不能在UI或另一套状态机创建牌／判胜。
+
+[REQ-027](./requirements/active/REQ-2026-027-contest-active-skills.md)增加冻结的技能定义、场／局次数、私有待办与生成来源；应用接战前选择、稳定反应与原有取消，表现层只展示投影和独立球形按钮。隐身信息须同时从事件及逐帧排除，AI端口也只得授权观察。[REQ-028](./requirements/active/REQ-2026-028-contest-combination-ai.md)最后接54卡／15技能组合策略，真实技能随机与选技、资源、搜索源分离。
+
+022实现engine/resources、numberCards与resourceTypes，资源数量预设位于presets/resources；023增加contributions、effectOperations、trumpLegality及undo，在同一transition／比较／投影边界执行29个数字／留场及悔牌定义。执行数据位于trumps/numberDefinitions.ts，只有显式注入才启用；numberEffectTestHelpers同原型一样只作测试夹具。既有生产依赖守卫继续排除执行定义、预设／候选与夹具，正常入口未启用资源模式。技能ID不进入道具CodexProgress，对局技能次数／待办不持久化；S4完整图鉴增加技能独立页，资格由S3难度进度派生。

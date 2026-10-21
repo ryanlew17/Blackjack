@@ -74,7 +74,6 @@ export interface TrumpDefinition {
   readonly playable: false; // No candidate has passed S2 admission yet.
 }
 export interface CandidateAvailability {
-  readonly earliestDifficulty: Difficulty;
   readonly copiesPerSide: Readonly<Record<Difficulty, number>>;
 }
 export type TrumpInstance = {

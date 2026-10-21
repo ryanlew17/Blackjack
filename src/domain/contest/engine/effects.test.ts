@@ -1,3 +1,4 @@
+// @req REQ-2026-022: instance identity/resource migration preserves existing rule regressions.
 // @req REQ-2026-019: all outcomes use real transitions, not patched states.
 import { describe, expect, it, vi } from "vitest";
 import {
@@ -16,7 +17,7 @@ import type {
 } from "./index";
 import type { NumberValue, PlayerId } from "../types";
 import { PROTOTYPE_RULES, prototypeSetup } from "./prototype";
-import { fixedRandom } from "./testHelpers";
+import { fixedRandom, cardValues } from "./testHelpers";
 import { cleanupRound, cleanupGame } from "./lifecycle";
 import { observeTrumps } from "./effects";
 
@@ -52,7 +53,14 @@ function play(
       type: "PlayTrump",
       player,
       instanceId,
-      ...(targetId ? { targetId } : {}),
+      ...(targetId
+        ? {
+            targetId:
+              state.round.trumps!.table.find(
+                (t) => t.sourceInstanceId === targetId,
+              )?.effectId ?? targetId,
+          }
+        : {}),
       roundNumber: state.roundNumber,
     },
     noRandom,
@@ -85,14 +93,18 @@ function finish(state: MatchState) {
 function conserve(result: MatchTransition, setup: TrumpSetup) {
   for (const state of [result.state, ...result.events.map((e) => e.state)]) {
     expect(
-      [
-        ...state.round.deck,
-        ...state.round.hands.human,
-        ...state.round.hands.ai,
-      ].sort((a, b) => a - b),
+      [...state.round.deck, ...state.round.hands.human, ...state.round.hands.ai]
+        .map((card) => card.value)
+        .sort((a, b) => a - b),
     ).toEqual(Array.from({ length: 11 }, (_, i) => i + 1));
     const t = state.round.trumps!;
-    const ids = [...t.hands.human, ...t.hands.ai, ...t.table, ...t.discarded]
+    const ids = [
+      ...t.hands.human,
+      ...t.hands.ai,
+      ...t.stock.human,
+      ...t.stock.ai,
+      ...t.destroyed.map((d) => d.instance),
+    ]
       .map((t) => t.instanceId)
       .sort();
     expect(ids).toEqual(
@@ -193,8 +205,8 @@ describe("atomic multi-trump turns", () => {
     const returned = play(state, "human-0");
     conserve(returned, setup);
     state = returned.state;
-    expect(state.round.hands.human).toEqual([10]);
-    expect(state.round.deck.at(-1)).toBe(11);
+    expect(cardValues(state.round.hands.human)).toEqual([10]);
+    expect(state.round.deck.at(-1)?.value).toBe(11);
     expect(legalTrumpCommands(observeMatch(state, "human").round)).toEqual([]);
     const illegal = play(state, "human-1");
     expect(illegal.state).toBe(state);
@@ -242,13 +254,13 @@ describe("public legality and event projection", () => {
     );
     const failed = play(a, "human-0"),
       success = play(b, "human-0");
-    expect(failed.state.round.hands.human).toEqual([10, 11]);
+    expect(cardValues(failed.state.round.hands.human)).toEqual([10, 11]);
     expect(failed.state.round.turn?.usedTrump).toBe(true);
     expect(failed.state.round.trumps!.hands.human).toEqual([]);
     expect(
       failed.events.filter((e) => e.type === "round").at(-1),
     ).toMatchObject({ event: { type: "trump", effect: "draw", card: null } });
-    expect(success.state.round.hands.human).toEqual([10, 11, 2]);
+    expect(cardValues(success.state.round.hands.human)).toEqual([10, 11, 2]);
     for (const result of [failed, success])
       for (const viewer of ["human", "ai"] as const) {
         const projected = projectMatchTransition(result, viewer);
@@ -302,11 +314,11 @@ describe("table capacity, replacement and cleanup", () => {
     const rejected = play(state, "human-5");
     expect(rejected.state).toBe(state);
     expect(rejected.events).toEqual([]);
-    expect(state.round.hands.human).toEqual([10, 11]);
-    expect(state.round.deck).toContain(3);
+    expect(cardValues(state.round.hands.human)).toEqual([10, 11]);
+    expect(cardValues(state.round.deck)).toContain(3);
     const immediate = play(state, "human-6");
     conserve(immediate, setup);
-    expect(immediate.state.round.hands.human).toEqual([10, 11, 2]);
+    expect(cardValues(immediate.state.round.hands.human)).toEqual([10, 11, 2]);
     expect(immediate.state.round.trumps!.table).toHaveLength(5);
   });
   it("replaces the global target across players, then clearing restores 21 without resurrecting old effects", () => {
@@ -321,12 +333,12 @@ describe("table capacity, replacement and cleanup", () => {
     conserve(mixed, setup);
     state = mixed.state;
     expect(state.round.pointTarget).toBe(24);
-    expect(state.round.trumps!.table.map((t) => t.instanceId)).toEqual([
+    expect(state.round.trumps!.table.map((t) => t.sourceInstanceId)).toEqual([
       "ai-0",
     ]);
-    expect(state.round.trumps!.discarded.map((t) => t.instanceId)).toContain(
-      "human-0",
-    );
+    expect(
+      state.round.trumps!.destroyed.map((d) => d.instance.instanceId),
+    ).toContain("human-0");
     const drawn = state.round.hands.ai;
     state = stay(state).state;
     const cleared = play(state, "human-1", "ai-0");
@@ -390,7 +402,11 @@ describe("table capacity, replacement and cleanup", () => {
     expect(state.round.trumps).toEqual({
       hands: { human: [], ai: [] },
       table: [],
-      discarded: [],
+      game: 1,
+      stock: { human: [], ai: [] },
+      destroyed: [],
+      nextGeneratedId: 1,
+      nextEffectId: 1,
     });
     expect(cleanupGame(cleanupGame(state.round))).toEqual(
       cleanupGame(state.round),
@@ -402,7 +418,14 @@ describe("table capacity, replacement and cleanup", () => {
     ).state;
     expect(state.game.number).toBe(2);
     expect(state.game.points).toEqual({ human: 0, ai: 0 });
-    expect(state.round.trumps!.hands).toEqual(setup);
+    expect(state.round.trumps!.hands.human.map((c) => c.definitionId)).toEqual(
+      setup.human.map((c) => c.definitionId),
+    );
+    expect(
+      state.round.trumps!.hands.human.every((c) =>
+        c.instanceId.startsWith("game-2:"),
+      ),
+    ).toBe(true);
     expect(state.round.pointTarget).toBe(21);
     expect(state.rules.round).toBe(rules);
   });
@@ -450,7 +473,7 @@ it("copies mutable nested rules and private setup while reusing one frozen snaps
     true,
   );
   state = play(state, "held").state;
-  expect(state.round.hands.human).toEqual([10, 11, 2]);
+  expect(cardValues(state.round.hands.human)).toEqual([10, 11, 2]);
   state = finish(state);
   state = transitionMatch(
     state,
@@ -506,7 +529,7 @@ describe("review fixes at setup and observation boundaries", () => {
     expect(Object.isFrozen(observation.ownHand)).toBe(true);
     expect(Object.isFrozen(observation.ownHand[0])).toBe(true);
     expect(Object.isFrozen(observation.table)).toBe(true);
-    expect(Object.isFrozen(observation.discarded)).toBe(true);
+    expect(Object.isFrozen(observation.destroyed)).toBe(true);
     expect(() => Object.assign(observation, { opponentHandCount: 0 })).toThrow(
       TypeError,
     );

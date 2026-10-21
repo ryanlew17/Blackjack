@@ -5,7 +5,6 @@ import type { CandidateAvailability } from "../trumps/types";
 
 export const CANDIDATE_AVAILABILITY = freezeData({
   "draw-2": {
-    earliestDifficulty: "easy",
     copiesPerSide: {
       easy: 2,
       standard: 2,
@@ -15,7 +14,6 @@ export const CANDIDATE_AVAILABILITY = freezeData({
     },
   },
   "draw-3": {
-    earliestDifficulty: "easy",
     copiesPerSide: {
       easy: 2,
       standard: 2,
@@ -25,7 +23,6 @@ export const CANDIDATE_AVAILABILITY = freezeData({
     },
   },
   "draw-4": {
-    earliestDifficulty: "easy",
     copiesPerSide: {
       easy: 2,
       standard: 2,
@@ -35,7 +32,6 @@ export const CANDIDATE_AVAILABILITY = freezeData({
     },
   },
   "draw-5": {
-    earliestDifficulty: "easy",
     copiesPerSide: {
       easy: 2,
       standard: 2,
@@ -45,7 +41,6 @@ export const CANDIDATE_AVAILABILITY = freezeData({
     },
   },
   "draw-6": {
-    earliestDifficulty: "easy",
     copiesPerSide: {
       easy: 2,
       standard: 2,
@@ -55,7 +50,6 @@ export const CANDIDATE_AVAILABILITY = freezeData({
     },
   },
   "draw-7": {
-    earliestDifficulty: "easy",
     copiesPerSide: {
       easy: 2,
       standard: 2,
@@ -65,7 +59,6 @@ export const CANDIDATE_AVAILABILITY = freezeData({
     },
   },
   return: {
-    earliestDifficulty: "easy",
     copiesPerSide: {
       easy: 2,
       standard: 2,
@@ -75,7 +68,6 @@ export const CANDIDATE_AVAILABILITY = freezeData({
     },
   },
   remove: {
-    earliestDifficulty: "standard",
     copiesPerSide: {
       easy: 0,
       standard: 2,
@@ -85,7 +77,6 @@ export const CANDIDATE_AVAILABILITY = freezeData({
     },
   },
   exchange: {
-    earliestDifficulty: "standard",
     copiesPerSide: {
       easy: 0,
       standard: 1,
@@ -95,7 +86,6 @@ export const CANDIDATE_AVAILABILITY = freezeData({
     },
   },
   "target-17": {
-    earliestDifficulty: "challenge",
     copiesPerSide: {
       easy: 0,
       standard: 0,
@@ -105,7 +95,6 @@ export const CANDIDATE_AVAILABILITY = freezeData({
     },
   },
   "target-24": {
-    earliestDifficulty: "standard",
     copiesPerSide: {
       easy: 0,
       standard: 1,
@@ -115,7 +104,6 @@ export const CANDIDATE_AVAILABILITY = freezeData({
     },
   },
   "target-27": {
-    earliestDifficulty: "danger",
     copiesPerSide: {
       easy: 0,
       standard: 0,
@@ -125,7 +113,6 @@ export const CANDIDATE_AVAILABILITY = freezeData({
     },
   },
   destroy: {
-    earliestDifficulty: "easy",
     copiesPerSide: {
       easy: 2,
       standard: 2,
@@ -135,7 +122,6 @@ export const CANDIDATE_AVAILABILITY = freezeData({
     },
   },
   "destroy-all": {
-    earliestDifficulty: "danger",
     copiesPerSide: {
       easy: 0,
       standard: 0,
@@ -145,7 +131,6 @@ export const CANDIDATE_AVAILABILITY = freezeData({
     },
   },
   "best-draw": {
-    earliestDifficulty: "challenge",
     copiesPerSide: {
       easy: 0,
       standard: 0,
@@ -155,7 +140,6 @@ export const CANDIDATE_AVAILABILITY = freezeData({
     },
   },
   pressure: {
-    earliestDifficulty: "standard",
     copiesPerSide: {
       easy: 0,
       standard: 1,
@@ -165,7 +149,6 @@ export const CANDIDATE_AVAILABILITY = freezeData({
     },
   },
   "pressure-supply": {
-    earliestDifficulty: "challenge",
     copiesPerSide: {
       easy: 0,
       standard: 0,
@@ -175,7 +158,6 @@ export const CANDIDATE_AVAILABILITY = freezeData({
     },
   },
   shield: {
-    earliestDifficulty: "standard",
     copiesPerSide: {
       easy: 0,
       standard: 1,
@@ -185,7 +167,6 @@ export const CANDIDATE_AVAILABILITY = freezeData({
     },
   },
   "shared-supply": {
-    earliestDifficulty: "challenge",
     copiesPerSide: {
       easy: 0,
       standard: 0,
@@ -195,7 +176,6 @@ export const CANDIDATE_AVAILABILITY = freezeData({
     },
   },
   "resource-swap": {
-    earliestDifficulty: "danger",
     copiesPerSide: {
       easy: 0,
       standard: 0,
@@ -205,7 +185,6 @@ export const CANDIDATE_AVAILABILITY = freezeData({
     },
   },
   harvest: {
-    earliestDifficulty: "nightmare",
     copiesPerSide: {
       easy: 0,
       standard: 0,

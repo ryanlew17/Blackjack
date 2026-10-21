@@ -1,3 +1,4 @@
+// @req REQ-2026-022: instance identity/resource migration preserves existing rule regressions.
 // @req REQ-2026-016: all match scenarios progress through actual commands.
 import { describe, expect, it, vi } from "vitest";
 import type { NumberValue, PlayerId } from "../types";
@@ -9,7 +10,7 @@ import {
   transitionMatch,
 } from "./index";
 import type { MatchState, MatchTransition } from "./types";
-import { fixedRandom } from "./testHelpers";
+import { fixedRandom, handValues } from "./testHelpers";
 import { opponentOf } from "./turn";
 
 function scriptedRandom(
@@ -175,7 +176,7 @@ describe("fixed standard match setup and round progression", () => {
     expect(state.wins).toEqual({ human: 1, ai: 0 });
     expect(state.roundNumber).toBe(6);
     expect(state.round.firstPlayer).toBe("ai");
-    expect(state.round.hands).toEqual({ human: [8, 9], ai: [10, 11] });
+    expect(handValues(state.round)).toEqual({ human: [8, 9], ai: [10, 11] });
     expect(state.round.revealed).toEqual([]);
     expect(state.round.result).toBeNull();
     expect(state.rules).toBe(rules);
