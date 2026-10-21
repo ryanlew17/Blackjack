@@ -1,9 +1,11 @@
+// @req REQ-2026-024: validate interaction kinds and hidden all-other costs before RNG.
 // @req REQ-2026-023: numeric contributions, authorized information and reversible effects.
 // @req REQ-2026-015/022: validate all public configuration before any random call.
 import { freezeData } from "../immutable";
 import { DIFFICULTIES } from "../types";
 import type { MatchRules, RoundRules } from "./types";
 import type { TrumpEffect } from "./effectTypes";
+import { TABLE_KINDS } from "./effectTypes";
 import { HIT_PROBABILITIES } from "./resourceTypes";
 import { NUMBER_VALUES } from "./numbers";
 
@@ -29,6 +31,7 @@ function validEffect(effect: TrumpEffect, definitions: object): boolean {
     case "trim":
     case "exchange-table":
     case "undo-last":
+    case "sudden-death":
       return true;
     case "scry":
       return effect.count === 2;
@@ -38,6 +41,7 @@ function validEffect(effect: TrumpEffect, definitions: object): boolean {
         (effect.value === 1 || effect.value === 2)
       );
     case "remove-table":
+    case "delete-stock":
     case "remove-latest":
     case "remove-all":
     case "reveal-hidden":
@@ -84,18 +88,14 @@ export function snapshotRoundRules(rules: RoundRules): RoundRules {
         !Array.isArray(d.onPlay) ||
         !d.onPlay.every((e) => validEffect(e, trumps.definitions)) ||
         (d.cost !== undefined &&
+          d.cost !== "all-other" &&
           (!Number.isSafeInteger(d.cost) || d.cost < 0 || d.cost > 7)) ||
         (d.table &&
           ((d.table.pointTarget !== null &&
             (!Number.isSafeInteger(d.table.pointTarget) ||
               d.table.pointTarget < 1)) ||
             (d.table.kind !== undefined &&
-              (![
-                "symbiosis",
-                "resonance",
-                "face-lighten",
-                "face-burden",
-              ].includes(d.table.kind) ||
+              (!TABLE_KINDS.includes(d.table.kind) ||
                 d.table.pointTarget !== null)) ||
             (d.table.remainingCharges !== undefined &&
               (!Number.isSafeInteger(d.table.remainingCharges) ||

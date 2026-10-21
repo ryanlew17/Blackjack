@@ -1,3 +1,4 @@
+// @req REQ-2026-024: expose score and skill-recovery contracts without card admission.
 // @req REQ-2026-015: authority API; consumers beyond coordination use views only.
 export { createRound, transition } from "./transition";
 export { legalActions } from "./legalActions";
@@ -93,3 +94,7 @@ export type {
 
 // @req REQ-2026-023: data contracts only; executable card definitions are explicitly injected.
 export type { Side, TableKind, TableSpecification } from "./effectTypes";
+// @req REQ-2026-024: skill execution/admission stays in REQ-027.
+export { SKILL_USE_RECOVERY } from "./effectTypes";
+export type { RoundScore } from "./types";
+export type { TableEventPayload } from "./effectTypes";

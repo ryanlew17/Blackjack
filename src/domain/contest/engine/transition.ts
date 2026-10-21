@@ -1,7 +1,8 @@
+// @req REQ-2026-024: resolve draw modifiers and finite Turn boundaries before returning.
 // @req REQ-2026-023: numeric contributions, authorized information and reversible effects.
 // @req REQ-2026-015/022: authoritative outcomes, including resource grants, precede replay.
 import { playTrump } from "./effects";
-import type { TrumpState } from "./effectTypes";
+import type { TrumpState, SuddenDeathMarker } from "./effectTypes";
 import { createTrumpState, grantTrumps } from "./resources";
 import { freezeData } from "../immutable";
 import type { PlayerId } from "../types";
@@ -15,6 +16,9 @@ import type { ContestRandom, ResourceRandomSources } from "./resourceTypes";
 import { observeRound } from "./observation";
 import { DEFAULT_ROUND_RULES, snapshotRoundRules } from "./rules";
 import { nextTurn, opponentOf } from "./turn";
+import { beginTurn } from "./triggers";
+import { affectsTurn, isEffectActive } from "./tableEffects";
+import { moveNumber, removeEffect } from "./effectOperations";
 import type {
   RoundCommand,
   RoundEvent,
@@ -30,6 +34,7 @@ export function createRound(
   trumps?: TrumpState,
   numberScope = 1,
   gameStart = false,
+  suddenDeath?: SuddenDeathMarker,
 ): RoundTransition {
   if (firstPlayer !== "human" && firstPlayer !== "ai")
     throw new RangeError("Invalid first player");
@@ -42,6 +47,7 @@ export function createRound(
   let state: RoundState = freezeData({
     rules: snapshot,
     ...(setup ? { trumps: setup } : {}),
+    ...(suddenDeath ? { suddenDeath } : {}),
     firstPlayer,
     phase: "dealing",
     hands: { human: [], ai: [] },
@@ -142,13 +148,35 @@ export function transition(
   if (command.type === "Hit") {
     const policy = original.rules.trumps?.resources;
     const sources = policy ? resourceRandom(random) : undefined;
-    const count = Math.min(
-      original.hitDrawCounts[command.player],
-      original.deck.length,
+    const table = original.trumps?.table ?? [];
+    const heavy = table.some(
+      (t) =>
+        t.kind === "heavy-hit" &&
+        affectsTurn(t, turn) &&
+        isEffectActive(t, table),
+    );
+    const count = heavy ? 2 : original.hitDrawCounts[command.player];
+    const safeguards = table.filter(
+      (t) =>
+        t.kind === "safe-hit" &&
+        t.owner === command.player &&
+        isEffectActive(t, table),
     );
     let state = original;
     const events: RoundEvent[] = [];
-    for (let index = 0; index < count; index++) {
+    const remove = (id: string) => {
+      const removed = removeEffect(state, id);
+      state = removed.state;
+      for (const d of removed.deltas)
+        if (d.type === "effect-removed")
+          events.push({
+            type: "table-effect",
+            operation: "removed",
+            effectId: d.effectId,
+            state,
+          });
+    };
+    for (let index = 0; index < count && state.deck.length; index++) {
       const card = state.deck[0];
       state = freezeData({
         ...state,
@@ -163,7 +191,6 @@ export function transition(
           player: command.player,
           instanceId: card.instanceId,
         },
-        turn: index === count - 1 ? nextTurn(turn) : turn,
         quietStays: 0,
       });
       events.push({
@@ -172,18 +199,61 @@ export function transition(
         card: card.value,
         state,
       });
+      if (index === 0 && safeguards.length) {
+        if (effectiveTotals(state)[command.player] > state.pointTarget) {
+          state = moveNumber(state, card.instanceId, {
+            player: null,
+            index: state.deck.length,
+          }).state;
+          const source = state.trumps!.destroyed.find(
+            (d) => d.instance.instanceId === safeguards[0].sourceInstanceId,
+          )!.instance;
+          events.push({
+            type: "trump",
+            player: command.player,
+            instance: source,
+            effect: "return",
+            card: card.value,
+            state,
+          });
+        }
+        for (const record of safeguards) remove(record.effectId);
+      }
     }
+    const followingTurn = nextTurn(turn);
+    state = freezeData({ ...state, turn: followingTurn });
+    // Preserve the established final-Hit handover frame, including any Safe Hit return frames.
+    let lastHit = events.length - 1;
+    while (events[lastHit].type !== "hit") lastHit--;
+    for (let i = lastHit; i < events.length; i++)
+      events[i] = {
+        ...events[i],
+        state: freezeData({ ...events[i].state, turn: followingTurn }),
+      };
     if (policy && randomUnit(sources!.trumpGate) < policy.hitProbability) {
+      const caches = state.trumps!.table.filter(
+        (t) =>
+          t.kind === "supply-cache" &&
+          t.owner === command.player &&
+          isEffectActive(t, state.trumps!.table),
+      );
       const grant = grantTrumps(
         state,
         command.player,
-        1,
+        caches.length ? 2 : 1,
         "hit",
         sources!.trumpSelection,
+        undefined,
+        turn,
       );
       state = grant.state;
       events.push(...grant.events);
+      for (const record of caches) remove(record.effectId);
     }
+    const boundary = beginTurn(state, nextTurn(turn), sources);
+    state = boundary.state;
+    events.push(...boundary.events);
+    events[events.length - 1] = { ...events[events.length - 1], state };
     return freezeData({ state, events });
   }
   const quiet = !turn.usedTrump;
@@ -222,6 +292,12 @@ export function transition(
     );
     state = freezeData({ ...state, phase: "settled", result });
     events.push({ type: "settled", result, state });
+  }
+  if (!closing) {
+    const boundary = beginTurn(state, state.turn!, random);
+    state = boundary.state;
+    events.push(...boundary.events);
+    events[events.length - 1] = { ...events[events.length - 1], state };
   }
   return freezeData({ state, events });
 }

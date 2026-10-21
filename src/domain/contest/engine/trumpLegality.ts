@@ -4,6 +4,7 @@ import type { PlayTrumpCommand } from "./effectTypes";
 import type { RoundObservation } from "./types";
 import { opponentOf } from "./turn";
 import { sameGlobalGroup, transferable } from "./contributions";
+import { isEffectActive } from "./tableEffects";
 function combinations(ids: readonly string[], count: number): string[][] {
   if (count === 0) return [[]];
   if (count > ids.length) return [];
@@ -29,12 +30,35 @@ export function legalTrumpCommands(
     const definition = view.rules.trumps!.definitions[instance.definitionId];
     if (!definition) return [];
     const table = definition.table;
+    if (
+      table &&
+      (table.pointTarget !== null || table.kind === "resonance") &&
+      trumps.table.some(
+        (t) => t.kind === "target-lock" && isEffectActive(t, trumps.table),
+      )
+    )
+      return [];
+    if (
+      table &&
+      (table.kind === "hush" || table.kind === "full-shield") &&
+      trumps.table.some((t) => t.kind === table.kind && t.owner === viewer)
+    )
+      return [];
     const ownSlots = trumps.table.filter((t) => t.owner === viewer).length;
-    const replacesOwn = table
-      ? trumps.table.filter(
-          (t) => t.owner === viewer && sameGlobalGroup(table, t),
-        ).length
-      : 0;
+    const replaced = new Set(
+      table
+        ? trumps.table
+            .filter((t) => sameGlobalGroup(table, t))
+            .map((t) => t.effectId)
+        : [],
+    );
+    // A replaced target also removes its dependent Suppress; count only actual own slots released.
+    for (const t of trumps.table)
+      if (t.targetEffectId && replaced.has(t.targetEffectId))
+        replaced.add(t.effectId);
+    const replacesOwn = trumps.table.filter(
+      (t) => t.owner === viewer && replaced.has(t.effectId),
+    ).length;
     if (table && ownSlots - replacesOwn >= view.rules.trumps!.tableCapacity)
       return [];
     const faces = {
@@ -43,7 +67,11 @@ export function legalTrumpCommands(
     };
     let deck = view.deckCount;
     let selectors =
-      table?.kind === "face-lighten" || table?.kind === "face-burden" ? 1 : 0;
+      table?.kind === "face-lighten" ||
+      table?.kind === "face-burden" ||
+      table?.kind === "suppress"
+        ? 1
+        : 0;
     let valid = true;
     for (const effect of definition.onPlay) {
       if (
@@ -89,9 +117,13 @@ export function legalTrumpCommands(
       } else if (effect.type === "reveal-hidden") {
         if (!view.hands[side(effect.target)].cards[0]?.faceDown) valid = false;
       } else if (effect.type === "exchange-table") selectors++;
+      else if (effect.type === "sudden-death" && view.suddenDeath)
+        valid = false;
       else if (effect.type === "undo-last") {
         if (
           !view.lastPlay ||
+          (view.undoableTrumpIds !== undefined &&
+            !view.undoableTrumpIds.includes(instance.instanceId)) ||
           (view.lastPlay.type === "number" &&
             !view.faceUpCardIds[view.lastPlay.player].includes(
               view.lastPlay.instanceId,
@@ -116,6 +148,10 @@ export function legalTrumpCommands(
         )
         .map((targetId) => ({ targetId }));
     }
+    if (table?.kind === "suppress")
+      targets = trumps.table
+        .filter((t) => t.owner === other && t.kind !== "suppress")
+        .map((t) => ({ targetId: t.effectId }));
     if (definition.onPlay.some((e) => e.type === "exchange-table")) {
       targets = trumps.table
         .filter((t) => t.owner === viewer && transferable(t))
@@ -128,20 +164,30 @@ export function legalTrumpCommands(
             })),
         );
     }
+    const others = trumps.ownHand
+      .filter((c) => c.instanceId !== instance.instanceId)
+      .map((c) => c.instanceId);
+    if (definition.cost === "all-other" && others.length === 0) return [];
     const costs = combinations(
       trumps.ownHand
         .filter((c) => c.instanceId !== instance.instanceId)
         .map((c) => c.instanceId),
-      definition.cost ?? 0,
+      definition.cost === "all-other" ? others.length : (definition.cost ?? 0),
     );
-    return targets.flatMap((target) =>
-      costs.map((costIds) => ({
-        type: "PlayTrump" as const,
-        player: viewer,
-        instanceId: instance.instanceId,
-        ...target,
-        ...(costIds.length ? { costIds } : {}),
-      })),
+    const definitions = definition.onPlay.some((e) => e.type === "delete-stock")
+      ? Object.keys(view.rules.trumps!.definitions)
+      : [undefined];
+    return definitions.flatMap((definitionId) =>
+      targets.flatMap((target) =>
+        costs.map((costIds) => ({
+          type: "PlayTrump" as const,
+          player: viewer,
+          instanceId: instance.instanceId,
+          ...target,
+          ...(definitionId === undefined ? {} : { definitionId }),
+          ...(costIds.length ? { costIds } : {}),
+        })),
+      ),
     );
   });
 }

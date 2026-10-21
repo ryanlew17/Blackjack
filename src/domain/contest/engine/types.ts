@@ -11,6 +11,7 @@ import type {
   ResourceEventPayload,
   ResourceEventView,
   SuddenDeathMarker,
+  TableEventPayload,
 } from "./effectTypes";
 import type { NumberInstance, CardTransaction } from "./numberCards";
 import type { NumberValue, PlayerId } from "../types";
@@ -62,6 +63,7 @@ export interface RoundState {
   readonly revealed: readonly PlayerId[];
   readonly result: RoundResult | null;
   readonly trumps?: TrumpState;
+  readonly suddenDeath?: SuddenDeathMarker;
 }
 export type RoundCommand =
   | {
@@ -72,6 +74,7 @@ export type RoundCommand =
 export type RoundEvent = (
   | TrumpEventPayload
   | ResourceEventPayload
+  | TableEventPayload
   | {
       readonly type: "deal";
       readonly player: PlayerId;
@@ -132,10 +135,14 @@ export interface RoundObservation {
     readonly instanceId: string;
   } | null;
   readonly trumps?: TrumpObservation;
+  readonly suddenDeath?: SuddenDeathMarker;
+  /** Public capacity feasibility for each of the viewer's own possible payments; no inverse identities. */
+  readonly undoableTrumpIds?: readonly string[];
 }
 export type RoundEventView = (
   | TrumpEventPayload
   | ResourceEventView
+  | TableEventPayload
   | {
       readonly type: "deal";
       readonly player: PlayerId;
@@ -166,6 +173,20 @@ export interface RoundTransitionView {
 
 // @req REQ-2026-016: fixed standard, no-trump match lifecycle.
 export type PlayerScores = Readonly<Record<PlayerId, number>>;
+export interface RoundScore {
+  readonly base: 0 | 1;
+  readonly attack: number;
+  readonly defense: number;
+  readonly bonus: number;
+  readonly ceasefire: boolean;
+  readonly guarded: boolean;
+  readonly increment: number;
+  readonly modifiers: readonly {
+    readonly effectId: string;
+    readonly owner: PlayerId;
+    readonly amount: number;
+  }[];
+}
 export interface MatchRules {
   readonly version: 1;
   readonly difficulty: "standard";
@@ -204,7 +225,11 @@ export type MatchCommand = (RoundCommand | { readonly type: "NextRound" }) & {
 };
 export type MatchEvent = (
   | { readonly type: "round"; readonly event: RoundEvent }
-  | { readonly type: "round-scored"; readonly winner: PlayerId | null }
+  | {
+      readonly type: "round-scored";
+      readonly winner: PlayerId | null;
+      readonly score: RoundScore;
+    }
   | {
       readonly type: "target-extended";
       readonly from: number;
@@ -230,7 +255,11 @@ export interface MatchObservation {
 }
 export type MatchEventView = (
   | { readonly type: "round"; readonly event: RoundEventView }
-  | { readonly type: "round-scored"; readonly winner: PlayerId | null }
+  | {
+      readonly type: "round-scored";
+      readonly winner: PlayerId | null;
+      readonly score: RoundScore;
+    }
   | {
       readonly type: "target-extended";
       readonly from: number;

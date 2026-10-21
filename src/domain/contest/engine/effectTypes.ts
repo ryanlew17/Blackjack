@@ -1,9 +1,49 @@
+// @req REQ-2026-024: explicit scoring, resource and finite Turn-effect contracts.
 // @req REQ-2026-019/022/023: card bodies, audit and independent effect records.
 import type { NumberValue, PlayerId } from "../types";
 import type { TrumpResourceRules } from "./resourceTypes";
 export type Side = "self" | "opponent";
 export type TableKind =
-  "symbiosis" | "resonance" | "face-lighten" | "face-burden";
+  | "symbiosis"
+  | "resonance"
+  | "face-lighten"
+  | "face-burden"
+  | "pressure"
+  | "shield"
+  | "full-shield"
+  | "last-stand"
+  | "ceasefire"
+  | "risk-pledge"
+  | "harvest"
+  | "bandwagon"
+  | "supply-cache"
+  | "safe-hit"
+  | "hush"
+  | "embargo"
+  | "target-lock"
+  | "suppress"
+  | "heavy-hit";
+export const TABLE_KINDS: readonly TableKind[] = Object.freeze([
+  "symbiosis",
+  "resonance",
+  "face-lighten",
+  "face-burden",
+  "pressure",
+  "shield",
+  "full-shield",
+  "last-stand",
+  "ceasefire",
+  "risk-pledge",
+  "harvest",
+  "bandwagon",
+  "supply-cache",
+  "safe-hit",
+  "hush",
+  "embargo",
+  "target-lock",
+  "suppress",
+  "heavy-hit",
+]);
 export interface TableSpecification {
   readonly pointTarget: number | null;
   readonly kind?: TableKind;
@@ -33,10 +73,18 @@ export type TrumpEffect =
     }
   | { readonly type: "reveal-hidden"; readonly target: Side }
   | { readonly type: "scry"; readonly count: 2 }
-  | { readonly type: "rotate-deck" | "trim" | "exchange-table" | "undo-last" };
+  | { readonly type: "delete-stock"; readonly target: Side }
+  | {
+      readonly type:
+        | "rotate-deck"
+        | "trim"
+        | "exchange-table"
+        | "undo-last"
+        | "sudden-death";
+    };
 export interface TrumpDefinition {
   readonly onPlay: readonly TrumpEffect[];
-  readonly cost?: number;
+  readonly cost?: number | "all-other";
   readonly table?: TableSpecification;
 }
 export interface TrumpRules {
@@ -71,6 +119,12 @@ export interface TableEffect {
   readonly remainingCharges?: number;
   /** REQ-024 can suspend a record without discarding it or rerunning onPlay. */
   readonly suppressed?: boolean;
+  /** @req REQ-2026-024: public, exact Turn bindings; no timer-based lifetime. */
+  readonly affectedPlayer?: PlayerId;
+  readonly expiresAfterTurn?: number;
+  readonly targetEffectId?: string;
+  readonly watchedTurn?: number;
+  readonly copiedDefinitionId?: string;
 }
 export interface TrumpDestruction {
   readonly instance: TrumpInstance;
@@ -105,6 +159,7 @@ export interface PlayTrumpCommand {
   readonly targetId?: string;
   readonly ownTargetId?: string;
   readonly costIds?: readonly string[];
+  readonly definitionId?: string;
 }
 export interface TrumpEventPayload {
   readonly type: "trump";
@@ -124,27 +179,40 @@ export interface TrumpEventPayload {
     | "peek"
     | "rotated"
     | "exchanged"
-    | "undone";
+    | "undone"
+    | "sudden-death";
   readonly card?: NumberValue | null;
   readonly targetId?: string;
   /** Only the actor receives these values; never spread this payload into a view. */
   readonly privateCards?: readonly NumberValue[];
 }
 export type ResourceCause =
-  "game-start" | "round-start" | "hit" | "effect" | "cost";
+  "game-start" | "round-start" | "hit" | "effect" | "cost" | "trigger";
 export interface ResourceEventPayload {
   readonly type: "resource";
   readonly player: PlayerId;
-  readonly operation: "draw" | "generate" | "delete" | "transfer";
+  readonly operation: "draw" | "generate" | "delete" | "transfer" | "blocked";
   readonly cause: ResourceCause;
   readonly instance: TrumpInstance | null;
   readonly fromPlayer?: PlayerId;
   readonly public: boolean;
+  /** A publicly declared stock target, including a legal miss. Never an unannounced draw. */
+  readonly definitionId?: string;
 }
 export type ResourceEventView = Omit<ResourceEventPayload, "public">;
 export interface SkillUseRecovery {
   readonly uses: 1;
   readonly additionalGameActivations: 1;
+}
+/** @req REQ-2026-024: REQ-027 applies this only after validating an actual selected skill. */
+export const SKILL_USE_RECOVERY: SkillUseRecovery = Object.freeze({
+  uses: 1,
+  additionalGameActivations: 1,
+});
+export interface TableEventPayload {
+  readonly type: "table-effect";
+  readonly effectId: string;
+  readonly operation: "updated" | "removed";
 }
 export interface SuddenDeathMarker {
   readonly player: PlayerId;

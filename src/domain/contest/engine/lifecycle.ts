@@ -1,3 +1,4 @@
+// @req REQ-2026-024: Game cleanup also removes the Sudden Death marker.
 // @req REQ-2026-023: numeric contributions, authorized information and reversible effects.
 // @req REQ-2026-016/022: remove effect records without reviving destroyed card bodies.
 import type { RoundState } from "./types";
@@ -18,7 +19,7 @@ export function cleanupRound(round: RoundState): RoundState {
 }
 /** Every Game gets a new namespace/stock; nothing from the old stock is recycled. */
 export function cleanupGame(round: RoundState): RoundState {
-  const clean = cleanupRound(round);
+  const { suddenDeath: _marker, ...clean } = cleanupRound(round);
   return clean.trumps
     ? {
         ...clean,

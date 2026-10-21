@@ -1,9 +1,12 @@
+// @req REQ-2026-024: project public capacity feasibility and exact continuous-effect state.
 // @req REQ-2026-023: numeric contributions, authorized information and reversible effects.
 // @req REQ-2026-015: UI and strategies receive ONLY these projected values.
 import { observeTrumps } from "./effects";
 import { freezeData } from "../immutable";
 import type { PlayerId } from "../types";
 import { contribution, effectiveTotals } from "./contributions";
+import { canUndoWith } from "./undo";
+import { isEffectActive } from "./tableEffects";
 import type {
   NumberCardView,
   RoundEvent,
@@ -71,7 +74,19 @@ export function observeRound(
         ? state.scry[viewer]!.cards.map((c) => c.value)
         : null,
     pointTarget: state.pointTarget,
-    hitDrawCounts: state.hitDrawCounts,
+    hitDrawCounts: {
+      ...state.hitDrawCounts,
+      ...(state.turn &&
+      state.trumps?.table.some(
+        (t) =>
+          t.kind === "heavy-hit" &&
+          t.affectedPlayer === state.turn!.player &&
+          t.expiresAfterTurn === state.turn!.number &&
+          isEffectActive(t, state.trumps!.table),
+      )
+        ? { [state.turn.player]: 2 as const }
+        : {}),
+    },
     turn: state.turn,
     quietStays: state.quietStays,
     result: state.result,
@@ -83,6 +98,14 @@ export function observeRound(
         }
       : null,
     ...(state.trumps ? { trumps: observeTrumps(state.trumps, viewer) } : {}),
+    ...(state.suddenDeath ? { suddenDeath: state.suddenDeath } : {}),
+    ...(state.trumps && state.lastPlay?.type === "trump"
+      ? {
+          undoableTrumpIds: state.trumps.hands[viewer]
+            .filter((c) => canUndoWith(state, viewer, c.instanceId))
+            .map((c) => c.instanceId),
+        }
+      : {}),
   });
 }
 
@@ -92,12 +115,20 @@ export function projectRoundEvent(
 ): RoundEventView {
   const state = observeRound(event.state, viewer);
   switch (event.type) {
+    case "table-effect":
+      return freezeData({
+        type: event.type,
+        effectId: event.effectId,
+        operation: event.operation,
+        state,
+      });
     case "resource":
       return freezeData({
         type: event.type,
         player: event.player,
         operation: event.operation,
         cause: event.cause,
+        ...(event.definitionId ? { definitionId: event.definitionId } : {}),
         instance:
           event.public || event.player === viewer || event.fromPlayer === viewer
             ? event.instance

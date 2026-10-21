@@ -1,8 +1,10 @@
+// @req REQ-2026-024: interpret suppression for numeric contributions and transferred records.
 // @req REQ-2026-023: one contribution model for authority, authorized views and best draw.
 import type { PlayerId } from "../types";
 import type { NumberInstance } from "./numberCards";
 import type { RoundState } from "./types";
 import type { TableEffect } from "./effectTypes";
+import { isEffectActive } from "./tableEffects";
 
 export const TRANSFERABLE_TABLE_IDS = Object.freeze([
   "pressure",
@@ -17,7 +19,7 @@ export const TRANSFERABLE_TABLE_IDS = Object.freeze([
 export function transferable(effect: TableEffect): boolean {
   return (
     effect.pointTarget === null &&
-    !effect.kind &&
+    (!effect.kind || TRANSFERABLE_TABLE_IDS.some((id) => id === effect.kind)) &&
     TRANSFERABLE_TABLE_IDS.some((id) => id === effect.definitionId)
   );
 }
@@ -29,7 +31,10 @@ export function contribution(
   if (card.instanceId === state.hiddenCards[player])
     return card.value * state.hiddenMultipliers[player];
   const adjustment = (state.trumps?.table ?? [])
-    .filter((t) => !t.suppressed && t.cardId === card.instanceId)
+    .filter(
+      (t) =>
+        isEffectActive(t, state.trumps!.table) && t.cardId === card.instanceId,
+    )
     .reduce((sum, t) => sum + (t.adjustment ?? 0), 0);
   return Math.max(1, card.value + adjustment);
 }
@@ -46,7 +51,9 @@ export function effectiveTotals(
   };
   if (
     settlement &&
-    state.trumps?.table.some((t) => t.kind === "symbiosis" && !t.suppressed)
+    state.trumps?.table.some(
+      (t) => t.kind === "symbiosis" && isEffectActive(t, state.trumps!.table),
+    )
   ) {
     const human = state.hands.human.find(
       (c) => c.instanceId === state.hiddenCards.human,
@@ -64,8 +71,9 @@ export function effectiveTotals(
 }
 export function tablePointTarget(state: RoundState): number {
   return (
-    state.trumps?.table.find((t) => t.pointTarget !== null && !t.suppressed)
-      ?.pointTarget ?? state.rules.pointTarget
+    state.trumps?.table.find(
+      (t) => t.pointTarget !== null && isEffectActive(t, state.trumps!.table),
+    )?.pointTarget ?? state.rules.pointTarget
   );
 }
 export function sameGlobalGroup(
@@ -75,6 +83,8 @@ export function sameGlobalGroup(
   return (
     ((a.pointTarget !== null || a.kind === "resonance") &&
       (b.pointTarget !== null || b.kind === "resonance")) ||
-    (a.kind === "symbiosis" && b.kind === "symbiosis")
+    (a.kind !== undefined &&
+      ["symbiosis", "ceasefire", "target-lock"].includes(a.kind) &&
+      a.kind === b.kind)
   );
 }

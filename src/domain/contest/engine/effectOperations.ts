@@ -1,3 +1,4 @@
+// @req REQ-2026-024: remove suppression dependents before targets and record exact updates.
 // @req REQ-2026-023: shared reversible mutations; no scoring or player-command dispatch here.
 import { freezeData } from "../immutable";
 import type { PlayerId } from "../types";
@@ -9,6 +10,11 @@ export interface Mutation {
   readonly state: RoundState;
   readonly deltas: readonly EffectDelta[];
 }
+/** @req REQ-2026-024: attach the current transaction before publishing each mutation's frames. */
+export type EffectRecorder = (
+  state: RoundState,
+  deltas: readonly EffectDelta[],
+) => RoundState;
 
 export function locateNumber(state: RoundState, id: string) {
   for (const player of ["human", "ai", null] as const) {
@@ -31,9 +37,18 @@ function replaceRegion(
     : { ...state, hands: { ...state.hands, [player]: cards } };
 }
 export function removeEffect(state: RoundState, id: string): Mutation {
+  const record = state.trumps!.table.find((t) => t.effectId === id);
+  if (!record) return { state, deltas: [] };
+  const deltas: EffectDelta[] = [];
+  // Remove dependents first: undo restores their target before recreating the link.
+  for (const dependent of state.trumps!.table.filter(
+    (t) => t.targetEffectId === id,
+  )) {
+    const removed = removeEffect(state, dependent.effectId);
+    state = removed.state;
+    deltas.push(...removed.deltas);
+  }
   const index = state.trumps!.table.findIndex((t) => t.effectId === id);
-  if (index < 0) return { state, deltas: [] };
-  const record = state.trumps!.table[index];
   let next: RoundState = {
     ...state,
     trumps: {
@@ -44,9 +59,30 @@ export function removeEffect(state: RoundState, id: string): Mutation {
   next = { ...next, pointTarget: tablePointTarget(next) };
   return {
     state: freezeData(next),
-    deltas: [{ ...record, type: "effect-removed", index }],
+    deltas: [...deltas, { ...record, type: "effect-removed", index }],
   };
 }
+export function updateEffect(state: RoundState, record: TableEffect): Mutation {
+  const before = state.trumps!.table.find(
+    (t) => t.effectId === record.effectId,
+  );
+  if (!before) return { state, deltas: [] };
+  let next = {
+    ...state,
+    trumps: {
+      ...state.trumps!,
+      table: state.trumps!.table.map((t) =>
+        t.effectId === record.effectId ? record : t,
+      ),
+    },
+  };
+  next = { ...next, pointTarget: tablePointTarget(next) };
+  return {
+    state: freezeData(next),
+    deltas: [{ type: "effect-updated", before, after: record }],
+  };
+}
+
 export function detachBindings(state: RoundState, cardId: string): Mutation {
   const deltas: EffectDelta[] = [];
   for (const record of state.trumps?.table.filter((t) => t.cardId === cardId) ??

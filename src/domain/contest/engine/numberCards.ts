@@ -1,3 +1,4 @@
+// @req REQ-2026-024: extend inverse deltas and remove dependent suppression on number deletion.
 // @req REQ-2026-023: numeric contributions, authorized information and reversible effects.
 // @req REQ-2026-022: one live region per identity, even with duplicate values.
 import { freezeData } from "../immutable";
@@ -59,6 +60,28 @@ export type EffectDelta =
       readonly player: PlayerId;
       readonly before: 1 | 2;
       readonly after: 1 | 2;
+    }
+  | {
+      readonly type: "effect-updated";
+      readonly before: import("./effectTypes").TableEffect;
+      readonly after: import("./effectTypes").TableEffect;
+    }
+  | DeltaKinds<
+      "trump-stock-deleted",
+      {
+        readonly player: PlayerId;
+        readonly instance: import("./effectTypes").TrumpInstance;
+        readonly index: number;
+      }
+    >
+  | DeltaKinds<
+      "trump-stock-generated",
+      { readonly player: PlayerId; readonly instanceId: string }
+    >
+  | {
+      readonly type: "sudden-death";
+      readonly before: import("./effectTypes").SuddenDeathMarker | undefined;
+      readonly after: import("./effectTypes").SuddenDeathMarker | undefined;
     };
 
 export type CardTransaction =
@@ -124,6 +147,11 @@ export function deleteNumber(
     (player !== null && state.hiddenCards[player] === instanceId)
   )
     return state;
+  const bindings = new Set(
+    state.trumps?.table
+      .filter((t) => t.cardId === instanceId)
+      .map((t) => t.effectId) ?? [],
+  );
   return freezeData({
     ...state,
     ...(player === null
@@ -144,7 +172,11 @@ export function deleteNumber(
       ? {
           trumps: {
             ...state.trumps,
-            table: state.trumps.table.filter((t) => t.cardId !== instanceId),
+            table: state.trumps.table.filter(
+              (t) =>
+                !bindings.has(t.effectId) &&
+                (!t.targetEffectId || !bindings.has(t.targetEffectId)),
+            ),
           },
         }
       : {}),

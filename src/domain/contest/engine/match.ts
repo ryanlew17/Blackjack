@@ -1,3 +1,4 @@
+// @req REQ-2026-024: apply one score breakdown and synchronize the public Game marker.
 // @req REQ-2026-016: compose round results into a standard BO5 in memory.
 import { createTrumpState } from "./effects";
 import type { TrumpSetup } from "./effectTypes";
@@ -9,7 +10,7 @@ import { numberRandom, resourceRandom } from "./resourceTypes";
 import type { ContestRandom } from "./resourceTypes";
 import { observeMatch } from "./matchObservation";
 import { createMatchRules } from "./rules";
-import { createContestGame, scoreContestRound } from "./scoring";
+import { createContestGame, scoreContestRound, roundScore } from "./scoring";
 import { createRound, transition } from "./transition";
 import { opponentOf } from "./turn";
 import type {
@@ -20,7 +21,20 @@ import type {
   MatchTransition,
   RoundRules,
   RoundTransition,
+  RoundState,
+  ContestGameState,
 } from "./types";
+function syncMarker(
+  game: ContestGameState,
+  round: RoundState,
+): ContestGameState {
+  if (game.suddenDeath === round.suddenDeath) return game;
+  const { suddenDeath: _marker, ...rest } = game;
+  return {
+    ...rest,
+    ...(round.suddenDeath ? { suddenDeath: round.suddenDeath } : {}),
+  };
+}
 
 function liftRoundEvents(
   state: MatchState,
@@ -32,6 +46,7 @@ function liftRoundEvents(
     state: freezeData({
       ...state,
       round: event.state,
+      game: syncMarker(state.game, event.state),
       phase: event.state.phase === "settled" ? "resolving" : "playing",
     }),
   }));
@@ -111,6 +126,9 @@ export function transitionMatch(
         : original.round.trumps,
       original.roundNumber + 1,
       original.phase === "game-complete",
+      original.phase === "game-complete"
+        ? undefined
+        : original.game.suddenDeath,
     );
     const state: MatchState = freezeData({
       ...original,
@@ -131,18 +149,28 @@ export function transitionMatch(
     typeof random === "function" ? undefined : random,
   );
   if (round.state === original.round) return { state: original, events: [] };
-  let state: MatchState = freezeData({ ...original, round: round.state });
+  let state: MatchState = freezeData({
+    ...original,
+    round: round.state,
+    game: syncMarker(original.game, round.state),
+  });
   const events = liftRoundEvents(original, round);
   if (round.state.phase !== "settled") return freezeData({ state, events });
 
   const result = round.state.result!;
-  const game = scoreContestRound(original.game, result.winner, original.rules);
+  const score = roundScore(round.state);
+  const game = scoreContestRound(
+    state.game,
+    result.winner,
+    original.rules,
+    score.increment,
+  );
   state = freezeData({
     ...state,
     phase: "resolving",
     game: { ...game, target: original.game.target, winner: null },
   });
-  events.push({ type: "round-scored", winner: result.winner, state });
+  events.push({ type: "round-scored", winner: result.winner, score, state });
   if (game.target !== original.game.target) {
     state = freezeData({
       ...state,
@@ -173,6 +201,7 @@ export function transitionMatch(
       ...state,
       phase: matchWinner ? "resolving" : "game-complete",
       round: cleanupGame(state.round),
+      game: syncMarker(game, cleanupGame(state.round)),
     });
     events.push({ type: "game-cleanup", state });
     if (matchWinner) {

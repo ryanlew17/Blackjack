@@ -1,3 +1,4 @@
+// @req REQ-2026-024: project the authoritative score breakdown.
 // @req REQ-2026-016: match scores are public; round secrets remain projected.
 import { freezeData } from "../immutable";
 import type { PlayerId } from "../types";
@@ -39,7 +40,12 @@ export function projectMatchEvent(
         state,
       });
     case "round-scored":
-      return freezeData({ type: event.type, winner: event.winner, state });
+      return freezeData({
+        type: event.type,
+        winner: event.winner,
+        score: event.score,
+        state,
+      });
     case "game-won":
       return freezeData({ type: event.type, winner: event.winner, state });
     case "match-won":

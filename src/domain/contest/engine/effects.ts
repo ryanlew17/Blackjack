@@ -1,3 +1,4 @@
+// @req REQ-2026-024: one atomic card executor includes actual trigger and stock deltas.
 // @req REQ-2026-019/022/023: one atomic executor for numeric cards and effect records.
 import { freezeData } from "../immutable";
 import type { PlayerId } from "../types";
@@ -11,7 +12,12 @@ import type {
 import type { ResourceRandomSources } from "./resourceTypes";
 import type { EffectDelta } from "./numberCards";
 import { generateNumber, deleteNumber } from "./numberCards";
-import { deleteTrump, generateTrump, grantTrumps } from "./resources";
+import {
+  deleteTrump,
+  deleteStockTrump,
+  generateTrump,
+  grantTrumps,
+} from "./resources";
 import { opponentOf, recordTrumpConsumption } from "./turn";
 import { legalTrumpCommands } from "./trumpLegality";
 import { effectiveTotals, sameGlobalGroup } from "./contributions";
@@ -24,8 +30,10 @@ import {
   swapEffects,
   setMultiplier,
 } from "./effectOperations";
-import type { Mutation } from "./effectOperations";
+import type { EffectRecorder, Mutation } from "./effectOperations";
 import { undoLastPlay } from "./undo";
+import { respondToPlay } from "./triggers";
+import { shortLived } from "./tableEffects";
 export { legalTrumpCommands } from "./trumpLegality";
 export { createTrumpState, observeTrumps } from "./resources";
 
@@ -51,6 +59,7 @@ export function playTrump(
         c.instanceId === command.instanceId &&
         c.targetId === command.targetId &&
         c.ownTargetId === command.ownTargetId &&
+        c.definitionId === command.definitionId &&
         equalCosts(c.costIds, command.costIds),
     )
   )
@@ -60,6 +69,7 @@ export function playTrump(
   )!;
   const definition = original.rules.trumps!.definitions[instance.definitionId];
   const previous = original.lastPlay;
+  const existing = original.trumps!.table;
   let state = original;
   const events: RoundEvent[] = [],
     deltas: EffectDelta[] = [];
@@ -75,6 +85,10 @@ export function playTrump(
         deltas: [...deltas],
       },
     });
+  const record: EffectRecorder = (next, changes) => {
+    deltas.push(...changes);
+    return transaction(next);
+  };
   const emit = (
     effect: TrumpEventPayload["effect"],
     extra: Pick<TrumpEventPayload, "card" | "targetId" | "privateCards"> = {},
@@ -200,17 +214,11 @@ export function playTrump(
         "effect",
         random?.trumpSelection,
         effect.definitionId,
+        undefined,
+        record,
       );
-      for (const event of granted.events) {
-        if (event.type === "resource" && event.instance)
-          deltas.push({
-            type: "trump-granted",
-            player,
-            instanceId: event.instance.instanceId,
-          });
-        state = transaction(event.state);
-        events.push({ ...event, state });
-      }
+      state = granted.state;
+      events.push(...granted.events);
     } else if (effect.type === "generate-trump") {
       const generated = generateTrump(
         state.trumps!,
@@ -306,6 +314,48 @@ export function playTrump(
     } else if (effect.type === "undo-last") {
       apply(undoLastPlay(state, previous!, instance.instanceId));
       emit("undone");
+    } else if (effect.type === "delete-stock") {
+      const player = side(effect.target);
+      const index = state.trumps!.stock[player].findIndex(
+        (c) => c.definitionId === command.definitionId,
+      );
+      const deleted = deleteStockTrump(
+        state.trumps!,
+        player,
+        command.definitionId!,
+        true,
+      );
+      state = { ...state, trumps: deleted.state };
+      if (deleted.instance)
+        deltas.push({
+          type: "trump-stock-deleted",
+          player,
+          instance: deleted.instance,
+          index,
+        });
+      state = transaction(state);
+      events.push({
+        type: "resource",
+        player,
+        operation: "delete",
+        cause: "effect",
+        definitionId: command.definitionId,
+        instance: deleted.instance,
+        public: true,
+        state,
+      });
+    } else if (effect.type === "sudden-death") {
+      const marker = {
+        player: command.player,
+        sourceInstanceId: instance.instanceId,
+      };
+      deltas.push({
+        type: "sudden-death",
+        before: state.suddenDeath,
+        after: marker,
+      });
+      state = { ...state, suddenDeath: marker };
+      emit("sudden-death");
     }
   }
   if (definition.table) {
@@ -325,6 +375,18 @@ export function playTrump(
         sourceInstanceId: instance.instanceId,
         definitionId: instance.definitionId,
         owner: command.player,
+        ...(shortLived(spec.kind)
+          ? {
+              affectedPlayer: opponentOf(command.player),
+              expiresAfterTurn: state.turn!.number + 1,
+            }
+          : {}),
+        ...(spec.kind === "suppress"
+          ? { targetEffectId: command.targetId }
+          : {}),
+        ...(spec.kind === "bandwagon"
+          ? { watchedTurn: state.turn!.number + 1 }
+          : {}),
         ...(spec.kind === "face-lighten" || spec.kind === "face-burden"
           ? {
               cardId: command.targetId!,
@@ -336,5 +398,16 @@ export function playTrump(
     );
     emit("placed");
   }
+  const triggered = respondToPlay(
+    state,
+    command.player,
+    instance.definitionId,
+    existing,
+    random,
+    record,
+  );
+  events.push(...triggered.events);
+  state = transaction(triggered.state);
+  events[events.length - 1] = { ...events[events.length - 1], state };
   return freezeData({ state, events });
 }

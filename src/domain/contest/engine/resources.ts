@@ -1,3 +1,4 @@
+// @req REQ-2026-024: bound Embargo interception and generated stock origins.
 // @req REQ-2026-022: finite no-replacement stock; generated cards have a separate origin.
 import { freezeData } from "../immutable";
 import type { PlayerId } from "../types";
@@ -12,8 +13,17 @@ import type {
 } from "./effectTypes";
 import type { RandomSource } from "./numbers";
 import { randomUnit } from "./numbers";
-import type { RoundEvent, RoundState, RoundTransition } from "./types";
+import type {
+  RoundEvent,
+  RoundState,
+  RoundTransition,
+  TurnState,
+} from "./types";
 import { opponentOf } from "./turn";
+import { isEffectActive, affectsTurn } from "./tableEffects";
+import { removeEffect } from "./effectOperations";
+import type { EffectRecorder } from "./effectOperations";
+import type { EffectDelta } from "./numberCards";
 
 export function createTrumpState(
   rules: TrumpRules,
@@ -72,7 +82,9 @@ export function observeTrumps(
     ownHand: state.hands[viewer],
     opponentHandCount: state.hands[opponentOf(viewer)].length,
     stockCounts: { human: state.stock.human.length, ai: state.stock.ai.length },
-    table: state.table,
+    table: state.table.map((t) =>
+      isEffectActive(t, state.table) ? t : { ...t, suppressed: true },
+    ),
     destroyed: state.destroyed.map((d) => ({
       owner: d.owner,
       reason: d.reason,
@@ -113,10 +125,12 @@ export function generateTrump(
   definitionId: string,
   sourceId: string,
   rules: TrumpRules,
+  destination: "hand" | "stock" = "hand",
 ): { readonly state: TrumpState; readonly instance: TrumpInstance | null } {
   if (!sourceId || !Object.hasOwn(rules.definitions, definitionId))
     throw new RangeError("Invalid trump generation");
-  if (state.hands[player].length >= 8) return { state, instance: null };
+  if (destination === "hand" && state.hands[player].length >= 8)
+    return { state, instance: null };
   const used = new Set(
     [
       ...state.hands.human,
@@ -137,7 +151,19 @@ export function generateTrump(
     state: {
       ...state,
       nextGeneratedId: serial + 1,
-      hands: { ...state.hands, [player]: [...state.hands[player], instance] },
+      ...(destination === "hand"
+        ? {
+            hands: {
+              ...state.hands,
+              [player]: [...state.hands[player], instance],
+            },
+          }
+        : {
+            stock: {
+              ...state.stock,
+              [player]: [...state.stock[player], instance],
+            },
+          }),
     },
     instance,
   });
@@ -221,15 +247,66 @@ export function grantTrumps(
   cause: ResourceCause,
   selection?: RandomSource,
   definitionId?: string,
-): RoundTransition {
+  receivingTurn?: TurnState,
+  recordDeltas?: EffectRecorder,
+): RoundTransition & { readonly deltas: readonly EffectDelta[] } {
   if (!Number.isSafeInteger(count) || count < 0)
     throw new RangeError("Invalid grant count");
-  if (!original.trumps) return { state: original, events: [] };
+  if (!original.trumps) return { state: original, events: [], deltas: [] };
   let state = original;
-  const events: RoundEvent[] = [];
+  const events: RoundEvent[] = [],
+    deltas: EffectDelta[] = [];
   for (let i = 0; i < count; i++) {
+    const canReceive =
+      state.trumps!.hands[player].length < 8 &&
+      state.trumps!.stock[player].some(
+        (c) => definitionId === undefined || c.definitionId === definitionId,
+      );
+    const embargo = canReceive
+      ? state.trumps!.table.find(
+          (t) =>
+            t.kind === "embargo" &&
+            t.affectedPlayer === player &&
+            affectsTurn(t, receivingTurn ?? state.turn) &&
+            isEffectActive(t, state.trumps!.table),
+        )
+      : undefined;
+    if (embargo) {
+      const removed = removeEffect(state, embargo.effectId);
+      deltas.push(...removed.deltas);
+      state = recordDeltas?.(removed.state, removed.deltas) ?? removed.state;
+      events.push({
+        type: "resource",
+        operation: "blocked",
+        player,
+        cause,
+        instance: null,
+        public: false,
+        state,
+      });
+      for (const d of removed.deltas)
+        if (d.type === "effect-removed")
+          events.push({
+            type: "table-effect",
+            effectId: d.effectId,
+            operation: "removed",
+            state,
+          });
+      continue;
+    }
     const draw = drawTrump(state.trumps!, player, selection, definitionId);
-    state = freezeData({ ...state, trumps: draw.state });
+    const changes: EffectDelta[] = draw.instance
+      ? [
+          {
+            type: "trump-granted",
+            player,
+            instanceId: draw.instance.instanceId,
+          },
+        ]
+      : [];
+    deltas.push(...changes);
+    const next = { ...state, trumps: draw.state };
+    state = recordDeltas?.(next, changes) ?? freezeData(next);
     events.push({
       type: "resource",
       operation: "draw",
@@ -241,5 +318,5 @@ export function grantTrumps(
     });
     if (!draw.instance) break;
   }
-  return freezeData({ state, events });
+  return freezeData({ state, events, deltas });
 }
