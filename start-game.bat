@@ -7,12 +7,12 @@ rem correctly on any system code page.
 title Blackjack - The Green Room
 cd /d "%~dp0"
 
-rem Probe node; the game requires Node.js 22.12+
+rem Probe node; the game requires Node.js 24.x 24.22.1+ or 26.x 26.12.1+
 rem (the check also fails when node is not on PATH at all)
-node -e "const [a,b]=process.versions.node.split('.').map(Number);process.exit(a>22||(a===22&&b>=12)?0:1)" >nul 2>nul
+node -e "const [a,b,c]=process.versions.node.split('.').map(Number);process.exit(Number.isInteger(c)&&((a===24&&(b>22||(b===22&&c>=1)))||(a===26&&(b>12||(b===12&&c>=1))))?0:1)" >nul 2>nul
 if errorlevel 1 (
     echo.
-    echo [Error] No usable Node.js 22.12+ environment was detected.
+    echo [Error] No usable Node.js 24.x 24.22.1+ or 26.x 26.12.1+ environment was detected.
     echo Please download and install the LTS version from the official site first:
     echo.
     echo     https://nodejs.org/

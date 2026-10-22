@@ -42,7 +42,7 @@ GitHub Issue > `docs/requirements/active/*.md` > design docs. Register every new
 ## Commands
 
 ```bash
-npm ci               # install from lockfile (Node.js ≥ 22.12)
+npm ci               # install from lockfile (Node.js 24.x ≥24.22.1 or 26.x ≥26.12.1)
 npm run dev          # Vite dev server, http://127.0.0.1:5173
 npm test             # Vitest: domain rules + save validation (colocated *.test.ts)
 npm run typecheck    # strict TypeScript

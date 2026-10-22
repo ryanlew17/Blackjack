@@ -10,16 +10,16 @@
 
 cd "$(dirname "$0")" || exit 1
 
-# Probe node; the game requires Node.js 22.12+
+# Probe node; the game requires Node.js 24.x 24.22.1+ or 26.x 26.12.1+
 NODE_OK=""
 if command -v node >/dev/null 2>&1 \
-   && node -e 'const [a,b]=process.versions.node.split(".").map(Number);process.exit(a>22||(a===22&&b>=12)?0:1)' >/dev/null 2>&1; then
+   && node -e 'const [a,b,c]=process.versions.node.split(".").map(Number);process.exit(Number.isInteger(c)&&((a===24&&(b>22||(b===22&&c>=1)))||(a===26&&(b>12||(b===12&&c>=1))))?0:1)' >/dev/null 2>&1; then
     NODE_OK=1
 fi
 
 if [ -z "$NODE_OK" ]; then
     echo
-    echo "[Error] No usable Node.js 22.12+ environment was detected."
+    echo "[Error] No usable Node.js 24.x 24.22.1+ or 26.x 26.12.1+ environment was detected."
     echo "Please install the LTS version from the official site first: https://nodejs.org/"
     echo
     echo "Opening the download page ..."

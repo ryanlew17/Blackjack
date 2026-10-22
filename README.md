@@ -35,7 +35,7 @@ A local-first, single-player Blackjack game for the browser, built with **React 
 `index.html` — no Node.js or server needed (since v0.1.1; the v0.1.0 package
 showed a blank page on double-click, see [ADR-002](./docs/adr/ADR-002-singlefile-release-build.md)).
 
-**Running from source** requires **Node.js 22.12+** and npm.
+**Running from source** requires **Node.js 24.x ≥24.22.1 or 26.x ≥26.12.1** and npm.
 
 **Windows** — double-click `start-game.bat`.
 

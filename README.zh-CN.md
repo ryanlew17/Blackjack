@@ -33,7 +33,7 @@
 
 **只想玩游戏？** 下载最新的 Release 构建包，解压后双击 `index.html` 即可——无需 Node.js 或本地服务器（自 v0.1.1 起；v0.1.0 发布包双击白屏，见 [ADR-002](./docs/adr/ADR-002-singlefile-release-build.md)）。
 
-**从源码运行**需要 **Node.js 22.12+** 和 npm。
+**从源码运行**需要 **Node.js 24.x ≥24.22.1 或 26.x ≥26.12.1** 和 npm。
 
 **Windows** —— 双击 `start-game.bat`。
 
