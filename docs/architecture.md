@@ -51,8 +51,8 @@ src/
     contest/
       types.ts               # 难度、参与者与数字牌词汇
       immutable.ts           # 竞赛静态数据冻结工具
-      trumps/                # 21候选目录＋023的29个执行定义；生产准入待025
-      presets/               # 独立实验库存与 F1/P0 元数据
+      trumps/                # 54卡元数据、53卡唯一执行准入
+      presets/               # 数量、显式标准开发预设；F1/P0隔离
       codex/                 # 查询、进度更新、负载校验、公开入口与测试
       engine/                # 回合／BO5、资源、数字／留场与悔牌、投影；夹具隔离
       ai/                    # S1 无道具基线；S2 搜索待实现
@@ -186,3 +186,11 @@ S1原型的table／discarded活实例结构已成为历史；[REQ-022](./require
 [REQ-027](./requirements/active/REQ-2026-027-contest-active-skills.md)增加冻结的技能定义、场／局次数、私有待办与生成来源；应用接战前选择、稳定反应与原有取消，表现层只展示投影和独立球形按钮。隐身信息须同时从事件及逐帧排除，AI端口也只得授权观察。[REQ-028](./requirements/active/REQ-2026-028-contest-combination-ai.md)最后接54卡／15技能组合策略，真实技能随机与选技、资源、搜索源分离。
 
 022实现engine/resources、numberCards与resourceTypes，资源数量预设位于presets/resources；023增加contributions、effectOperations、trumpLegality及undo，在同一transition／比较／投影边界执行29个数字／留场及悔牌定义。执行数据位于trumps/numberDefinitions.ts，只有显式注入才启用；numberEffectTestHelpers同原型一样只作测试夹具。既有生产依赖守卫继续排除执行定义、预设／候选与夹具，正常入口未启用资源模式。技能ID不进入道具CodexProgress，对局技能次数／待办不持久化；S4完整图鉴增加技能独立页，资格由S3难度进度派生。
+
+## S2 道具准入与应用边界（REQ-025）
+
+`trumps/admitted.ts` 精确聚合023／024的53个执行定义，`catalog.ts` 登记54个ID／双语键／真实来源并引用同一执行对象；回仙只有元数据，027完成技能后再准入。`presets/s2.ts` 只提供冻结标准BO5开发配置，库存61；五档已准入资源合计39/61/73/75/77，不把危险／噩梦缺少回仙的过渡值当作最终54卡76/78。
+
+生产controller显式选择 `preset: "s2-development"` 才启用道具；正常页面在026提供用卡UI前仍选默认无道具流程。coordinator的双方受控端口仍不向页面暴露。领域定义只说明效果，所有执行仍经原transition；精确依赖守卫仅放行admitted、ids、numberDefinitions、interactionDefinitions及s2／resources，不通配放行目录、实验、prototype或测试夹具。
+
+默认道具随机流惰性播种、各自独立推进；注入时仍要求numbers／trumpGate／trumpSelection三端口。控制器、Hook、策略和元数据不访问Storage；S3元进度的写入失败／冲突验收继续留在roadmap。当前不新增共享引擎、经典规则或存档字段。

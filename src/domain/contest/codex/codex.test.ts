@@ -20,7 +20,7 @@ describe("codex progress and observations", () => {
   it("starts with metadata-free locked entries and no discoveries", () => {
     const progress = createCodexProgress();
     expect(codexSummary(progress)).toEqual({
-      total: 21,
+      total: 54,
       unlocked: 0,
       unviewed: 0,
     });
@@ -98,13 +98,13 @@ describe("codex progress and observations", () => {
     expect(listUnlockedIds(b)).toEqual(["draw-2", "harvest"]);
     const c = success(markViewed(b, "draw-2")).progress;
     expect(firstUnviewedId(c)).toBe("harvest");
-    expect(codexSummary(c)).toEqual({ total: 21, unlocked: 2, unviewed: 1 });
+    expect(codexSummary(c)).toEqual({ total: 54, unlocked: 2, unviewed: 1 });
     const visible = listCodexItems(c);
     expect(visible[0]).toMatchObject({
       status: "viewed",
       definition: { id: "draw-2" },
     });
-    expect(visible.at(-1)).toMatchObject({
+    expect(visible.find((item) => item.id === "harvest")).toMatchObject({
       status: "new",
       definition: { id: "harvest" },
     });

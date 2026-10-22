@@ -1,556 +1,256 @@
-// @req REQ-2026-013: candidate catalog only; no gameplay execution or admission.
+// @req REQ-2026-025: 54 registered identities, 53 admitted executions; no second effect schema.
 import { freezeData } from "../immutable";
-import { isTrumpId, type TrumpId } from "./ids";
-import type { TrumpDefinition } from "./types";
+import { TRUMP_IDS, isTrumpId, type TrumpId } from "./ids";
+import { ADMITTED_TRUMP_DEFINITIONS, isAdmittedTrumpId } from "./admitted";
+import type { TrumpDefinition, TrumpTag, SourceId } from "./types";
 
-export const TRUMP_CATALOG = freezeData({
+const METADATA = {
   "draw-2": {
-    id: "draw-2",
-    nameKey: "contest.trump.draw-2.name",
-    descriptionKey: "contest.trump.draw-2.description",
     tags: ["buff", "number"],
-    conditions: [],
-    cost: null,
-    onPlay: [
-      {
-        kind: "drawNumber",
-        value: 2,
-      },
-    ],
-    table: null,
-    failedResolution: "consume",
-    provenance: {
-      referenceName: "2 Card",
-      sourceIds: ["W2"],
-    },
-    admission: "priority-prototype",
-    playable: false,
+    provenance: { referenceName: "2 Card", sourceIds: ["W2"] },
   },
   "draw-3": {
-    id: "draw-3",
-    nameKey: "contest.trump.draw-3.name",
-    descriptionKey: "contest.trump.draw-3.description",
     tags: ["buff", "number"],
-    conditions: [],
-    cost: null,
-    onPlay: [
-      {
-        kind: "drawNumber",
-        value: 3,
-      },
-    ],
-    table: null,
-    failedResolution: "consume",
-    provenance: {
-      referenceName: "3 Card",
-      sourceIds: ["W2"],
-    },
-    admission: "priority-prototype",
-    playable: false,
+    provenance: { referenceName: "3 Card", sourceIds: ["W2"] },
   },
   "draw-4": {
-    id: "draw-4",
-    nameKey: "contest.trump.draw-4.name",
-    descriptionKey: "contest.trump.draw-4.description",
     tags: ["buff", "number"],
-    conditions: [],
-    cost: null,
-    onPlay: [
-      {
-        kind: "drawNumber",
-        value: 4,
-      },
-    ],
-    table: null,
-    failedResolution: "consume",
-    provenance: {
-      referenceName: "4 Card",
-      sourceIds: ["W2"],
-    },
-    admission: "priority-prototype",
-    playable: false,
+    provenance: { referenceName: "4 Card", sourceIds: ["W2"] },
   },
   "draw-5": {
-    id: "draw-5",
-    nameKey: "contest.trump.draw-5.name",
-    descriptionKey: "contest.trump.draw-5.description",
     tags: ["buff", "number"],
-    conditions: [],
-    cost: null,
-    onPlay: [
-      {
-        kind: "drawNumber",
-        value: 5,
-      },
-    ],
-    table: null,
-    failedResolution: "consume",
-    provenance: {
-      referenceName: "5 Card",
-      sourceIds: ["W2"],
-    },
-    admission: "priority-prototype",
-    playable: false,
+    provenance: { referenceName: "5 Card", sourceIds: ["W2"] },
   },
   "draw-6": {
-    id: "draw-6",
-    nameKey: "contest.trump.draw-6.name",
-    descriptionKey: "contest.trump.draw-6.description",
     tags: ["buff", "number"],
-    conditions: [],
-    cost: null,
-    onPlay: [
-      {
-        kind: "drawNumber",
-        value: 6,
-      },
-    ],
-    table: null,
-    failedResolution: "consume",
-    provenance: {
-      referenceName: "6 Card",
-      sourceIds: ["W2"],
-    },
-    admission: "priority-prototype",
-    playable: false,
+    provenance: { referenceName: "6 Card", sourceIds: ["W2"] },
   },
   "draw-7": {
-    id: "draw-7",
-    nameKey: "contest.trump.draw-7.name",
-    descriptionKey: "contest.trump.draw-7.description",
     tags: ["buff", "number"],
-    conditions: [],
-    cost: null,
-    onPlay: [
-      {
-        kind: "drawNumber",
-        value: 7,
-      },
-    ],
-    table: null,
-    failedResolution: "consume",
-    provenance: {
-      referenceName: "7 Card",
-      sourceIds: ["W2"],
-    },
-    admission: "priority-prototype",
-    playable: false,
+    provenance: { referenceName: "7 Card", sourceIds: ["W2"] },
   },
   return: {
-    id: "return",
-    nameKey: "contest.trump.return.name",
-    descriptionKey: "contest.trump.return.description",
     tags: ["buff", "number"],
-    conditions: [
-      {
-        kind: "hasFaceUp",
-        target: "self",
-      },
-    ],
-    cost: null,
-    onPlay: [
-      {
-        kind: "returnLastFaceUp",
-        target: "self",
-      },
-    ],
-    table: null,
-    failedResolution: "consume",
-    provenance: {
-      referenceName: "Return",
-      sourceIds: ["G1"],
-    },
-    admission: "priority-prototype",
-    playable: false,
+    provenance: { referenceName: "Return", sourceIds: ["G1"] },
   },
   remove: {
-    id: "remove",
-    nameKey: "contest.trump.remove.name",
-    descriptionKey: "contest.trump.remove.description",
     tags: ["debuff", "number"],
-    conditions: [
-      {
-        kind: "hasFaceUp",
-        target: "opponent",
-      },
-    ],
-    cost: null,
-    onPlay: [
-      {
-        kind: "returnLastFaceUp",
-        target: "opponent",
-      },
-    ],
-    table: null,
-    failedResolution: "consume",
-    provenance: {
-      referenceName: "Remove",
-      sourceIds: ["G1"],
-    },
-    admission: "priority-prototype",
-    playable: false,
+    provenance: { referenceName: "Remove", sourceIds: ["G1"] },
   },
   exchange: {
-    id: "exchange",
-    nameKey: "contest.trump.exchange.name",
-    descriptionKey: "contest.trump.exchange.description",
     tags: ["both", "number"],
-    conditions: [
-      {
-        kind: "hasFaceUp",
-        target: "self",
-      },
-      {
-        kind: "hasFaceUp",
-        target: "opponent",
-      },
-    ],
-    cost: null,
-    onPlay: [
-      {
-        kind: "swapLastFaceUp",
-      },
-    ],
-    table: null,
-    failedResolution: "consume",
-    provenance: {
-      referenceName: "Exchange",
-      sourceIds: ["G1"],
-    },
-    admission: "priority-prototype",
-    playable: false,
+    provenance: { referenceName: "Exchange", sourceIds: ["G1"] },
   },
   "target-17": {
-    id: "target-17",
-    nameKey: "contest.trump.target-17.name",
-    descriptionKey: "contest.trump.target-17.description",
     tags: ["both", "rule"],
-    conditions: [],
-    cost: null,
-    onPlay: [],
-    table: {
-      effects: [
-        {
-          kind: "pointTarget",
-          value: 17,
-        },
-      ],
-      expires: "round-end",
-      stacking: "replace-global-point-target",
-    },
-    failedResolution: "consume",
-    provenance: {
-      referenceName: "Go for 17",
-      sourceIds: ["G1"],
-    },
-    admission: "priority-prototype",
-    playable: false,
+    provenance: { referenceName: "Go for 17", sourceIds: ["G1"] },
   },
   "target-24": {
-    id: "target-24",
-    nameKey: "contest.trump.target-24.name",
-    descriptionKey: "contest.trump.target-24.description",
     tags: ["both", "rule"],
-    conditions: [],
-    cost: null,
-    onPlay: [],
-    table: {
-      effects: [
-        {
-          kind: "pointTarget",
-          value: 24,
-        },
-      ],
-      expires: "round-end",
-      stacking: "replace-global-point-target",
-    },
-    failedResolution: "consume",
-    provenance: {
-      referenceName: "Go for 24",
-      sourceIds: ["G1"],
-    },
-    admission: "priority-prototype",
-    playable: false,
+    provenance: { referenceName: "Go for 24", sourceIds: ["G1"] },
   },
   "target-27": {
-    id: "target-27",
-    nameKey: "contest.trump.target-27.name",
-    descriptionKey: "contest.trump.target-27.description",
     tags: ["both", "rule"],
-    conditions: [],
-    cost: null,
-    onPlay: [],
-    table: {
-      effects: [
-        {
-          kind: "pointTarget",
-          value: 27,
-        },
-      ],
-      expires: "round-end",
-      stacking: "replace-global-point-target",
-    },
-    failedResolution: "consume",
-    provenance: {
-      referenceName: "Go for 27",
-      sourceIds: ["G1"],
-    },
-    admission: "extended-experiment",
-    playable: false,
+    provenance: { referenceName: "Go for 27", sourceIds: ["G1"] },
   },
   destroy: {
-    id: "destroy",
-    nameKey: "contest.trump.destroy.name",
-    descriptionKey: "contest.trump.destroy.description",
     tags: ["debuff", "counter"],
-    conditions: [
-      {
-        kind: "hasTableCard",
-        target: "opponent",
-      },
-    ],
-    cost: null,
-    onPlay: [
-      {
-        kind: "removeTable",
-        target: "opponent",
-        scope: "latest",
-      },
-    ],
-    table: null,
-    failedResolution: "consume",
-    provenance: {
-      referenceName: "Destroy",
-      sourceIds: ["G3"],
-    },
-    admission: "priority-prototype",
-    playable: false,
+    provenance: { referenceName: "Destroy", sourceIds: ["G3"] },
   },
   "destroy-all": {
-    id: "destroy-all",
-    nameKey: "contest.trump.destroy-all.name",
-    descriptionKey: "contest.trump.destroy-all.description",
     tags: ["debuff", "counter"],
-    conditions: [
-      {
-        kind: "hasTableCard",
-        target: "opponent",
-      },
-    ],
-    cost: null,
-    onPlay: [
-      {
-        kind: "removeTable",
-        target: "opponent",
-        scope: "all",
-      },
-    ],
-    table: null,
-    failedResolution: "consume",
-    provenance: {
-      referenceName: "Destroy+",
-      sourceIds: ["G3"],
-    },
-    admission: "extended-experiment",
-    playable: false,
+    provenance: { referenceName: "Destroy+", sourceIds: ["G3"] },
   },
   "best-draw": {
-    id: "best-draw",
-    nameKey: "contest.trump.best-draw.name",
-    descriptionKey: "contest.trump.best-draw.description",
     tags: ["buff", "number"],
-    conditions: [],
-    cost: null,
-    onPlay: [
-      {
-        kind: "drawBest",
-        algorithm: "highest-safe-else-lowest",
-      },
-    ],
-    table: null,
-    failedResolution: "consume",
-    provenance: {
-      referenceName: "Perfect Draw",
-      sourceIds: ["G1"],
-    },
-    admission: "extended-experiment",
-    playable: false,
+    provenance: { referenceName: "Perfect Draw", sourceIds: ["G1"] },
   },
   pressure: {
-    id: "pressure",
-    nameKey: "contest.trump.pressure.name",
-    descriptionKey: "contest.trump.pressure.description",
     tags: ["buff", "score"],
-    conditions: [],
-    cost: null,
-    onPlay: [],
-    table: {
-      effects: [
-        {
-          kind: "winBonus",
-          amount: 1,
-        },
-      ],
-      expires: "round-end",
-      stacking: "additive",
-    },
-    failedResolution: "consume",
-    provenance: {
-      referenceName: "One-Up",
-      sourceIds: ["W2"],
-    },
-    admission: "priority-prototype",
-    playable: false,
+    provenance: { referenceName: "One-Up", sourceIds: ["W2"] },
   },
   "pressure-supply": {
-    id: "pressure-supply",
-    nameKey: "contest.trump.pressure-supply.name",
-    descriptionKey: "contest.trump.pressure-supply.description",
     tags: ["buff", "score", "resource"],
-    conditions: [],
-    cost: null,
-    onPlay: [
-      {
-        kind: "grantTrump",
-        target: "self",
-        count: 1,
-      },
-    ],
-    table: {
-      effects: [
-        {
-          kind: "winBonus",
-          amount: 1,
-        },
-      ],
-      expires: "round-end",
-      stacking: "additive",
-    },
-    failedResolution: "consume",
-    provenance: {
-      referenceName: "Two-Up",
-      sourceIds: ["W2"],
-    },
-    admission: "priority-prototype",
-    playable: false,
+    provenance: { referenceName: "Two-Up", sourceIds: ["W2"] },
   },
   shield: {
-    id: "shield",
-    nameKey: "contest.trump.shield.name",
-    descriptionKey: "contest.trump.shield.description",
     tags: ["buff", "defense", "score"],
-    conditions: [],
-    cost: null,
-    onPlay: [],
-    table: {
-      effects: [
-        {
-          kind: "cancelOpponentBonusOnLoss",
-          amount: 1,
-        },
-      ],
-      expires: "round-end",
-      stacking: "additive",
-    },
-    failedResolution: "consume",
-    provenance: {
-      referenceName: "Shield",
-      sourceIds: ["G1"],
-    },
-    admission: "priority-prototype",
-    playable: false,
+    provenance: { referenceName: "Shield", sourceIds: ["G1"] },
   },
   "shared-supply": {
-    id: "shared-supply",
-    nameKey: "contest.trump.shared-supply.name",
-    descriptionKey: "contest.trump.shared-supply.description",
     tags: ["both", "resource"],
-    conditions: [],
-    cost: null,
-    onPlay: [
-      {
-        kind: "grantTrump",
-        target: "self",
-        count: 1,
-      },
-      {
-        kind: "grantTrump",
-        target: "opponent",
-        count: 1,
-      },
-    ],
-    table: null,
-    failedResolution: "consume",
-    provenance: {
-      referenceName: "Happiness",
-      sourceIds: ["G2"],
-    },
-    admission: "extended-experiment",
-    playable: false,
+    provenance: { referenceName: "Happiness", sourceIds: ["G2"] },
   },
   "resource-swap": {
-    id: "resource-swap",
-    nameKey: "contest.trump.resource-swap.name",
-    descriptionKey: "contest.trump.resource-swap.description",
     tags: ["buff", "resource"],
-    conditions: [
-      {
-        kind: "hasOtherHandCards",
-        count: 1,
-      },
-    ],
-    cost: {
-      discardOtherHandCards: 1,
-      selection: "owner-choice",
-    },
-    onPlay: [
-      {
-        kind: "grantTrump",
-        target: "self",
-        count: 2,
-      },
-    ],
-    table: null,
-    failedResolution: "consume",
-    provenance: {
-      referenceName: "Trump Switch",
-      sourceIds: ["G2"],
-    },
-    admission: "extended-experiment",
-    playable: false,
+    provenance: { referenceName: "Trump Switch", sourceIds: ["G2"] },
   },
   harvest: {
-    id: "harvest",
-    nameKey: "contest.trump.harvest.name",
-    descriptionKey: "contest.trump.harvest.description",
     tags: ["buff", "resource"],
-    conditions: [],
-    cost: null,
-    onPlay: [],
-    table: {
-      effects: [
-        {
-          kind: "grantAfterOtherTrumpConsumed",
-          count: 1,
-          charges: 2,
-          excludeSelf: true,
-          grantDoesNotTrigger: true,
-          leaveOnExhaustion: true,
-        },
-      ],
-      expires: "round-end",
-      stacking: "independent",
-    },
-    failedResolution: "consume",
-    provenance: {
-      referenceName: "Harvest",
-      sourceIds: ["G2"],
-    },
-    admission: "extended-experiment",
-    playable: false,
+    provenance: { referenceName: "Harvest", sourceIds: ["G2"] },
   },
-} as const satisfies Record<TrumpId, TrumpDefinition>);
+  symbiosis: {
+    tags: ["both", "rule"],
+    provenance: { referenceName: "symbiosis", sourceIds: ["REQ-021"] },
+  },
+  "double-hidden": {
+    tags: ["debuff", "number"],
+    provenance: { referenceName: "double-hidden", sourceIds: ["REQ-021"] },
+  },
+  bandwagon: {
+    tags: ["buff", "resource"],
+    provenance: { referenceName: "bandwagon", sourceIds: ["REQ-021"] },
+  },
+  normalize: {
+    tags: ["buff", "counter", "number"],
+    provenance: { referenceName: "normalize", sourceIds: ["REQ-021"] },
+  },
+  hush: {
+    tags: ["debuff", "rule"],
+    provenance: { referenceName: "hush", sourceIds: ["REQ-021"] },
+  },
+  embargo: {
+    tags: ["debuff", "resource"],
+    provenance: { referenceName: "embargo", sourceIds: ["REQ-021"] },
+  },
+  "full-shield": {
+    tags: ["buff", "defense", "score"],
+    provenance: { referenceName: "full-shield", sourceIds: ["REQ-021"] },
+  },
+  "last-stand": {
+    tags: ["buff", "score"],
+    provenance: { referenceName: "last-stand", sourceIds: ["REQ-021"] },
+  },
+  ceasefire: {
+    tags: ["both", "score"],
+    provenance: { referenceName: "ceasefire", sourceIds: ["REQ-021"] },
+  },
+  "risk-pledge": {
+    tags: ["both", "score"],
+    provenance: { referenceName: "risk-pledge", sourceIds: ["REQ-021"] },
+  },
+  "forced-draw": {
+    tags: ["debuff", "number"],
+    provenance: { referenceName: "forced-draw", sourceIds: ["REQ-021"] },
+  },
+  redraw: {
+    tags: ["buff", "number"],
+    provenance: { referenceName: "redraw", sourceIds: ["REQ-021"] },
+  },
+  scry: {
+    tags: ["buff", "number"],
+    provenance: { referenceName: "scry", sourceIds: ["REQ-021"] },
+  },
+  "deck-rotate": {
+    tags: ["both", "number"],
+    provenance: { referenceName: "deck-rotate", sourceIds: ["REQ-021"] },
+  },
+  trim: {
+    tags: ["buff", "number"],
+    provenance: { referenceName: "trim", sourceIds: ["REQ-021"] },
+  },
+  "reveal-self": {
+    tags: ["both", "resource"],
+    provenance: { referenceName: "reveal-self", sourceIds: ["REQ-021"] },
+  },
+  "reveal-opponent": {
+    tags: ["debuff", "number"],
+    provenance: { referenceName: "reveal-opponent", sourceIds: ["REQ-021"] },
+  },
+  "target-lock": {
+    tags: ["both", "rule"],
+    provenance: { referenceName: "target-lock", sourceIds: ["REQ-021"] },
+  },
+  "table-exchange": {
+    tags: ["both", "counter"],
+    provenance: { referenceName: "table-exchange", sourceIds: ["REQ-021"] },
+  },
+  suppress: {
+    tags: ["debuff", "counter"],
+    provenance: { referenceName: "suppress", sourceIds: ["REQ-021"] },
+  },
+  decommission: {
+    tags: ["buff", "resource"],
+    provenance: { referenceName: "decommission", sourceIds: ["REQ-021"] },
+  },
+  "banish-copy": {
+    tags: ["debuff", "resource"],
+    provenance: { referenceName: "banish-copy", sourceIds: ["REQ-021"] },
+  },
+  "heavy-hit": {
+    tags: ["debuff", "number"],
+    provenance: { referenceName: "heavy-hit", sourceIds: ["REQ-021"] },
+  },
+  "face-lighten": {
+    tags: ["buff", "number"],
+    provenance: { referenceName: "face-lighten", sourceIds: ["REQ-021"] },
+  },
+  "face-burden": {
+    tags: ["debuff", "number"],
+    provenance: { referenceName: "face-burden", sourceIds: ["REQ-021"] },
+  },
+  resonance: {
+    tags: ["both", "rule"],
+    provenance: { referenceName: "resonance", sourceIds: ["REQ-021"] },
+  },
+  "supply-cache": {
+    tags: ["buff", "resource"],
+    provenance: { referenceName: "supply-cache", sourceIds: ["REQ-021"] },
+  },
+  "life-trade": {
+    tags: ["both", "resource"],
+    provenance: { referenceName: "life-trade", sourceIds: ["REQ-021"] },
+  },
+  "purge-hand": {
+    tags: ["buff", "resource"],
+    provenance: { referenceName: "purge-hand", sourceIds: ["REQ-021"] },
+  },
+  "safe-hit": {
+    tags: ["buff", "defense"],
+    provenance: { referenceName: "safe-hit", sourceIds: ["REQ-021"] },
+  },
+  regret: {
+    tags: ["both", "counter"],
+    provenance: { referenceName: "regret", sourceIds: ["REQ-022"] },
+  },
+  "skill-revival": {
+    tags: ["buff", "resource"],
+    provenance: { referenceName: "skill-revival", sourceIds: ["REQ-022"] },
+  },
+  "sudden-death": {
+    tags: ["both", "rule"],
+    provenance: { referenceName: "sudden-death", sourceIds: ["REQ-022"] },
+  },
+} as const satisfies Record<
+  TrumpId,
+  {
+    readonly tags: readonly TrumpTag[];
+    readonly provenance: {
+      readonly referenceName: string;
+      readonly sourceIds: readonly SourceId[];
+    };
+  }
+>;
 
+export const TRUMP_CATALOG: Readonly<Record<TrumpId, TrumpDefinition>> =
+  freezeData(
+    Object.fromEntries(
+      TRUMP_IDS.map((id): [TrumpId, TrumpDefinition] => [
+        id,
+        {
+          id,
+          nameKey: `contest.trump.${id}.name`,
+          descriptionKey: `contest.trump.${id}.description`,
+          ...METADATA[id],
+          admission: isAdmittedTrumpId(id) ? "admitted" : "pending-skill",
+          playable: isAdmittedTrumpId(id),
+          execution: isAdmittedTrumpId(id)
+            ? ADMITTED_TRUMP_DEFINITIONS[id]
+            : null,
+        } satisfies TrumpDefinition,
+      ]),
+    ) as Record<TrumpId, TrumpDefinition>,
+  );
 export function findTrump(value: unknown): TrumpDefinition | undefined {
   return isTrumpId(value) ? TRUMP_CATALOG[value] : undefined;
 }

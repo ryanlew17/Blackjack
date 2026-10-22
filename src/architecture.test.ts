@@ -97,8 +97,18 @@ describe("module architecture", () => {
       if (visited.has(file)) continue;
       visited.add(file);
       expect(file).not.toMatch(
-        /\/contest\/(codex|presets|trumps)\/|\/prototype[/.]|\.test\.|\/testHelpers\./,
+        /\/contest\/codex\/|\/prototype[/.]|\.test\.|\/(?:[^/]*TestHelpers|testHelpers)\./,
       );
+      // @req REQ-2026-025: exact admission; experimental presets/catalog/fixtures stay excluded.
+      if (/\/contest\/(presets|trumps)\//.test(file))
+        expect([
+          "./domain/contest/presets/s2.ts",
+          "./domain/contest/presets/resources.ts",
+          "./domain/contest/trumps/admitted.ts",
+          "./domain/contest/trumps/ids.ts",
+          "./domain/contest/trumps/numberDefinitions.ts",
+          "./domain/contest/trumps/interactionDefinitions.ts",
+        ]).toContain(file);
       // @req REQ-2026-020: admit only the completed no-trump baseline.
       if (file.includes("/contest/ai/"))
         expect(file).toBe("./domain/contest/ai/policy.ts");
@@ -144,11 +154,13 @@ describe("module architecture", () => {
     expect(visited).toContain("./application/contest/useContest.ts");
     expect(visited).toContain("./application/contest/controller.ts");
     expect(visited).toContain("./domain/contest/ai/policy.ts");
+    expect(visited).toContain("./domain/contest/presets/s2.ts");
+    expect(visited).toContain("./domain/contest/trumps/admitted.ts");
     expect(visited).toContain("./presentation/shell/ModeSelect.tsx");
     expect(visited).toContain("./presentation/contest/table/ContestTable.tsx");
   });
-  // @req REQ-2026-021: the expanded plan must not imply runtime admission.
-  it("keeps the expanded design distinct from unadmitted runtime candidates", async () => {
+  // @req REQ-2026-021/025: planned identities and explicit execution admission agree.
+  it("admits the 51 planned definitions and two additions while reserving Skill Revival", async () => {
     const { TRUMP_CATALOG } = await import("./domain/contest/trumps/catalog");
     const { isTrumpId, TRUMP_IDS } =
       await import("./domain/contest/trumps/ids");
@@ -166,15 +178,21 @@ describe("module architecture", () => {
     const ids = rows.map((row) => row[0].slice(1, -1));
     expect(ids).toHaveLength(51);
     expect(new Set(ids).size).toBe(ids.length);
-    expect(ids.slice(0, TRUMP_IDS.length)).toEqual([...TRUMP_IDS]);
+    expect(ids).toEqual(TRUMP_IDS.slice(0, 51));
+    expect(TRUMP_IDS.slice(51)).toEqual([
+      "regret",
+      "skill-revival",
+      "sudden-death",
+    ]);
+    expect(TRUMP_CATALOG["skill-revival"].playable).toBe(false);
     expect(research).not.toContain("| 最早出现 |");
     for (const row of rows) {
       const id = row[0].slice(1, -1);
       const copies = row[3].split("/").map(Number);
       expect(copies).toHaveLength(5);
       expect(copies.every((n) => Number.isSafeInteger(n) && n >= 0)).toBe(true);
-      if (isTrumpId(id)) expect(TRUMP_CATALOG[id].playable).toBe(false);
-      else expect(Object.hasOwn(TRUMP_CATALOG, id)).toBe(false);
+      expect(isTrumpId(id)).toBe(true);
+      if (isTrumpId(id)) expect(TRUMP_CATALOG[id].playable).toBe(true);
     }
   });
 });

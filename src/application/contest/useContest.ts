@@ -9,11 +9,11 @@ import {
 import type { Settings } from "../../infrastructure/classic/save";
 import { playSound, unlockAudio } from "../../infrastructure/shared/audio";
 import { createContestController } from "./controller";
-import type { ContestAction, ContestControllerOptions } from "./types";
+import type { ContestInput, ContestControllerOptions } from "./types";
 
 export interface UseContestOptions extends Pick<
   ContestControllerOptions,
-  "random" | "opponent"
+  "random" | "opponent" | "preset"
 > {
   readonly settings: Pick<Settings, "motion" | "muted" | "volume">;
   readonly systemReduced?: boolean;
@@ -24,6 +24,7 @@ export function useContest({
   systemReduced = false,
   random,
   opponent,
+  preset,
 }: UseContestOptions) {
   const preferences = useRef(settings);
   preferences.current = settings;
@@ -34,6 +35,7 @@ export function useContest({
     createContestController({
       random,
       opponent,
+      preset,
       reducedMotion: reduced,
       onEvent(event) {
         const pref = preferences.current;
@@ -76,7 +78,7 @@ export function useContest({
     controller.restart();
   }, [controller]);
   const send = useCallback(
-    (type: ContestAction) => {
+    (type: ContestInput) => {
       unlockAudio();
       return controller.send(type);
     },

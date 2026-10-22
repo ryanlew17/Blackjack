@@ -1,5 +1,5 @@
 # 竞赛预设
 
-@req REQ-2026-012 / REQ-2026-013
+`resources.ts` 管五档数量及显式准入过滤；`s2.ts` 提供冻结的标准开发预设，由应用显式选择。`experimental.ts` 仅保留历史 F1/P0 数据，不进入生产依赖图。
 
-experimental.ts 仅存 F1/P0 研究数据，所有项尚未准入。S3 后续建立 validated.ts 管已验证五档预设；S5 增加 custom.ts 的所选卡池与依赖验证。不能将 experimental 当成正式比赛默认值，开场冻结规则快照由后续引擎／应用层完成。
+开发值不代表五档已完成对抗平衡；进行中的 Match 始终使用自己的冻结快照。范围和约束见 [竞赛规则](../../../../docs/design/contest-rules.md)。

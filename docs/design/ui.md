@@ -7,7 +7,7 @@
 > 关联需求：[REQ-2026-009](../requirements/archive/REQ-2026-009-css-patch-consolidation.md)
 > 关联需求：[REQ-2026-010](../requirements/archive/REQ-2026-010-touch-action-hints.md)
 > 关联需求：[REQ-2026-011](../requirements/archive/REQ-2026-011-interaction-semantics.md)
-> 最后更新：2026-10-21
+> 最后更新：2026-10-22
 > 来源：2026-09-22 重构定稿（App.tsx 拆分为 components/）
 
 ## 1. 组件结构
@@ -95,3 +95,7 @@ ContestStatus 新增双语「正在回放行动」状态，发牌、思考、行
 双生花在对方Turn稳定命令边界提供发动／放行入口，不能靠抢点动画间隙；选择取消、Esc、面板暂停、旧窗口恢复按既有协调机制失效，不自动提交。球形按钮仍为原生可聚焦按钮，Tab／Enter／Space、中英、减少动态、784×803／320×900和短视口主操作可达均需实际浏览器证据。
 
 S4图鉴单开主动技页／页签，介绍技能条件和五档场次数；不套用道具“遭遇未知身份”的三态，也不把技能ID写入道具图鉴字段。当前没有新增页面、素材、i18n文案或浏览器验收记录。
+
+## REQ-025 目录文案与界面边界
+
+两字典已补齐54组道具名称／说明；回仙明确标记待主动技阶段准入，旧候选效果元数据收敛为唯一执行引用。当前App继续无道具竞赛，未加入只有领取却不能使用的流程；手牌、留场、目标／费用选择与反馈由026接线。实际迁移兼容性检查见 [REQ-025](../requirements/archive/REQ-2026-025-contest-trump-admission-and-coordination.md)，不将内部Hook探针当成道具页面已经完成。

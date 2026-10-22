@@ -15,7 +15,7 @@
 - **发布前**：完整运行下列四项，并补做 §2 浏览器验收。
 
 ```bash
-npm test              # Vitest：当前483项（原362＋REQ-024积分33、补给／封锁44、隐私／撤销44；23文件）
+npm test              # Vitest：当前587项（26文件；REQ-025后）
 npm run typecheck     # 严格 TypeScript
 npm run format:check  # Prettier（源码、docs、双语 README、AGENTS.md 等；启动脚本与 LICENSE 不在其列）
 npm run build         # tsc -b + vite build → dist/
@@ -258,3 +258,13 @@ S1容量复查在本批给出不适用条件及满桌混合／目标腾格反例
 四项门禁全绿：`npm test` **483/483（23文件）**、typecheck、format:check、build（单文件 500.77 kB／gzip 156.50 kB）。产物程序化校验：`dist/index.html` 的 CSP meta 唯一且位于所有脚本标签之前、`script-src` 中的 `sha256-…` 与内联脚本规范化后逐字节一致、无 `data-build-csp` 占位符残留。Playwright CLI／Chromium（/tmp/pwtest 重装 1.63.0，复用本机 ms-playwright 浏览器缓存）三场景冒烟 10/10：生产 preview（4173）、`file://` 直接打开 dist、dev 服务器（5173，DOM 确认 dev 策略含脚本哈希与 `ws://127.0.0.1:*` 放行）各完成首页→进入经典→下注→发牌→行动→结算→下一局整手，全程零 console／页面错误；截图在 `output/playwright/csp-smoke/`。随机发牌的即时结算（天然 Blackjack）分支经重试覆盖；本批不触发发布矩阵。
 
 同日文档精简（纯文档改动，仅运行格式与链接检查）：双语 README 重写为面向用户，开发过程、里程碑、验收历史、目录树与技术栈表移出（均已有 docs 归属：roadmap／prd／architecture／ADR-002／需求归档）；AGENTS.md 精简为路由＋硬约束＋命令，CI 与 CSP 细节移入 [architecture.md](./architecture.md) §4，Quirks 改为指向各自设计文档的既有记录。
+
+## REQ-025 准入／接线与迁移额外检查（2026-10-22，自审归档）
+
+[REQ-025](./requirements/archive/REQ-2026-025-contest-trump-admission-and-coordination.md)完成53可执行卡精确准入、54卡目录／双语、冻结标准开发预设及结构化目标／费用；正常页面在026接用卡界面前继续无道具。全量**587/587（26文件）**、typecheck、format及45领域源码ES2022-only纯度通过；新增准入84项、应用26项、独立随机2项，旧候选结构测试随唯一执行目录收敛，经典／023／024套件继续回归。最终23项留场逐卡满桌、四回放阶段×四取消方式、强制旧回调、闲置目标失效、真实双方多卡、资源BO5和Storage全部方法／length零调用均通过。
+
+用户要求仅针对本次依赖／Node迁移额外验证：Node26.12.1／npm12.2.1干净npm ci与审计0漏洞，生产build **520,671 bytes／gzip162.28kB**、最终CSP哈希校验通过；不放行被npm12拦截的安装脚本，实际esbuild／Vite仍正常。Chromium156与WebKit26.6生产preview、Chromium dev完成竞赛一Round、揭牌／暂停／刷新放弃、经典动画中刷新与真实保存导入导出；中英、784×803／320×900、减少动态／焦点／Esc、无横向溢出，零控制台／页面错误。隔离真实React StrictMode Hook探针覆盖S2多卡补给、先提交、可见性／暂停取消、HMR保留状态及卸载／再挂载，Storage零调用；不是道具页面已实现的证据。
+
+完整证据／产物哈希／版本及限制统一见归档需求。本项不是发布：初次自审时CLI限制导致file://尚缺通过证据（同日补验见下），未重跑Firefox、LAN、真机、完整浏览器BO5、Node24或听感；未执行的检查不被记为通过，也不将本次额外检查变成后续每任务默认全矩阵。后续026–028及发布按各自适用门槛继续验证。
+
+同日补验（ZCode）：通过Playwright Node库补齐CLI未覆盖的本地文件检查，干净目录拷贝`dist/`后`file://`直开——Chromium全流程17项（竞赛一回合揭牌积分／刷新丢弃／经典动画中刷新精确恢复1,900／真实导出导入往返／中文与784×803、320×900无横向溢出）与WebKit首页、竞赛一回合、零错误3项均通过（合计20项），零console／页面错误；Firefox、LAN、真机、完整浏览器BO5、Node24、听感仍未覆盖。证据见[REQ-025](./requirements/archive/REQ-2026-025-contest-trump-admission-and-coordination.md)补验小节。

@@ -3,7 +3,7 @@
 > 适用范围：经典 useGame 的权威状态、队列、恢复与冲突；竞赛 controller/useContest 的内存提交、投影回放、无道具 AI 与取消。
 > 何时读取：改经典／竞赛协调、动画节奏、内存或持久化提交、取消及冲突处理前。
 > 关联需求：REQ-2026-003–006、REQ-2026-017。
-> 最后更新：2026-10-21
+> 最后更新：2026-10-22
 > 来源：2026-09-22 重构定稿（effectId 单调计数器）
 
 以下 §1–5 为经典模式，竞赛见 §6。
@@ -60,3 +60,13 @@ useContest 通过参数只读既有设置中的 motion、muted、volume，复用
 同 Turn 的每张道具经同一 transitionMatch 先提交完整终态，再回放 human 投影，busy 期间拒绝重复输入。每段回放完读取权威行动方：用卡后恢复同一方，Hit／Stay 后才换方；显式受控 AI 由测试提交命令，不调用自动策略。正常策略仍只从观察和合法 Hit／Stay 决策，即使内部注入手牌也不会主动用卡。
 
 原回放节奏未改：发牌／Hit 220ms、其余 300ms、减少动态 35ms，AI 思考 300ms。原型事件沿用其余事件节奏；正式音效／道具动效尚未接生产。真实浏览器复核思考→行动回放→玩家可操作各约 302ms，保持原来的自然节奏。页面现在区分发牌、行动回放、思考与揭牌状态，按钮可用性即时呈现，避免用禁用透明度渐变模糊输入锁。
+
+## 8. 正式道具接线与输入失效（REQ-025）
+
+生产controller支持显式S2标准开发预设，useContest透传 `preset` 和三路真实随机；正常App不选择该预设，026接可用页面后再启用。公开 `trumpCommands` 来自权威human观察的 `legalTrumpCommands`，携带instanceId、必要targetId／ownTargetId／definitionId／costIds及当前inputId；send强制human身份并交由同一transitionMatch校验，不暴露完整状态。
+
+用卡及其补给／触发全部同步提交终态，之后逐帧回放；每张卡回放后恢复同一行动方，Hit／Stay才结束Turn。busy／paused／非行动方及非法目标、费用零副作用，不排队保存待提交输入。每次成功提交、pause、skip、exit、restart更新取消代次，旧inputId不再可用；恢复后须取得新的结构化选择，不自动提交旧目标。
+
+回到可见时调用skipAnimations：回放直接落定终态，思考中的旧回调作废并从权威行动方重新等待决策，闲置时也使目标选择失效；paused仍保持暂停。每个回调检查取消代次，策略返回后再次检查，覆盖策略同步暂停／退出／重开。默认策略继续只接观察和合法Hit／Stay，不主动使用道具。
+
+真实客户端Hook的StrictMode挂载、连续用卡／补给、暂停恢复、可见性分发和卸载／再挂载在本次额外迁移检查覆盖；证据与适用边界统一见 [REQ-025](../requirements/archive/REQ-2026-025-contest-trump-admission-and-coordination.md)。经典队列与持久化顺序不变。

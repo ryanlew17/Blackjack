@@ -193,7 +193,7 @@ export const CANDIDATE_AVAILABILITY = freezeData({
       nightmare: 1,
     },
   },
-} as const satisfies Record<TrumpId, CandidateAvailability>);
+} as const satisfies Partial<Record<TrumpId, CandidateAvailability>>);
 
 export const EXPERIMENTAL_F1_P0 = freezeData({
   id: "research-f1-p0",

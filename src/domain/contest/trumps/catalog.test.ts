@@ -1,30 +1,46 @@
-// @req REQ-2026-013 / REQ-2026-021
+// @req REQ-2026-013/025: catalog identity, provenance and execution admission.
 import { describe, expect, it } from "vitest";
 import { TRUMP_CATALOG, findTrump } from "./catalog";
 import { TRUMP_IDS, isTrumpId } from "./ids";
-import type { TrumpDefinition } from "./types";
+import { ADMITTED_TRUMP_DEFINITIONS, ADMITTED_TRUMP_IDS } from "./admitted";
+import { NUMBER_TRUMP_DEFINITIONS } from "./numberDefinitions";
+import { INTERACTION_TRUMP_DEFINITIONS } from "./interactionDefinitions";
 import { DIFFICULTIES } from "../types";
 import {
   CANDIDATE_AVAILABILITY,
   EXPERIMENTAL_F1_P0,
 } from "../presets/experimental";
+import { STOCK_QUANTITIES, createResourcePreset } from "../presets/resources";
+import { S2_DEVELOPMENT_PRESET } from "../presets/s2";
 
-describe("candidate data integrity", () => {
-  it("has 21 unique, queryable, non-playable definitions with distinct copy keys", () => {
-    expect(TRUMP_IDS).toHaveLength(21);
-    expect(new Set(TRUMP_IDS).size).toBe(21);
+describe("registered catalog and explicit admission", () => {
+  it("registers 54 identities and admits precisely the 53 executed definitions", () => {
+    expect(TRUMP_IDS).toHaveLength(54);
+    expect(new Set(TRUMP_IDS).size).toBe(54);
     expect(Object.keys(TRUMP_CATALOG)).toEqual([...TRUMP_IDS]);
+    expect(ADMITTED_TRUMP_IDS).toHaveLength(53);
+    expect(new Set(Object.keys(ADMITTED_TRUMP_DEFINITIONS))).toEqual(
+      new Set(ADMITTED_TRUMP_IDS),
+    );
     for (const id of TRUMP_IDS) {
-      const card: TrumpDefinition = TRUMP_CATALOG[id];
-      expect(findTrump(id)).toBe(card);
+      const card = findTrump(id)!;
+      expect(card).toBe(TRUMP_CATALOG[id]);
       expect(card.id).toBe(id);
       expect(card.nameKey).toBe(`contest.trump.${id}.name`);
       expect(card.descriptionKey).toBe(`contest.trump.${id}.description`);
-      expect(card.playable).toBe(false);
-      expect(card.provenance.sourceIds.length).toBeGreaterThan(0);
-      expect(
-        card.onPlay.length + (card.table?.effects.length ?? 0),
-      ).toBeGreaterThan(0);
+      expect(card.playable).toBe(id !== "skill-revival");
+      expect(card.admission).toBe(
+        id === "skill-revival" ? "pending-skill" : "admitted",
+      );
+      if (id === "skill-revival") expect(card.execution).toBeNull();
+      else expect(card.execution).toBe(ADMITTED_TRUMP_DEFINITIONS[id]);
+    }
+    // These references are the existing 023/024 implementation, never translated copies.
+    for (const [id, execution] of Object.entries({
+      ...NUMBER_TRUMP_DEFINITIONS,
+      ...INTERACTION_TRUMP_DEFINITIONS,
+    })) {
+      expect(findTrump(id)!.execution).toBe(execution);
     }
   });
   it.each(["__proto__", "constructor", "draw-1", "draw-11", "", null, 2])(
@@ -34,103 +50,64 @@ describe("candidate data integrity", () => {
       expect(findTrump(value)).toBeUndefined();
     },
   );
-  it("keeps all nested catalog and preset data immutable", () => {
+  it("preserves old references and labels project designs with their actual requirement sources", () => {
+    expect(findTrump("draw-2")!.provenance).toEqual({
+      referenceName: "2 Card",
+      sourceIds: ["W2"],
+    });
+    for (const id of TRUMP_IDS.slice(21)) {
+      expect(findTrump(id)!.provenance.sourceIds).toEqual([
+        ["regret", "skill-revival", "sudden-death"].includes(id)
+          ? "REQ-022"
+          : "REQ-021",
+      ]);
+    }
+  });
+  it("keeps the full catalog, executions, quantities and development preset deeply frozen", () => {
     const verify = (value: unknown) => {
       if (value && typeof value === "object") {
         expect(Object.isFrozen(value)).toBe(true);
         Object.values(value).forEach(verify);
       }
     };
-    verify(TRUMP_CATALOG);
-    verify(CANDIDATE_AVAILABILITY);
-    verify(EXPERIMENTAL_F1_P0);
+    [
+      TRUMP_CATALOG,
+      ADMITTED_TRUMP_IDS,
+      ADMITTED_TRUMP_DEFINITIONS,
+      STOCK_QUANTITIES,
+      S2_DEVELOPMENT_PRESET,
+      EXPERIMENTAL_F1_P0,
+    ].forEach(verify);
     expect(() => {
-      (TRUMP_CATALOG.pressure as unknown as { playable: boolean }).playable =
-        true;
+      (findTrump("pressure") as { playable: boolean }).playable = false;
     }).toThrow();
   });
-  it("uses only per-difficulty copy limits and preserves the legacy research totals", () => {
-    const totals = DIFFICULTIES.map((d) =>
-      TRUMP_IDS.reduce(
-        (sum, id) => sum + CANDIDATE_AVAILABILITY[id].copiesPerSide[d],
-        0,
+  it("uses current quantities for admission and retains the isolated historical F1/P0 values", () => {
+    expect(
+      DIFFICULTIES.map((d) =>
+        Object.values(CANDIDATE_AVAILABILITY).reduce(
+          (n, c) => n + c.copiesPerSide[d],
+          0,
+        ),
       ),
+    ).toEqual([16, 22, 26, 29, 30]);
+    expect(
+      DIFFICULTIES.map((d) =>
+        Object.values(createResourcePreset(d, ADMITTED_TRUMP_IDS).stock).reduce(
+          (n, c) => n + c,
+          0,
+        ),
+      ),
+    ).toEqual([39, 61, 73, 75, 77]);
+    expect(Object.keys(STOCK_QUANTITIES)).toEqual([...TRUMP_IDS]);
+    expect(S2_DEVELOPMENT_PRESET.round.trumps.resources).toEqual(
+      createResourcePreset("standard", ADMITTED_TRUMP_IDS),
     );
-    expect(totals).toEqual([16, 22, 26, 29, 30]);
-    for (const id of TRUMP_IDS) {
-      const data = CANDIDATE_AVAILABILITY[id];
-      expect(data).not.toHaveProperty("earliestDifficulty");
-      expect(Object.values(data.copiesPerSide).some((count) => count > 0)).toBe(
-        true,
-      );
-      for (const count of Object.values(data.copiesPerSide)) {
-        expect(Number.isSafeInteger(count) && count >= 0).toBe(true);
-      }
-    }
-  });
-  it.each([2, 3, 4, 5, 6, 7])(
-    "describes draw %i without a hidden-card precondition",
-    (n) => {
-      const card = findTrump(`draw-${n}`)!;
-      expect(card.conditions).toEqual([]);
-      expect(card.onPlay).toEqual([{ kind: "drawNumber", value: n }]);
-      expect(card.failedResolution).toBe("consume");
-      expect(card.table).toBeNull();
-    },
-  );
-  it("protects face-down cards and expresses both sides of an exchange", () => {
-    expect(TRUMP_CATALOG.return.conditions).toEqual([
-      { kind: "hasFaceUp", target: "self" },
-    ]);
-    expect(TRUMP_CATALOG.remove.conditions).toEqual([
-      { kind: "hasFaceUp", target: "opponent" },
-    ]);
-    expect(TRUMP_CATALOG.exchange.conditions).toEqual([
-      { kind: "hasFaceUp", target: "self" },
-      { kind: "hasFaceUp", target: "opponent" },
-    ]);
-    expect(TRUMP_CATALOG.return.onPlay[0].target).toBe("self");
-    expect(TRUMP_CATALOG.remove.onPlay[0].target).toBe("opponent");
-  });
-  it("distinguishes mixed effects, defensive direction and target replacement", () => {
-    const card = TRUMP_CATALOG["pressure-supply"];
-    expect(card.onPlay).toEqual([
-      { kind: "grantTrump", target: "self", count: 1 },
-    ]);
-    expect(card.table.effects).toEqual([{ kind: "winBonus", amount: 1 }]);
-    expect(TRUMP_CATALOG.shield.table.effects).toEqual([
-      { kind: "cancelOpponentBonusOnLoss", amount: 1 },
-    ]);
-    for (const id of ["target-17", "target-24", "target-27"] as const) {
-      expect(TRUMP_CATALOG[id].table.stacking).toBe(
-        "replace-global-point-target",
-      );
-      expect(TRUMP_CATALOG[id].table.effects[0].value).toBe(
-        Number(id.slice(7)),
-      );
-    }
-  });
-  it("keeps resource costs, grant order and finite trigger charges explicit", () => {
-    expect(TRUMP_CATALOG["resource-swap"].cost).toEqual({
-      discardOtherHandCards: 1,
-      selection: "owner-choice",
-    });
-    expect(TRUMP_CATALOG["resource-swap"].conditions).toEqual([
-      { kind: "hasOtherHandCards", count: 1 },
-    ]);
-    expect(TRUMP_CATALOG["shared-supply"].onPlay.map((e) => e.target)).toEqual([
-      "self",
-      "opponent",
-    ]);
-    expect(TRUMP_CATALOG.harvest.table.effects[0]).toMatchObject({
-      charges: 2,
-      excludeSelf: true,
-      grantDoesNotTrigger: true,
-      leaveOnExhaustion: true,
-    });
-    expect(EXPERIMENTAL_F1_P0.resource.model).toBe(
-      "finite-per-side-no-recycle",
-    );
+    expect(
+      S2_DEVELOPMENT_PRESET.round.trumps.resources.stock,
+    ).not.toHaveProperty("skill-revival");
     expect(EXPERIMENTAL_F1_P0.playable).toBe(false);
+    for (const card of Object.values(TRUMP_CATALOG))
+      expect(card).not.toHaveProperty("earliestDifficulty");
   });
 });

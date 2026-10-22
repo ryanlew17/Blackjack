@@ -1,7 +1,8 @@
-// @req REQ-2026-017/019: private authority and shared replay for normal/scripted consumers.
+// @req REQ-2026-017/019/025: private authority and shared replay for normal/scripted consumers.
 import {
   createMatch,
   legalMatchActions,
+  legalTrumpCommands,
   observeMatch,
   projectMatchTransition,
   transitionMatch,
@@ -12,6 +13,8 @@ import {
   type RoundRules,
   type TrumpSetup,
 } from "../../domain/contest/engine";
+import { freezeData } from "../../domain/contest/immutable";
+import { createContestRandomSources } from "./random";
 import { baselinePolicy } from "../../domain/contest/ai/policy";
 import type {
   ContestControllerOptions,
@@ -20,7 +23,10 @@ import type {
 } from "./types";
 
 import type { PlayerId } from "../../domain/contest/types";
-export interface ContestCoordinatorOptions extends ContestControllerOptions {
+export interface ContestCoordinatorOptions extends Omit<
+  ContestControllerOptions,
+  "preset"
+> {
   readonly roundRules?: RoundRules;
   readonly trumpSetup?: TrumpSetup;
   readonly controlledPlayers?: readonly PlayerId[];
@@ -28,7 +34,11 @@ export interface ContestCoordinatorOptions extends ContestControllerOptions {
 export function createContestCoordinator(
   options: ContestCoordinatorOptions = {},
 ) {
-  const random = options.random ?? Math.random;
+  const random =
+    options.random ??
+    (options.roundRules?.trumps?.resources
+      ? createContestRandomSources()
+      : Math.random);
   const opponent = options.opponent ?? baselinePolicy;
   const controlled = options.controlledPlayers ?? ["human"];
   const listeners = new Set<() => void>();
@@ -47,11 +57,14 @@ export function createContestCoordinator(
     paused: false,
     event: null,
     effectId: 0,
+    trumpCommands: Object.freeze([]),
     actions: Object.freeze([]),
   });
 
   function publish(match = view.match, event: MatchEventView | null = null) {
     const busy = replaying || thinking;
+    const actionable =
+      current && !busy && !paused ? observeMatch(current, "human") : null;
     view = Object.freeze({
       match,
       busy,
@@ -60,8 +73,16 @@ export function createContestCoordinator(
       event,
       effectId,
       actions: Object.freeze(
-        current && !busy && !paused
-          ? [...legalMatchActions(observeMatch(current, "human"))]
+        actionable ? [...legalMatchActions(actionable)] : [],
+      ),
+      trumpCommands: freezeData(
+        actionable
+          ? legalTrumpCommands(actionable.round).map(
+              ({ player: _player, ...command }) => ({
+                ...command,
+                inputId: generation,
+              }),
+            )
           : [],
       ),
     });
@@ -103,7 +124,10 @@ export function createContestCoordinator(
         (action): action is OpponentAction =>
           action === "Hit" || action === "Stay",
       );
+      const expected = current;
       const type = opponent(observation, actions);
+      // An injected policy can synchronously pause/exit/restart. Its old result is then stale.
+      if (id !== generation || current !== expected || paused) return;
       const result = transitionMatch(
         current,
         {
@@ -202,7 +226,8 @@ export function createContestCoordinator(
       return true;
     },
     skipAnimations() {
-      if (!replaying) return;
+      if (!current) return;
+      // Visibility/skip also invalidates idle target selections and pending AI decisions.
       cancelPending();
       ready();
     },

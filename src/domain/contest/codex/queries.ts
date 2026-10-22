@@ -1,5 +1,7 @@
-// @req REQ-2026-013: stable catalog order; locked entries omit card metadata.
-import { CANDIDATE_AVAILABILITY } from "../presets/experimental";
+// @req REQ-2026-013/025: stable catalog order; locked entries omit card metadata.
+import { STOCK_QUANTITIES } from "../presets/resources";
+import { DIFFICULTIES } from "../types";
+import { freezeData } from "../immutable";
 import { TRUMP_CATALOG } from "../trumps/catalog";
 import { TRUMP_IDS, type TrumpId } from "../trumps/ids";
 import type { CandidateAvailability, TrumpDefinition } from "../trumps/types";
@@ -21,7 +23,11 @@ export function listCodexItems(progress: CodexProgress): readonly CodexItem[] {
       id,
       status: entry.viewed ? "viewed" : "new",
       definition: TRUMP_CATALOG[id],
-      availability: CANDIDATE_AVAILABILITY[id],
+      availability: freezeData({
+        copiesPerSide: Object.fromEntries(
+          DIFFICULTIES.map((d, i) => [d, STOCK_QUANTITIES[id][i]]),
+        ) as CandidateAvailability["copiesPerSide"],
+      }),
     };
   });
 }
