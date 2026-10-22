@@ -2,89 +2,26 @@
 
 **English** | [简体中文](./README.zh-CN.md)
 
-A local-first, single-player Blackjack game for the browser, built with **React + TypeScript + Vite**. The green-felt **Classic Mode** brings animated cards and chips, optional sound, and virtual-chip wagers to desktop and mobile screens. From the home screen, choose Classic or **Contest Mode**, a shared-number-deck duel inspired by _Resident Evil 7_. This source branch includes a playable standard BO5 without trumps; item-card combos and the wider contest program remain on the [roadmap](./docs/roadmap.md).
-
-[PRD](./docs/prd.md) · [Architecture](./docs/architecture.md) · [Design snapshots](./docs/design/) · [Save format](./docs/contracts/save-format.md) · [Testing & verification](./docs/testing.md) · [Contributor guide](./AGENTS.md) · [Contest rules](docs/design/contest-rules.md)
+A local-first, single-player Blackjack game for the browser. Play the classic green-felt table against the dealer, or take on an opponent in **Contest Mode** — a shared-number-deck duel inspired by _Resident Evil 7_. Everything runs locally: no accounts, no telemetry, no backend. Built with React, TypeScript, and Vite.
 
 ## Features
 
-- **Two tables**: Classic restores your saved table; Contest starts a fresh standard BO5 with alternating turns, round points, an extending game target, and a deterministic opponent that hits below 17 when drawing is legal and otherwise stays.
-- **Classic rules**: hit, stand, double down, undo or clear wagers, and all in.
+- **Two tables**: Classic restores your saved table; Contest starts a standard best-of-five duel with alternating turns, round points, an extending game target, and a deterministic opponent.
+- **Full classic rules**: hit, stand, double down, split, insurance, late surrender, undo or clear wagers, and all in.
 - **Action hints**: when split, double, or surrender is available, a one-line explainer appears under the action buttons — reachable on touch screens, with desktop tooltips kept.
-- **Responsive 2D table**: custom SVG cards and chips, Motion animations, keyboard controls, and reduced-motion support. Contest actions fit short desktop/mobile screens for ordinary hands; longer hands scroll.
+- **Responsive 2D table**: custom SVG cards and chips, smooth animations, keyboard controls, and reduced-motion support.
 - **Bilingual interface**: English and Simplified Chinese, with browser-language detection and a saved language preference.
 - **Optional sound**: synthesized card and chip sounds, volume control, and mute.
 - **Classic resume**: refresh opens the home screen; entering Classic restores the current decision point or completed result, including after an animation interruption. Contest matches stay in memory and are abandoned on leaving or refresh.
 - **Portable saves**: export a JSON backup and validate it before confirming an import on another device.
 - **Local safeguards**: pause on cross-tab changes; keep playing with an export reminder when browser storage is unavailable.
-- **About**: open Settings → About for the current version, project repository, MIT license, and GitHub Issues feedback.
+- **About panel**: open Settings → About for the current version, project repository, MIT license, and GitHub Issues feedback.
 
-## Tech Stack
+## Play right away
 
-| Area              | Tools                                                           |
-| ----------------- | --------------------------------------------------------------- |
-| UI                | React 19, TypeScript in strict mode                             |
-| Build             | Vite 6, npm lockfile, vite-plugin-singlefile (single-file dist) |
-| Presentation      | Motion, CSS, inline SVG, Web Audio                              |
-| State and storage | React reducer, pure rules engine, localStorage                  |
-| Quality           | Vitest, Prettier, Playwright CLI browser verification           |
+Download the latest release build, unzip it, and double-click `index.html` — no Node.js or server needed. The single-file build runs over `file://` in Chrome, Edge, Firefox, and Safari, and the same folder can be uploaded to any static HTTP/HTTPS host, at the root or in a subdirectory. There is no Service Worker: a hosted copy needs the server reachable while you play.
 
-## Getting Started
-
-**Just playing?** Grab the latest release build, unzip it, and double-click
-`index.html` — no Node.js or server needed (since v0.1.1; the v0.1.0 package
-showed a blank page on double-click, see [ADR-002](./docs/adr/ADR-002-singlefile-release-build.md)).
-
-**Running from source** requires **Node.js 24.x ≥24.22.1 or 26.x ≥26.12.1** and npm.
-
-**Windows** — double-click `start-game.bat`.
-
-**macOS** — double-click `start-game.command`
-(first time: if Gatekeeper blocks it, right-click → Open; or run
-`bash start-game.command` in a terminal).
-
-**Linux** — run `bash start-game.command`
-(or make it executable, then double-click "Run in terminal" in your file manager).
-
-The launcher checks for Node.js, installs dependencies on first run, starts the
-game server at `http://127.0.0.1:5173`, and opens your browser automatically.
-From a terminal you can always do the same by hand:
-
-```bash
-npm ci
-npm run dev
-```
-
-```bash
-npm test              # Rule and save-validation tests
-npm run typecheck     # Strict TypeScript checks
-npm run format        # Format source, documentation, and configuration
-npm run format:check  # Check formatting without changing files
-npm run build         # Type-check and build dist/
-npm run preview       # Serve dist/, normally on port 4173
-```
-
-## Project Structure
-
-```text
-src/
-  domain/
-    classic/          # Existing rules and colocated tests
-    contest/          # Candidate data, round/match engines, no-trump AI baseline
-    shared/           # Reserved until actual reuse
-  application/        # Classic and contest coordinators; shared responsibilities reserved
-  infrastructure/     # classic save, shared audio; contest persistence reserved
-  presentation/       # Mode entrance, classic/contest tables, shared components, i18n
-  main.tsx            # App entry
-public/               # Static assets
-docs/                 # Architecture, design, contracts, requirements, roadmap
-```
-
-`node_modules/`, `dist/`, and `output/` are generated and ignored. Tests remain next to their implementation; no separate test runner or duplicated test tree is required.
-
-The engine commits the authoritative state before the presentation queue runs. Animation callbacks never deduct wagers or settle payouts. Money uses integer hundredths of a chip.
-
-## Table Rules (Classic Mode)
+## Table rules (Classic Mode)
 
 - Start with **2,000 virtual chips**. Each hand uses a freshly shuffled 52-card deck.
 - Face cards count as 10; aces count as 1 or 11. The computer is always the dealer.
@@ -92,44 +29,41 @@ The engine commits the authoritative state before the presentation queue runs. A
 - Natural Blackjack pays **3:2 net**; an ordinary win pays **1:1 net**. A push returns the wager.
 - An ordinary 21 ends the player's turn but does not guarantee a win. The dealer stands on every 17, including soft 17.
 - Double only on the initial two cards with enough remaining funds: match the wager, draw one card, then stand.
+- Split equal-value initial cards into at most two hands, with no re-splitting. Split aces receive one card each and cannot double; other split hands may double. Split 21 is not a natural Blackjack.
+- With a dealer Ace showing, choose insurance before the natural check: it costs half the original wager and pays 2:1 net for dealer Blackjack; the main wager settles independently.
+- After dealer Blackjack is ruled out, surrender an unsplit initial hand before hitting or doubling to recover half of the main wager. Insurance losses are not refunded.
 - Wagers use whole chips; balances may include half chips. All in preserves any unbettable half chip.
 
-Splitting, insurance, and late surrender are implemented and independently accepted (2026-09-22):
+## Contest Mode
 
-- Split equal-value initial cards into at most two hands, with no re-splitting. Split aces receive one card each and cannot double; other split hands may double. Split 21 is not a natural Blackjack.
-- With a dealer Ace showing, choose insurance before the natural check. Insurance costs half the original wager and pays 2:1 net for dealer Blackjack; the main wager settles independently.
-- After dealer Blackjack is ruled out, surrender an unsplit initial hand before hitting or doubling to recover half the main wager. Insurance losses are not refunded.
-- Save and rules versions are now v2. v1 and unknown versions are rejected without migration; existing automatic saves are not silently overwritten. Explicitly start over or import a valid v2 backup.
+A duel variant inspired by the 21-point game in _Resident Evil 7_. Each round deals from a shared deck containing the numbers 1–11 exactly once; both players start with two cards, first cards stay hidden, and play alternates between hit and stay until two consecutive stays reveal both hands. The match is a best-of-five: first to 5 game points wins, with ties extending the target at 4:4 and 6:6. The standard no-trump match is playable now — item cards, difficulty selection, the codex, and combination-search AI are on the roadmap. Full rules live in [contest-rules.md](./docs/design/contest-rules.md).
 
-## Saves & Privacy
+## Saves & privacy
 
-Classic progress and shared preferences stay in the current browser. Contest matches are not saved; returning home asks for confirmation, and refreshing abandons the match. Clearing site data removes the automatic save; export a `.blackjack.json` file for a separate backup. When a rejected legacy or corrupt save is loaded, the export entry is hidden because the in-memory progress is a fresh placeholder — importing a valid v2 backup restores it. Saves are unencrypted, editable single-player data and do not provide anti-cheat protection. No accounts, telemetry, ads, or backend are included.
+Classic progress and shared preferences stay in your browser; nothing leaves your machine. Export a `.blackjack.json` backup and import it on another device — files are validated before anything is replaced. Very old (v1) or corrupt saves are rejected rather than guessed: import a valid backup or explicitly start over. Clearing site data removes the automatic save. Contest matches are never saved. Saves are unencrypted, editable single-player data without anti-cheat protection. No accounts, telemetry, ads, or backend are included.
 
-## Deployment
+## Run from source
 
-Run `npm run build` to produce a **single-file `dist/`** (all JavaScript and CSS
-inlined into `index.html`). Distribute it as-is: double-clicking `index.html`
-works over `file://` in Chrome, Edge, Firefox, and Safari, and the same folder
-can be uploaded to any static HTTP/HTTPS host at root or in a subdirectory —
-no client-side routing fallback is required.
+Requires **Node.js 24.x ≥24.22.1 or 26.x ≥26.12.1** and npm.
 
-There is no Service Worker or guaranteed offline relaunch. Browser verification results and outstanding platform checks are documented in [testing & verification](./docs/testing.md).
+```bash
+npm ci
+npm run dev        # http://127.0.0.1:5173
+```
+
+- **Windows** — double-click `start-game.bat`.
+- **macOS** — double-click `start-game.command` (first time: if Gatekeeper blocks it, right-click → Open, or run `bash start-game.command`).
+- **Linux** — run `bash start-game.command` (or make it executable, then double-click "Run in terminal").
+
+The launcher checks for Node.js, installs dependencies on first run, starts the dev server, and opens your browser. Run `npm run build` to produce a distributable single-file `dist/`; `npm test`, `npm run typecheck`, and `npm run format` cover quality checks. Read [AGENTS.md](./AGENTS.md) before contributing, and keep both READMEs aligned when behavior or setup commands change.
 
 ## Roadmap
 
-Splitting, insurance, and late surrender are implemented and independently accepted (REQ-2026-003–006, archived). See the [technical roadmap](./docs/roadmap.md) and [requirements index](./docs/requirements/index.md).
+Classic rules and saves are complete and stable (v2). The Contest Mode program is in progress: the standard no-trump best-of-five is available, while item cards, difficulty selection, the codex, custom matches, and smarter AI are still planned. LAN/online play, accounts, and cloud saves are explicit non-goals. See the [technical roadmap](./docs/roadmap.md) and [requirements index](./docs/requirements/index.md).
 
-1. M0: register requirements and align planning documentation.
-2. M1: shared rules v2 state, settlement, and save validation.
-3. M2: split into at most two hands, with turn sequencing and independent settlement.
-4. M3: insurance decisions before checking dealer Blackjack, with independent payouts.
-5. M4: late surrender, integration checks, and a single rules/save v2 release.
+## Documentation
 
-Milestones have no calendar commitments; M1–M3 are development checkpoints, not separate releases. v2 rejects v1 and unknown saves without migration. Existing automatic saves must not be silently overwritten; starting over requires an explicit user choice.
-
-The local single-player scope was established on 2026-09-23: LAN play, online deployment, and accounts/cloud saves are explicit non-goals. The **Contest Mode** baseline was revised on 2026-10-04 (S0–S5, first shipping as v0.2.0): BO3/BO5/BO7/BO9 matches by difficulty retain first-to-5 games with an extending target (4:4 → first to 7, 6:6 → first to 9). Each round shares one number card of each value 1–11; a coin flip sets the initial first player, then first play alternates each round. A player may use consecutive item cards before drawing or staying to end their turn, and staying allows later decisions. Item acquisition is separate from the number deck; probabilities, card pools, and scoring effects await validation. The difficulty chain and codex remain, only meta-progress is saved, and refreshing abandons the match. The source branch currently offers a standard no-trump BO5; difficulty selection, trumps, codex, custom matches, and combination-search AI are still planned. This is not a new release. Classic rules and saves remain v2.
-
-See [AGENTS.md](./AGENTS.md) before contributing. Keep documentation in both languages aligned when changing behavior or setup commands.
+[PRD](./docs/prd.md) · [Architecture](./docs/architecture.md) · [Design snapshots](./docs/design/) · [Save formats](./docs/contracts/) · [Testing & verification](./docs/testing.md) · [Contributor guide](./AGENTS.md)
 
 ## License
 
