@@ -88,6 +88,8 @@ docs/requirements/archive/  # REQ-021统一保留道具规则、原版资料与�
 
 - `npm run dev`：Vite 开发服，默认 `http://127.0.0.1:5173`（`--host 127.0.0.1` 已固定在脚本中）。
 - `npm run build`：`tsc -b` 类型检查 + `vite build` → `dist/`（单文件产物：`vite-plugin-singlefile` 将 JS/CSS 内联进 `index.html`，仅 favicon 外置；`base: "./"` 保留）。
+- CSP：`index.html` 携带 `Content-Security-Policy` meta；`vite.config.ts` 的后置插件在 singlefile 内联完成后对最终脚本字节计算 SHA-256 哈希写回策略，并确保 meta 位于所有脚本标签之前；dev 变体额外放行 `ws://127.0.0.1:*` / `ws://localhost:*` 供 HMR（生产为 `connect-src 'none'`）。
+- CI 门禁（`.github/workflows/ci.yml`）：push 到 `main` / `codex/**` 及 PR 触发依赖审计（`npm audit --package-lock-only --audit-level=high`，出现 high/critical 即失败）加 `npm test` 与 `npm run build`（Node 24.22.1 / 26.12.1 双矩阵）。Dependabot（`.github/dependabot.yml`）每周开依赖与 Actions 更新 PR。审计只允许通过升级依赖保持干净，不得抑制公告或降低等级；工作流 action 按 commit SHA 固定，仅经 Dependabot PR 更新，不解 pin。
 - 分发/部署：`dist/` 是单文件静态产物，`file://` 双击可直接运行（自 v0.1.1 起，见 [ADR-002](./adr/ADR-002-singlefile-release-build.md)）；也可上传任意静态 HTTP/HTTPS 主机的根目录或子目录。无客户端路由回退。
 - 无 Service Worker，不保证离线重新打开。
 

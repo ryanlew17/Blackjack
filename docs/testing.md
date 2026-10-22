@@ -250,3 +250,11 @@ S1容量复查在本批给出不适用条件及满桌混合／目标腾格反例
 两条P3已在原REQ-024修复：赌命决胜与4:4同现时保留目标5、不再发送递延；onPlay补给及余粮／从众／断供逐帧同步记录已发生差量。新增9项复现用例修改前均失败、修复后通过，另加受压制余粮经移花后仍按原Turn到期恢复的1项，合计新增10项。全量**483/483（23文件）**、typecheck、format及全部43个竞赛非测试源码ES2022-only纯度通过，原473项继续回归；该次补修为自测，不冒充Review Agent独立运行的新证据。
 
 两项非缺陷观察已经写入卡表／规则及REQ-026界面提示；保持原撤销窗口与压制绑定语义。无UI、依赖、构建或存档更改，未build／浏览器／发布；本轮获授权将REQ-024实现与补修一并提交推送。完整处置与验收证据统一见[REQ-024外审回填](./requirements/archive/REQ-2026-024-contest-trump-scoring-and-chains.md#2026-10-22-外审回填与修整)。
+
+## CSP、CI 与 Dependabot 收尾验证（2026-10-22）
+
+工作区遗留的一批收尾改动完成验证：CSP 加固（`index.html` meta + `vite.config.ts` 在 singlefile 内联完成后注入最终脚本字节 SHA-256 哈希的插件）、已提交的 `.github/workflows/ci.yml` 与新增 `.github/dependabot.yml`、AGENTS.md 的 CI 说明。无领域／应用／表现层源码改动。
+
+四项门禁全绿：`npm test` **483/483（23文件）**、typecheck、format:check、build（单文件 500.77 kB／gzip 156.50 kB）。产物程序化校验：`dist/index.html` 的 CSP meta 唯一且位于所有脚本标签之前、`script-src` 中的 `sha256-…` 与内联脚本规范化后逐字节一致、无 `data-build-csp` 占位符残留。Playwright CLI／Chromium（/tmp/pwtest 重装 1.63.0，复用本机 ms-playwright 浏览器缓存）三场景冒烟 10/10：生产 preview（4173）、`file://` 直接打开 dist、dev 服务器（5173，DOM 确认 dev 策略含脚本哈希与 `ws://127.0.0.1:*` 放行）各完成首页→进入经典→下注→发牌→行动→结算→下一局整手，全程零 console／页面错误；截图在 `output/playwright/csp-smoke/`。随机发牌的即时结算（天然 Blackjack）分支经重试覆盖；本批不触发发布矩阵。
+
+同日文档精简（纯文档改动，仅运行格式与链接检查）：双语 README 重写为面向用户，开发过程、里程碑、验收历史、目录树与技术栈表移出（均已有 docs 归属：roadmap／prd／architecture／ADR-002／需求归档）；AGENTS.md 精简为路由＋硬约束＋命令，CI 与 CSP 细节移入 [architecture.md](./architecture.md) §4，Quirks 改为指向各自设计文档的既有记录。
