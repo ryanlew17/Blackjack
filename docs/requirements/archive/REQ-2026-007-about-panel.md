@@ -32,18 +32,8 @@ v0.1.0 首次发布后，玩家在游戏内无法获知项目仓库地址、当�
 
 ## 验收记录
 
-- 2026-09-22 验收：通过，随 v0.1.2 交付。
-- 自动门槛：Vitest 63/63、严格 TypeScript、Prettier、生产构建通过。
-- Chrome（Playwright CLI，生产 preview）：Tab 聚焦关于入口并 Enter 打开；同一 dialog 内切换标题与内容，返回设置、中英文切换、Esc / 关闭、重开恢复设置首页均通过。代码复核关闭仍统一调用 `closePanel()`。
-- 三个链接的完整目标地址、`target="_blank"` 与 `rel="noopener"` 已断言；显示版本 0.1.2 与 package.json 一致。Vite 从 package.json 注入版本，不维护第二份版本常量。
-- 桌面与 320px 中英文截图人工复核通过；页面及关于内容 scrollWidth 均不超出可用宽度。证据：`output/playwright/req007-desktop.png`、`req007-320-en.png`、`req007-320-zh.png`。
-- 实际发布包 `The-Green-Room-v0.1.2.zip` 解压到干净临时目录，通过 Chrome `file://` 打开，关于页版本正确，下注与发牌可用，控制台及页面错误均为 0；截图 `output/playwright/req007-file.png`。
-- 本次浏览器验收仅覆盖 Chrome；未重跑其他引擎或完整规则 v2 浏览器矩阵。游戏规则与存档格式未改动。
+2026-09-22 验收通过，随v0.1.2交付。
 
-## 变更记录
-
-- 2026-09-22 创建并登记索引
-- 2026-09-22 入口方案定为设置面板内二级页（about dialog 右上角弹窗方案作废），以最新需求为准
-
-- 2026-09-22 完成关于二级页、构建版本注入与双语文案；回写 UI 快照、双语 README、测试历史与路线图，验收后归档。
-- 2026-09-22 修复设置列表文字错位与行高不一：「关于」入口与「新游戏」按钮继承了 UA 按钮默认内边距（1px 6px）导致行文字右偏，补 `padding: 0` 与 `text-align: left`；「关于」行行高由 64px 统一为与设置行一致的 75px。修复随 v0.1.2 发布包替换上线，不迭代版本号。
+- 关于页复用设置dialog，版本由package.json注入；三个外链、双语、Tab／Enter／返回／Esc及统一关闭路径通过。
+- 自动检查：Vitest 63/63、typecheck、Prettier、build通过。
+- Chrome生产preview的桌面／320px截图核对通过、无横向溢出；实际发布包干净解压后file://验证版本、下注与发牌，零控制台／页面错误。证据位于 `output/playwright/req007-*.png`；未重跑其他引擎或完整规则矩阵。

@@ -2,7 +2,7 @@
 /// <reference types="vite/client" />
 import ts from "typescript";
 import { describe, expect, it } from "vitest";
-import research from "../docs/requirements/archive/REQ-2026-021-contest-trump-rule-contract.md?raw";
+import research from "../docs/design/contest-trumps.md?raw";
 
 const sources = import.meta.glob<string>(
   ["./**/*.ts", "./**/*.tsx", "./**/*.css", "!./**/*.test.ts", "!./**/*.d.ts"],

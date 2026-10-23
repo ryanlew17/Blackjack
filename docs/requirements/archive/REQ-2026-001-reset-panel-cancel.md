@@ -28,8 +28,3 @@
 - 代码：`App.tsx` ResetPanel `onCancel` 改走 `closePanel`（App.tsx:223）；全库仅剩 `closePanel` 定义内一处 `setPanel(null)`，无其他遗漏；`design/ui.md` 例外条目已删除。
 - 自动门槛：`npm test` 63/63、`typecheck`、`format:check`、`build`、`git diff --check` 全绿。
 - 浏览器走查（生产 dist + preview，Chromium headless 1280×800）：设置 → New game 打开 ResetPanel；Cancel 关闭；Esc 关闭；关闭按钮关闭；零控制台/页面错误。截图 `output/playwright/acc-req001-reset-panel.png`。
-
-## 变更记录
-
-- 2026-09-22 创建
-- 2026-09-22 实现并完成验收（提交 3c147fc），归档

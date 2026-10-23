@@ -8,13 +8,13 @@
 
 用户确认参考《生化危机7》21 点修订竞赛玩法，并允许停牌后重决策、连续使用道具发挥联动。设计依据见 [contest-rules.md](../design/contest-rules.md) §11。竞赛采用唯一 1–11 数字牌、双方交替行动、动态目标、独立道具资源和积分赛制，与经典扑克的 A 软硬点、S17、天然及金额语义不同。
 
-当前 `src/domain/game.ts` 的 score 使用扑克牌 ID 与 A 降点，shuffle 创建固定 52 张牌；`src/domain/testHelpers.ts` 的 fixedRandom/dealt 也绑定 52 张牌及下注发牌。它们不能只经目录平移便成为通用原语。
+经典`src/domain/classic/game.ts`的score使用扑克ID与A降点，shuffle创建52张牌；同目录testHelpers.ts的fixedRandom／dealt绑定52张牌及下注发牌。它们不能只经目录平移便成为通用原语。
 
 ## 决策
 
 ### 独立规则，按消费者提取共享工具
 
-- 继续规划 `domain/shared/`、`domain/classic/`、`domain/contest/`；本次只改文档，不移动源码。
+- domain按shared／classic／contest分责；shared仅在实际消费者成立时提取实现。
 - classic 保留现有牌 ID、点数/天然判断、52 张牌堆包装、RuleSet、金额/结算、存档校验与下注测试助手。S1 若移动文件只调整路径，现有外部规则、存档键与格式保持兼容。
 - contest 拥有独立数字牌类型、Match/Game/Round/Turn 状态、判胜、积分、道具区域/获取/效果与 AI；独立 `transition` 和 `legalActions`，使用同一 Match 内冻结的竞赛规则快照，不扩展经典 transition 的 mode 分支。
 - shared 只提取经两方实际使用验证的泛型数组洗牌、随机源接口等最小工具；不要为了填满目录而共享规则联合类型。牌面展示在 presentation 用适配器复用，不强迫两类牌共用一个 domain CardId。
@@ -47,11 +47,11 @@
 - S1 需同时验证经典兼容、竞赛信息投影与最小多卡原型，再冻结效果入口；仅无道具 BO5 跑通不足以证明道具框架合适。
 - S2/S3 需记录卡定义、概率模型、连锁终止与 AI/平衡数据；只冻结有证据的参数，不继承旧固定概率公式或扑克迁移卡。
 - 所有 domain 模块保持纯 TypeScript、随机可注入；每条命令先提交权威状态再播放事件，UI 与动画均不决定积分。
-- 经典存档仍为现有键 `green-room.blackjack.v1` 与格式 v2，竞赛元进度契约仍为未实现的 v1 草案。本决策不发布新版本或修改已交付功能。
+- 经典存档仍为现有键 `green-room.blackjack.v1` 与格式 v2，竞赛元进度契约仍为未实现的 v1 草案。发布时机按路线图和用户安排。
 
 ## 2026-10-18 实现进展
 
-REQ-012 已执行经典模块路径迁移（`domain/classic/`、`application/classic/`、`infrastructure/classic/`），上述背景中的旧路径保留为决策时点记录。REQ-013 已实现候选卡与图鉴纯数据层，完整竞赛引擎和共享调度仍未实现。两项需求已验收归档，未构建、未变更版本或发布；当前结构见 [architecture.md](../architecture.md)。
+REQ-012 已执行经典模块路径迁移（`domain/classic/`、`application/classic/`、`infrastructure/classic/`），上述背景中的旧路径保留为决策时点记录。图鉴纯数据、竞赛引擎与应用已有实现；跨模式共享调度尚未提取。两项需求已验收归档，未构建、未变更版本或发布；当前结构见 [architecture.md](../architecture.md)。
 
 ## 2026-10-18 S1 拆分与 AI 实施顺序
 
@@ -59,29 +59,29 @@ S1 已登记 REQ-014–020，首项只验证新目录下经典产物与最新正
 
 ## 2026-10-20 REQ-015 实现进展
 
-独立单回合引擎与观察／事件投影已落在 `domain/contest/engine/`，未接生产入口；Hit/Stay 和安静停牌遵循本决策，预留经合法消费后设置 `Turn.usedTrump` 的内部接缝，尚无道具执行器。规则快照随 Round 携带并冻结，完整状态仅供引擎／后续协调层使用，UI／策略接口只接投影视图。无需移动经典工具或创建共享规则。Match/Game、计分、协调、UI 与 AI 仍按 REQ-016–020 排期。
+单回合引擎与观察／事件投影位于domain/contest/engine/，与Match、应用和页面共同工作。规则快照随状态冻结，Turn用卡记录由合法消费更新；完整状态只留在引擎／协调层，UI和策略消费授权投影，不共享经典扑克规则。
 
 ## 2026-10-20 REQ-016 实现进展
 
-标准无道具 BO5 已由独立 Match 层组合 Round 引擎，积分递延、单次结算、胜局／胜场和跨 Game 先手轮换均在 transitionMatch 内确定。MatchRules 整场冻结，trumpDealing 固定 false；NextRound 继续发牌，结束 Match 不再接收命令。Match 观察与每个事件快照复用 Round 投影，未建立额外共享规则或存档接口。Round/Game 清理位置保留给 REQ-019/S2，当前不启用道具；应用、UI、AI 与元进度仍待后续需求。
+标准无道具 BO5 已由独立 Match 层组合 Round 引擎，积分递延、单次结算、胜局／胜场和跨 Game 先手轮换均在 transitionMatch 内确定。MatchRules整场冻结，默认关闭道具发放，正式资源由显式冻结配置启用；NextRound 继续发牌，结束 Match 不再接收命令。Match 观察与每个事件快照复用 Round 投影，未建立额外共享规则或存档接口。Round／Game清理遵守资源生命周期；当前道具、页面与基线AI已接通，技能／组合AI及元进度按后续需求实现。
 
 ## 2026-10-20 REQ-017 实现进展
 
-竞赛应用协调已接通私有权威内存提交、投影事件回放、输入锁与取消代次，useContest 仅公开观察及控制方法；占位对手只在自己的 Turn 从观察和合法 Hit/Stay 决策，没有策略随机源。暂停／回放结束读取权威行动方，不在动画中计算积分或切换 Turn。经典 useGame 和存储未改，本项未强行抽取 shared 调度；UI、正式 AI、PlayTrump 和元进度仍由后续需求承接。
+竞赛应用协调已接通私有权威内存提交、投影事件回放、输入锁与取消代次，useContest 仅公开观察及控制方法；占位对手只在自己的 Turn 从观察和合法 Hit/Stay 决策，没有策略随机源。暂停／回放结束读取权威行动方，不在动画中计算积分或切换 Turn。经典 useGame 和存储未改，本项未强行抽取 shared 调度；当前UI、基线AI和PlayTrump已接通；主动技、组合AI与元进度仍按各自需求承接。
 
 ## 2026-10-20 REQ-019 实现进展
 
-有限 PlayTrump 命令、效果原语、投影和 Round/Game 清理已复用既有引擎，固定原型定义／资源不进入生产入口；双方明确命令通过同一应用 coordinator 验证连续用卡后恢复原行动方。公开规则与私有手牌模板分离，默认无道具与只 Hit/Stay 占位不变。没有为此改经典规则／存档或强行抽共享引擎；完整资源策略、任意触发组合和正式卡池仍由 S2 定稿。
+PlayTrump、效果、投影及Round／Game清理复用同一引擎，coordinator负责连续命令与回放；原型固定资源仅作隔离夹具。当前正式资源、53卡准入与用卡页面已接通，主动技与组合AI仍待后续；经典规则和存档独立。
 
 ## 2026-10-21 REQ-020 与 S1 收尾
 
 S1 最后实施独立无道具基线 domain/contest/ai/policy.ts，只消费观察和合法 Hit／Stay、没有随机端口或 PlayTrump 返回值。应用保留私有权威 Match，每次合法 AI Turn 重新投影，取消代次继续防止旧决策提交；未改变规则或发牌流。不同隐藏数字、隐藏道具身份与真实堆顺序下，同观察／合法动作的确定性已验证。本文动态评价及有限组合搜索仍为 S2 末项，未因 S1 收尾提前实现。
 
-REQ-014–020 实现及各项验收已收尾，整体外部审查已完成，Codex 技术验收及用户最终验收通过，S1 周期已结束；按用户明确要求保留 [S1 周期归档记录](../requirements/archive/REQ-2026-020-contest-basic-ai.md)。本次不自动合并、打 tag 或发布。
+S1周期结论与审查处置见[REQ-020](../requirements/archive/REQ-2026-020-contest-basic-ai.md#s1-周期归档记录)。
 
 ## 2026-10-21 REQ-021 规则输入
 
-用户将道具设计目标扩为40+机制；[REQ-021](../requirements/archive/REQ-2026-021-contest-trump-rule-contract.md)定稿51定义／44组机制、五档副本唯一资格、每实例等概率和普通Hit门控20%/30%/40%/50%/60%。获取门控严格递增的新裁定取代此前不承诺单调的研究口径。共生、暗牌倍率、提前揭示、私有窥序与Turn触发按[运行契约](../requirements/archive/REQ-2026-021-contest-trump-rule-contract.md#b-道具数据与运行契约)由022–025实现；策略只能接收依法授权的私有片段，不能为此读取完整Match或真实随机。021只删除冗余earliestDifficulty元数据并验证数学输入，未准入51卡生产执行；五档真实对抗平衡仍在S3。
+用户将道具设计目标扩为40+机制；[REQ-021](../requirements/archive/REQ-2026-021-contest-trump-rule-contract.md)定稿51定义／44组机制、五档副本唯一资格、每实例等概率和普通Hit门控20%/30%/40%/50%/60%。获取门控严格递增的新裁定取代此前不承诺单调的研究口径。共生、暗牌倍率、提前揭示、私有窥序与Turn触发按[运行契约](../design/contest-trumps.md#b-道具数据与运行契约)由022–025实现；策略只能接收依法授权的私有片段，不能为此读取完整Match或真实随机。021只删除冗余earliestDifficulty元数据并验证数学输入，未准入51卡生产执行；五档真实对抗平衡仍在S3。
 
 ## 2026-10-21 用户追加：销毁、生成与主动技（资源已实现，技能待027）
 
@@ -95,16 +95,16 @@ REQ-014–020 实现及各项验收已收尾，整体外部审查已完成，Cod
 
 [REQ-023](../requirements/archive/REQ-2026-023-contest-trump-effects.md)在同一命令／观察边界交付29个执行定义。contributions统一派生暗牌倍率、绑定与结算共生；逻辑暗牌槽位不因公开改变，结果总和不随清理丢失。私有窥序与位置过期由引擎投影，legalActions不探测隐藏可用性；移花只交换明确允许的效果记录控制方，不重放即效或回收卡体。
 
-effectOperations／undo记录并逆转实际差量，不回滚整场、支付、随机、Turn或已知信息；撤销删除及恢复记录使用新ID。执行定义须显式注入，生产依赖图仍排除trumps、presets和测试夹具；024–028继续接计分／触发、正式准入、页面、技能与组合AI，不新增共享规则或脚本框架。
+effectOperations／undo记录并逆转实际差量，不回滚整场、支付、随机、Turn或已知信息；撤销删除及恢复记录使用新ID。执行定义须显式注入，正式定义／预设经精确文件白名单准入，实验与测试夹具继续隔离；计分、准入与页面已接通，技能与组合AI仍待后续，不新增共享规则或脚本框架。
 
 ## 2026-10-22 REQ-024 实现进展
 
 24个计分／补给／短效封锁与赌命定义通过既有transition、contributions、effectOperations／undo和唯一Match结算落地；与023合计53个执行定义，仍须显式注入。有限触发先执行onPlay／安装，再遍历既有有效记录，领取不递归触发；Turn边界按明确序号到期／领取。公开积分拆解和隐蔽费用／容量投影均在引擎确定，UI／AI不读取真实库存或差量，不消费真实随机推演。回仙只提供恢复值契约，完整技能执行留027。
 
-初验473项、外审补修后483项／类型／格式及全部43个竞赛非测试源码ES2022-only纯度通过；赌命已决Game不再递延，触发／补给回放帧同步记录截至该帧的实际差量。实际隐私等价、实例来源与满手逆操作证据见[REQ-024](../requirements/archive/REQ-2026-024-contest-trump-scoring-and-chains.md)。生产入口仍无道具，025–028继续正式准入、页面、技能与组合AI；没有新共享规则、经典改动、构建或发布。
+赌命已决Game不再递延，触发／补给回放帧同步记录截至该帧的实际差量。隐私、实例来源与满手逆操作证据见[REQ-024](../requirements/archive/REQ-2026-024-contest-trump-scoring-and-chains.md)。正式准入／页面已接通，技能及组合AI由027／028实现。
 
 ## 2026-10-22 REQ-025 准入与接线
 
 [REQ-025](../requirements/archive/REQ-2026-025-contest-trump-admission-and-coordination.md)按本决策完成53卡精确准入及标准开发配置，catalog.execution引用同一执行定义，不重建共享引擎。controller仅接human结构化用卡，完整Match仍私有；逐命令先提交，再投影回放，同一方可继续决策。取消代次也约束目标选择、可见性返回与策略同步中断；默认数字／门控／选取流独立推进，策略继续不接真实随机。
 
-正常页面待026提供用卡入口后再启用道具，回仙及技能留027，组合搜索留028。Storage零调用继续成立，S3元进度不能通过移除现有断言而提前接入；本项未修改经典规则、存档或共享队列。
+正常页面已启用含道具预设和用卡入口，回仙及技能留027，组合搜索留028。Storage零调用继续成立，S3元进度不能通过移除现有断言而提前接入；本项未修改经典规则、存档或共享队列。

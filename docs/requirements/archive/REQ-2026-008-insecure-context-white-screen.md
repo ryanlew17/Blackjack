@@ -28,15 +28,8 @@
 
 ## 验收记录
 
-- 2026-09-22,Kimi 开发并验收(用户审查通过):通过,于 `bug-fix` 分支交付(版本号不变、未新增 release)。
-- 修复:`save.ts` 新增模块内封装 `newRevision()`——`typeof crypto.randomUUID === "function"` 时用原生 UUID,否则降级为时间戳(36 进制)+两段随机串拼接;`envelope()` 改用之,`parseSave` 与存档格式零改动。
-- 自动门槛:Vitest 64/64(新增降级用例 stub 掉 `crypto.randomUUID`,50 次生成均唯一、非空、过 parseSave 往返)、严格 TypeScript、Prettier、生产构建通过(411 KB 量级与修复前一致)。
-- 明文 http 实测(Chromium 桌面 Chrome,`http://192.168.31.26:8931` 直出 dist/):`isSecureContext: false`、`randomUUID` 缺失(与事故环境一致)下页面正常渲染;完成下注→发牌→停牌→结算(余额精确)→下一局完整对局;发牌动画中与玩家行动中刷新均恢复正确;导出→清空→导入经真实下载事件与文件选择器往返一致;全程零控制台/页面错误。
-- 回归:干净目录 `file://`(真实 Chrome)、localhost http、自签 https 均渲染正常、零错误。
-- 文档回写:ADR-002 静态托管表述修订;docs/testing.md 发布验收新增明文 http 局域网 IP 必做场景与覆盖矩阵行、验证历史补记;docs/contracts/save-format.md 的 revision 描述同步(校验规则不变)。
-- 边界:明文 http 场景仅实测 Chromium(降级分支由单元测试覆盖,浏览器差异面在渲染而非 ID 生成);结算动画播放中「Next hand」disabled 为既有设计,非缺陷。
+2026-09-22 开发验收及用户审查通过。
 
-## 变更记录
-
-- 2026-09-22 创建并登记索引(随第三方 UX 审查确认;优先级 P1,可独立作为热修复发布)
-- 2026-09-22 修复、验收通过并归档;验收报告(中间产物)提炼进本节
+- `newRevision()`在原生UUID缺失时使用时间戳与随机串；存档格式、parseSave及revision校验不变，相关契约与发布检查已回写。
+- 自动检查：Vitest 64/64（新增降级生成50次唯一、非空及存档往返用例）、typecheck、Prettier、build通过。
+- Chromium实际LAN明文HTTP、非安全上下文且randomUUID缺失时，完整对局、动画／行动中刷新、真实导出导入通过；干净file://、localhost与自签HTTPS回归通过，零控制台／页面错误。LAN场景仅覆盖Chromium。

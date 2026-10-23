@@ -26,12 +26,8 @@
 
 ## 验收记录
 
-- 2026-09-23,Kimi 开发并验收(用户审查通过):通过,于 `bug-fix` 分支交付(版本号不变、未新增 release)。
-- 实现:ControlDeck 玩家动作区下方新增 `.action-hint` 提示行——仅当 `can(action)` 为真显示,优先级 分牌 > 加倍 > 投降,至多一条,文案复用 i18n 现有 helpSplit / helpDouble / helpSurrender(零新增文案);固定占位高度,纯 `<p>` 不参与 Tab 序;按钮 `title` 悬浮保留为桌面 hover 增强。
-- 浏览器验收(Chrome 经 Playwright 驱动,file:// 生产产物,真实固定存档夹具):390/320 × 中英共 46 项断言全过——对子首行动显示分牌提示、非对子显示加倍、余额不足落为投降、要牌后(19 点)提示消失;已分牌夹具(acc-split-mid)实测提示从分牌正确让位为加倍;四种提示状态下按钮行 boundingBox 逐一相等(零移位);320px 中英 scrollWidth ≤ 320;提示行 tabIndex -1 且无可聚焦后代;三按钮 title 与 help 文案逐一相等。
-- 自动门槛:Vitest 64/64、typecheck、format:check、build 全绿;ui.md §2 已回写。
+2026-09-23 开发验收及用户审查通过。
 
-## 变更记录
-
-- 2026-09-22 创建并登记索引
-- 2026-09-23 完成验收并归档
+- 提示按分牌＞加倍＞投降显示至多一条，复用既有字典并固定占位；保留按钮title，提示不参与Tab序。
+- Chrome file://生产产物以固定存档验证390／320px×中英，共46项通过；覆盖优先级、要牌／分牌后更新、按钮零移位、无横向溢出和不可聚焦。
+- 自动检查：Vitest 64/64、typecheck、format:check、build通过；UI快照已回写。

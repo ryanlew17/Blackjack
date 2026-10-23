@@ -1,6 +1,6 @@
-// @req REQ-2026-022: check resource data against its independently written requirement.
+// @req REQ-2026-022: check resource data against its independently written design baseline.
 import { describe, expect, it } from "vitest";
-import baseline from "../../../../docs/requirements/archive/REQ-2026-021-contest-trump-rule-contract.md?raw";
+import baseline from "../../../../docs/design/contest-trumps.md?raw";
 import { STOCK_QUANTITIES, createResourcePreset } from "./resources";
 import { DIFFICULTIES } from "../types";
 describe("54-definition stock quantities", () => {

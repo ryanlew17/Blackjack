@@ -1,6 +1,6 @@
 # AGENTS.md — Blackjack · The Green Room
 
-Local-first, single-player Blackjack web game (React 19 + TypeScript strict + Vite 6). This file routes you to the right documents and states the hard rules; detailed behavior, build, CI, history, and verification records all live in `docs/` — start a design-area visit from the `docs/design/` README index. Product scope authority is `docs/prd.md`.
+Local-first, single-player Blackjack web game (React 19 + TypeScript strict + Vite 6). This file routes you to current guidance and states the hard rules; start a design-area visit from `docs/design/README.md`. Product scope authority is `docs/prd.md`; requirement implementation and acceptance evidence belong in `docs/requirements/`.
 
 ## Context Loading Order
 
@@ -23,8 +23,8 @@ Do NOT read all of `docs/` by default. Product scope conflicts resolve to `docs/
 ## Requirement Workflow
 
 - Source priority: GitHub Issue > `docs/requirements/active/*.md` > design docs. Register every new requirement first (Issue or `docs/requirements/`); never write requirement bodies into the PRD. Implemented behavior is described by design docs; tag related code/tests with `@req REQ-YYYY-NNN` or `@issue #123`.
-- Since REQ-016, self-review plus the applicable task-level checks in `docs/testing.md` completes acceptance: record the evidence, mark done, and archive the requirement. Each requirement ends as exactly one document; intermediate artifacts (acceptance reports, handoffs, plans) are distilled into it and deleted.
-- READMEs cover the product, usage, setup, and the high-level roadmap only. Development progress, acceptance records, branch/commit status, and release verification stay in `docs/`.
+- Since REQ-016, self-review plus the applicable task-level checks in `docs/testing.md` completes acceptance: record the evidence in that requirement, mark done, and archive it. Each requirement ends as exactly one document; intermediate artifacts (acceptance reports, handoffs, plans) are distilled into it and deleted.
+- Root READMEs cover product, usage, setup and the high-level roadmap. Keep implementation summaries, acceptance evidence and release verification in the corresponding requirement; do not place progress or branch/commit logs in guidance.
 
 ## Hard Constraints
 
@@ -35,7 +35,8 @@ Do NOT read all of `docs/` by default. Product scope conflicts resolve to `docs/
 5. **Every user-visible string goes into BOTH dictionaries** in `src/presentation/i18n.ts` (en + zh-CN); no hardcoded copy → `docs/design/ui.md`
 6. **Rule variants only via the `rules` parameter** of classic `transition`; pinned `RuleSet` fields mean "not implemented" — implementing one = bump `rulesVersion` → `docs/adr/ADR-001-ruleset-parameterization.md`. Contest has independent `transition`/`legalActions` with one frozen rules snapshot per Match → `docs/adr/ADR-004-contest-turns-and-shared-boundaries.md`
 7. **Keep both READMEs (en + zh-CN) in sync** when behavior or setup commands change; check cadence follows `docs/testing.md` (task-level once per task, full gate before release)
-8. **Keep the READMEs and this file lean** — READMEs stay user-facing and AGENTS.md stays routing + hard rules only; development process, acceptance history, directory/stack detail, and other specifics belong in `docs/`
+8. **Keep the READMEs and this file lean** — root READMEs stay user-facing and AGENTS.md stays routing + hard rules; current process, directory/stack detail and other specifics belong in the relevant `docs/` guidance
+9. **Maintain all guidance in place** — every document under `docs/` except `docs/requirements/`, plus module guidance, describes current rules, explicit plans or their rationale. Consolidate existing topics; never append progress or acceptance logs. Keep task evidence in requirements and decision rationale in ADRs with explicit validity. Put REQ-bound cleanup in that REQ and milestone triggers in the owning document; agents follow those triggers, rewrite changed topics, and add a topic only for a new responsibility.
 
 ## Commands
 

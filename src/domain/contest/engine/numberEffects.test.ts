@@ -1,6 +1,6 @@
 // @req REQ-2026-023: per-card authority, contribution, public legality and projection evidence.
 import { describe, expect, it, vi } from "vitest";
-import source from "../../../../docs/requirements/archive/REQ-2026-021-contest-trump-rule-contract.md?raw";
+import source from "../../../../docs/design/contest-trumps.md?raw";
 import { NUMBER_TRUMP_DEFINITIONS } from "../trumps/numberDefinitions";
 import {
   createMatch,

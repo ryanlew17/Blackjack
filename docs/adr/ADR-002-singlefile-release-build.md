@@ -14,7 +14,7 @@ v0.1.0 发布包采用多文件构建（`index.html` + `assets/*.js` + `assets/*
 ## 决策
 
 - 生产构建改为**单文件产物**：引入 `vite-plugin-singlefile`，将全部 JavaScript 与 CSS 内联进 `index.html`（favicon 除外），`base: "./"` 保留。启动无任何外部资源请求，`file://` 下不存在 CORS 拦截面。
-- **发布验收门槛新增 `file://` 双击场景**：干净目录解压后以 `file://` 打开，至少 Chromium/WebKit 其一须取得零控制台错误的渲染证据（写入 `docs/testing.md`）。
+- **发布验收覆盖`file://`双击场景**：通用门槛在[testing.md](../testing.md#2-浏览器验收)，实际渲染与控制台证据写入对应发布需求。
 - **不恢复"npm 架构 + 本地服务器启动脚本"作为用户运行方式**。`start-game.bat` / `start-game.command` 保留，仅作为源码开发/本地运行用途。
 
 ## 理由
@@ -30,6 +30,6 @@ v0.1.0 发布包采用多文件构建（`index.html` + `assets/*.js` + `assets/*
 
 ## 后果
 
-- 正面：双击可玩在 Chromium / WebKit / Firefox 全部成立（沙箱三引擎矩阵 + 真实 Chrome 双击验收通过）；`https` 与 `localhost` 静态托管（根目录/子目录）行为不变；明文 `http` + 局域网 IP（非安全上下文）自 REQ-2026-008 修复 `crypto.randomUUID` 白屏后亦可用；发布包从 3 文件减为 2 文件（`index.html` + `favicon.svg`）。
-- 代价：`index.html` 约 419 KB（gzip 约 133 KB），失去外部资源独立缓存与并行加载（单页小游戏影响可忽略）；调试生产产物时无独立 source map 文件（构建期仍生成行内 map，需要时可临时关闭内联）。
+- 正面：同一静态产物覆盖file://与HTTP(S)根／子目录，消除本地模块资源的CORS失配；运行方式的当前验证门槛见testing.md，证据归对应REQ。
+- 代价：JS／CSS不能独立缓存或并行加载，生产调试受单文件形态约束；当前配置未启用source map，需要时显式配置并维护分发约束。产物大小随构建变化，不在此固定。
 - 流程后果：`docs/testing.md` 浏览器验收规范增补 `file://` 场景，防止同类回归。

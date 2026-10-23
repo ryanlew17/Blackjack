@@ -1,7 +1,9 @@
 # 竞赛牌桌（S1/S2）
 
-@req REQ-2026-018
+@req REQ-2026-018/019/026
 
-ContestTable.tsx／NumberCard.tsx 只呈现应用投影，ContestControls.tsx 发送应用动作并读取结果，ContestRules.tsx 展示固定标准无道具规则。未公开对手牌只生成牌背；自己的暗牌有「仅你可见」标记。应用负责行动、计分、输入锁和延迟取消。正式 TrumpHand／TrumpTable 待后续需求，不挂载测试夹具。
+ContestTable／NumberCard只读应用投影，ContestControls发送动作；ContestTrumps展示本人手牌、对方公开数量、留场绑定／压制／原Turn到期及有效窥序。TrumpChooser仅在trumpCommands中选择完整目标／费用／声明命令；取消、Esc与输入代次改变不提交，忙碌时不保留待执行选择。ContestFeedback读取已授权事件与引擎积分明细，不预报抽取成功或重算判胜。
 
-@req REQ-2026-019：竞赛常规手牌与主操作适配短视口；长手牌自然滚动，无吸底遮挡。状态分别显示发牌／思考／行动回放／揭牌，输入锁变化即时呈现，等待时长不变。
+正常入口显式选择标准含道具预设。道具区位于主操作之后、默认收拢；长数字牌与展开手牌自然滚动，无吸底遮挡。隐藏数字和未公开对手道具／费用身份不挂载DOM。双语规则说明当前对手仍只Hit／Stay，组合AI留REQ-028。
+
+生产入口不导入夹具、实验预设或测试助手；稀有场景通过隔离真实引擎验证，原始审查证据位于忽略的output/，结论与边界统一见REQ-026归档记录。

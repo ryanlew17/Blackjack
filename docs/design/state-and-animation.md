@@ -3,7 +3,7 @@
 > 适用范围：经典 useGame 的权威状态、队列、恢复与冲突；竞赛 controller/useContest 的内存提交、投影回放、无道具 AI 与取消。
 > 何时读取：改经典／竞赛协调、动画节奏、内存或持久化提交、取消及冲突处理前。
 > 关联需求：REQ-2026-003–006、REQ-2026-017。
-> 最后更新：2026-10-22
+> 最后更新：2026-10-23
 > 来源：2026-09-22 重构定稿（effectId 单调计数器）
 
 以下 §1–5 为经典模式，竞赛见 §6。
@@ -41,32 +41,34 @@
 
 ## 6. 竞赛内存协调（REQ-017）
 
-`application/contest/controller.ts` 用闭包保存完整 MatchState，useContest 是 React 订阅适配。初始闲置，start 明确开场，不读取／恢复存档；exit 丢弃 Match，restart 取消旧任务后新开。经典 useGame 与其持久化顺序保持不变，未提取 shared 队列。
+application/contest/coordinator.ts私有持有完整MatchState，controller限制human命令，useContest适配React订阅。初始闲置，start明确开场，exit丢弃Match，restart取消旧任务后新开；不恢复竞赛存档，不强行提取shared队列。
 
 每次 send 先由 transitionMatch 计算完整结果、同步提交权威内存状态，之后回放 human 投影事件与逐事件快照；动画不扣分、不计分、不决定下一行动方。snapshot() 返回权威 human 观察，match 字段返回当前展示帧，两者都没有牌堆或对手未揭暗牌。busy 在回放／AI 等待时锁定输入，暂停也锁定；human 命令不允许指定 AI 身份，非法动作保持原状态。
 
-发牌和 Hit 220ms，其余 300ms；减少动态效果为 35ms，effectId 跨事件及重开单调递增。skipAnimations 取消回放并落定已提交状态。回放／思考等待使用同一取消代次，exit/restart/pause/skip 会使滞后回调失效；暂停结束按权威行动方恢复，不能把一次事件回放等同于 Turn 结束。PlayTrump 尚未实现，其实际同 Turn 联动随 REQ-019 验证。
+发牌和 Hit 220ms，其余 300ms；减少动态效果为 35ms，effectId 跨事件及重开单调递增。skipAnimations 取消回放并落定已提交状态。回放／思考等待使用同一取消代次，exit/restart/pause/skip 会使滞后回调失效；暂停结束按权威行动方恢复，不能把一次事件回放等同于 Turn 结束。PlayTrump已接入同Turn连续决策，正式选择与反馈见§8–9。
 
 队列结束后若权威状态是 AI 的 Turn，等待 300ms，再调用 domain/contest/ai/policy.ts 的无道具基线（REQ-020）；只输入 ai 观察和合法 Hit/Stay，不传完整状态或真实随机源。自身总和 <17 且 Hit 合法时 Hit，否则 Stay。对手此前 Stay 后重新获得行动权时会再次决策；玩家 Turn、回合／Game 间隙和 Match 终态均不触发 AI。
 
 useContest 通过参数只读既有设置中的 motion、muted、volume，复用音效模块；设置更新仍由既有 API 负责。回到可见时跳过正在回放的帧，卸载时移除 visibilitychange 监听并退出；竞赛不监听存储冲突、不写任何对局或元进度。应用公共 API 仅含观察、投影事件、输入状态及控制方法。
 
-本项测试覆盖控制器与真实引擎的异步时序和 React 服务端闲置初始化。客户端挂载、卸载／可见性事件分发和实际音效未做浏览器验收，随 REQ-018 的 UI 接线验证；不能把服务端渲染测试视为浏览器证据。
-
 ## 7. REQ-019 多卡原型的应用验证
 
-原控制器的提交、队列、取消与策略调度提取至 application/contest/coordinator.ts，由生产 controller 及测试中的双方受控消费者复用；没有抽成跨模式 shared，也没有改经典 useGame。coordinator 的构造端口可显式注入 RoundRules／私有 TrumpSetup 与 controlledPlayers，sendCommand 接受受控方命令并添加当前 roundNumber。该端口不是页面设置，未接 query／storage／全局调试开关。生产 controller 只构造默认协调器，并保留 human-only 的 send(Hit／Stay／NextRound)，不暴露 sendCommand。
+coordinator统一权威提交、队列、取消和策略调度，构造端口可注入规则、互斥的私有固定资源或正式资源配置及受控方；sendCommand只用于受控消费者。生产controller可显式选择S2预设，对页面仅开放human的Hit／Stay／NextRound及结构化PlayTrump，不暴露sendCommand、完整Match或调试开关。
 
 同 Turn 的每张道具经同一 transitionMatch 先提交完整终态，再回放 human 投影，busy 期间拒绝重复输入。每段回放完读取权威行动方：用卡后恢复同一方，Hit／Stay 后才换方；显式受控 AI 由测试提交命令，不调用自动策略。正常策略仍只从观察和合法 Hit／Stay 决策，即使内部注入手牌也不会主动用卡。
 
-原回放节奏未改：发牌／Hit 220ms、其余 300ms、减少动态 35ms，AI 思考 300ms。原型事件沿用其余事件节奏；正式音效／道具动效尚未接生产。真实浏览器复核思考→行动回放→玩家可操作各约 302ms，保持原来的自然节奏。页面现在区分发牌、行动回放、思考与揭牌状态，按钮可用性即时呈现，避免用禁用透明度渐变模糊输入锁。
+道具事件沿用发牌／Hit220ms、其余300ms、减少动态35ms和AI思考300ms的节奏。页面区分发牌、行动回放、思考与揭牌；按钮可用性即时呈现，不以禁用透明度渐变模糊输入锁。
 
 ## 8. 正式道具接线与输入失效（REQ-025）
 
-生产controller支持显式S2标准开发预设，useContest透传 `preset` 和三路真实随机；正常App不选择该预设，026接可用页面后再启用。公开 `trumpCommands` 来自权威human观察的 `legalTrumpCommands`，携带instanceId、必要targetId／ownTargetId／definitionId／costIds及当前inputId；send强制human身份并交由同一transitionMatch校验，不暴露完整状态。
+controller支持显式S2标准开发预设，useContest透传preset和三路真实随机，当前App已启用。公开trumpCommands来自权威human观察的legalTrumpCommands，携带instanceId及必要目标／费用／definitionId和inputId；send强制human并由同一transitionMatch校验。
 
 用卡及其补给／触发全部同步提交终态，之后逐帧回放；每张卡回放后恢复同一行动方，Hit／Stay才结束Turn。busy／paused／非行动方及非法目标、费用零副作用，不排队保存待提交输入。每次成功提交、pause、skip、exit、restart更新取消代次，旧inputId不再可用；恢复后须取得新的结构化选择，不自动提交旧目标。
 
 回到可见时调用skipAnimations：回放直接落定终态，思考中的旧回调作废并从权威行动方重新等待决策，闲置时也使目标选择失效；paused仍保持暂停。每个回调检查取消代次，策略返回后再次检查，覆盖策略同步暂停／退出／重开。默认策略继续只接观察和合法Hit／Stay，不主动使用道具。
 
-真实客户端Hook的StrictMode挂载、连续用卡／补给、暂停恢复、可见性分发和卸载／再挂载在本次额外迁移检查覆盖；证据与适用边界统一见 [REQ-025](../requirements/archive/REQ-2026-025-contest-trump-admission-and-coordination.md)。经典队列与持久化顺序不变。
+## 9. 道具选择与回放反馈（REQ-026，已验收）
+
+App显式选择s2-development。view增加当前inputId和最多48条recentEvents，全部由human投影产生；逐帧记入，ready不清空，换Round／重开／退出清空。pause／skip跳至已提交终态时补齐剩余已授权反馈，不补播音效或再次执行命令。旧选择随取消代次失效，界面不缓存待提交命令；选择弹层本身是当前玩家的决策，规则／设置等外部面板仍沿用pause／resume。
+
+引擎在既有Turn边界关闭旧道具撤销窗口处增加公开原因事件，不投影EffectDelta；自动到期的旧封锁即使与上一手无关，也能解释悔牌失效。既有消费、回滚范围、行动权、随机与经典持久化未变。实际验证与未覆盖边界见REQ-026归档需求。

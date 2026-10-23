@@ -1,7 +1,8 @@
 # ADR-003: 竞赛模式独立引擎——domain 三库结构与独立存档
 
 日期：2026-09-23
-状态：已采纳（S0 文档基线；实现随 S1 落地）
+状态：部分被[ADR-004](./ADR-004-contest-turns-and-shared-boundaries.md)取代
+适用范围：保留独立竞赛引擎、经典兼容与独立元进度；下文共享扑克CardId／score、混合权重牌靴及统一存储生命周期为已取代方案，只用于说明设计取舍，不作为当前实现要求。
 
 ## 背景
 
@@ -28,6 +29,4 @@
 - 代价：S1 需一次目录重组（import 路径调整，用 git mv 保留历史）；`application/useGame` 中的动画队列、存储生命周期、跨标签冲突检测需抽为共享基建，两模式各挂薄封装；presentation 新增首页模式路由。
 - "先提交后渲染"硬约束对竞赛引擎同样适用：道具卡效果全部在竞赛 `transition` 内一次性结算，动画队列只播事件快照，动画回调永不决定积分。
 
-## 后续决策（2026-10-04）
-
-[ADR-004](./ADR-004-contest-turns-and-shared-boundaries.md) 部分取代本记录：竞赛改用唯一数字牌、可连续用卡的交替行动与独立道具资源；共享扑克 CardId/score、经典发牌助手、混合权重牌靴及统一存储生命周期不再适用。独立引擎、经典兼容与独立元进度存档方向继续有效。本记录正文保留为 2026-09-23 的历史决定，当前基线以 ADR-004 与 [contest-rules.md](../design/contest-rules.md) 为准。
+当前规则与共享边界见[ADR-004](./ADR-004-contest-turns-and-shared-boundaries.md)及[竞赛规则](../design/contest-rules.md)。

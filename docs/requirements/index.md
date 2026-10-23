@@ -3,8 +3,8 @@
 > 适用范围：**增量需求**的唯一登记处。PRD 不内联需求正文；已实现功能的行为快照在 `../design/`，不转为需求。
 > 何时读取：开始实现任何新需求之前——先在这里（或 GitHub Issues）定位需求 ID。
 > 关联需求：本文件即需求索引。
-> 最后更新：2026-10-22
-> 来源：2026-09-22 文档架构升级新建；首批两条为 2026-09-22 重构终审遗留的 minor；REQ-003–006 来自用户确认的规则 v2 里程碑计划；2026-09-22 REQ-001、REQ-002 完成验收并归档，中间产物提炼进各需求文档；REQ-2026-007 用户于 v0.1.0 发布后新增；REQ-2026-008–011 由 2026-09-22 第三方 UX 审查发现、用户确认后登记；2026-09-22 REQ-2026-008 完成验收并归档；2026-09-23 REQ-2026-009–011 完成验收并归档
+> 最后更新：2026-10-23
+> 来源：增量需求登记与归档。
 
 ## 需求表
 
@@ -30,32 +30,30 @@
 | [REQ-2026-018](./archive/REQ-2026-018-contest-basic-ui.md)                         | S1 模式入口与基础竞赛界面               | done   | 用户                 | src/presentation/shell/、contest/table/、App.tsx、i18n.ts、styles.css                                     | docs/roadmap.md、docs/design/contest-rules.md                                                                            | 2026-10-20 |
 | [REQ-2026-019](./archive/REQ-2026-019-contest-trump-prototype.md)                  | S1 多卡联动原型与页面体验修整           | done   | 用户                 | src/domain/contest/engine/、trumps/、application/contest/ 与 presentation/                                | docs/roadmap.md、docs/design/contest-rules.md、docs/design/ui.md                                                         | 2026-10-20 |
 | [REQ-2026-020](./archive/REQ-2026-020-contest-basic-ai.md)                         | S1 末项：无道具 AI 基线与隔离验收       | done   | 用户                 | src/domain/contest/ai/、engine/、application/contest/、styles.css 及测试                                  | docs/roadmap.md、docs/design/contest-rules.md                                                                            | 2026-10-21 |
-| [REQ-2026-021](./archive/REQ-2026-021-contest-trump-rule-contract.md)              | S2 道具规则定稿与首批准入方案           | done   | 用户（S2 拆分）      | 道具规则／研究、候选元数据与架构／目录测试                                                                | docs/design/contest-rules.md、docs/adr/ADR-004-contest-turns-and-shared-boundaries.md                                    | 2026-10-21 |
+| [REQ-2026-021](./archive/REQ-2026-021-contest-trump-rule-contract.md)              | S2 道具规则定稿与首批准入方案           | done   | 用户（S2 拆分）      | 道具规则／研究、候选元数据与架构／目录测试                                                                | docs/design/contest-trumps.md、docs/design/contest-rules.md、docs/adr/ADR-004-contest-turns-and-shared-boundaries.md     | 2026-10-23 |
 | [REQ-2026-022](./archive/REQ-2026-022-contest-trump-resources.md)                  | S2 道具获取、库存与生命周期             | done   | 用户（S2 拆分）      | src/domain/contest/engine/、trumps/、presets/ 及同目录测试                                                | docs/design/contest-rules.md、docs/adr/ADR-004-contest-turns-and-shared-boundaries.md                                    | 2026-10-21 |
 | [REQ-2026-023](./archive/REQ-2026-023-contest-trump-effects.md)                    | S2 正式数字牌效果与留场规则             | done   | 用户（S2 拆分）      | src/domain/contest/engine/、trumps/ 及效果／观察测试                                                      | docs/design/contest-rules.md、docs/adr/ADR-004-contest-turns-and-shared-boundaries.md                                    | 2026-10-22 |
 | [REQ-2026-024](./archive/REQ-2026-024-contest-trump-scoring-and-chains.md)         | S2 积分道具、补给与有限触发联动         | done   | 用户（S2 拆分）      | src/domain/contest/engine/、trumps/、积分／资源／投影测试                                                 | docs/design/contest-rules.md、docs/adr/ADR-004-contest-turns-and-shared-boundaries.md                                    | 2026-10-22 |
 | [REQ-2026-025](./archive/REQ-2026-025-contest-trump-admission-and-coordination.md) | S2 首批卡池准入与应用接线               | done   | 用户（S2 拆分）      | src/domain/contest/trumps/、presets/、src/application/contest/、生产入口架构测试                          | docs/design/contest-rules.md、docs/adr/ADR-004-contest-turns-and-shared-boundaries.md                                    | 2026-10-22 |
-| [REQ-2026-026](./active/REQ-2026-026-contest-trump-interface.md)                   | S2 道具手牌、留场与对抗反馈界面         | active | 用户（S2 拆分）      | src/presentation/contest/、App.tsx、i18n.ts、styles.css、src/application/contest/useContest.ts 及相关测试 | docs/design/contest-rules.md、docs/adr/ADR-004-contest-turns-and-shared-boundaries.md                                    | 2026-10-21 |
-| [REQ-2026-027](./active/REQ-2026-027-contest-active-skills.md)                     | S2 主动技框架、首批15技与战前选择       | active | 用户（主动技提前）   | domain/contest、application/contest、presentation/contest、i18n及测试                                     | docs/design/contest-rules.md、docs/design/ui.md、docs/adr/ADR-004-contest-turns-and-shared-boundaries.md                 | 2026-10-22 |
-| [REQ-2026-028](./active/REQ-2026-028-contest-combination-ai.md)                    | S2 末项：道具与主动技组合AI对抗         | active | 用户（S2拆分／顺延） | src/domain/contest/ai/、必要engine纯函数、src/application/contest/及测试                                  | docs/design/contest-rules.md、docs/adr/ADR-004-contest-turns-and-shared-boundaries.md                                    | 2026-10-21 |
+| [REQ-2026-026](./archive/REQ-2026-026-contest-trump-interface.md)                  | S2 道具手牌、留场与对抗反馈界面         | done   | 用户（S2 拆分）      | src/presentation/contest/、App.tsx、i18n.ts、styles.css、src/application/contest/useContest.ts 及相关测试 | docs/design/contest-rules.md、docs/adr/ADR-004-contest-turns-and-shared-boundaries.md                                    | 2026-10-23 |
+| [REQ-2026-027](./active/REQ-2026-027-contest-active-skills.md)                     | S2 主动技框架、首批15技与战前选择       | active | 用户（主动技提前）   | domain/contest、application/contest、presentation/contest、i18n及测试                                     | docs/design/contest-rules.md、docs/design/ui.md、docs/adr/ADR-004-contest-turns-and-shared-boundaries.md                 | 2026-10-23 |
+| [REQ-2026-028](./active/REQ-2026-028-contest-combination-ai.md)                    | S2 末项：道具与主动技组合AI对抗         | active | 用户（S2拆分／顺延） | src/domain/contest/ai/、必要engine纯函数、src/application/contest/及测试                                  | docs/design/contest-rules.md、docs/adr/ADR-004-contest-turns-and-shared-boundaries.md                                    | 2026-10-23 |
 
-REQ-2026-021已完成51卡规则／数学实验与研究目录合并后自审归档，原版R/Q资料统一保留、非剧情卡最晚S4结束引入；022已完成真实资源／销毁／生成删除及三卡类型接缝，023已完成28项既定数字／留场定义加悔牌共29个执行定义并自审归档；024已完成24个计分／补给／封锁及赌命定义、隐蔽费用与扩展悔牌，外审两条P3已补修并自审归档，现有执行定义合计53个；规划54卡、027新增15技，025已完成53卡准入、结构化应用接线与取消／迁移复验并归档，026–028仍为active、尚未实施；按规则定稿 → 资源 → 数字／留场效果 → 积分／补给联动 → 卡池与应用 → 页面 → 主动技 → 末项组合 AI 的顺序推进。依赖与周期交付见 [S2 排期](../roadmap.md#s2-需求拆分与实施顺序2026-10-21)。
-
-REQ-2026-001–020 已验收归档（S1 整体外审与最终验收通过，周期已结束）。REQ-014 经独立验收绿灯，main 上 v0.1.4 已正式发布并完成上传资产回读复验，仅交付架构迁移兼容性，无新增 feature，图鉴不生效；实际 Release 证据见归档需求。REQ-015 已在发布后 main 新建的 `codex/contest-round-engine` 实现并通过独立验收（2026-10-20），实现与验收证据见归档需求；实现与归档记录归入该分支，开发版本为 0.2.0、尚未发布。REQ-016 已按任务收尾检查与自审验收归档（2026-10-20），标准无道具 BO5、积分递延和比赛生命周期已实现；REQ-017 已按任务收尾检查与自审验收归档（2026-10-20），已接内存提交、投影队列、取消与占位对手；REQ-018 已实现模式入口与基础竞赛界面、通过四项用户人工页面测试并归档（2026-10-20），三条非阻塞体验观察已并入 REQ-019；REQ-019 已实现有限多卡原型与三项体验修整、自审验收归档（2026-10-20）；REQ-020 已作为 S1 末项完成无道具 AI 基线、隔离与取消补证并自审归档，沿用竞赛分支与 0.2.0 开发版本；S1 整体外部审查已完成，Codex 技术验收及用户最终验收通过，S1 周期已结束，详见 [S1 周期归档记录](archive/REQ-2026-020-contest-basic-ai.md)。实施顺序和依赖见 [roadmap.md](../roadmap.md)；S2的REQ-021–025已完成，其余026–028待实施，主动技为REQ-027、AI组合决策为末项REQ-028；后续新需求编号自 REQ-2026-029 起顺延。
+REQ-001–026已验收归档，REQ-027–028为active、尚未实施；后续新编号自REQ-2026-029起顺延。S1周期结论见[REQ-020](archive/REQ-2026-020-contest-basic-ai.md#s1-周期归档记录)，S2依赖与实施顺序见[roadmap](../roadmap.md#s2-需求拆分与实施顺序2026-10-21)。
 
 ## 状态流转
 
 - `active`：进行中，文件在 [active/](./active/)。
 - `done` / `cancelled`：移入 [archive/](./archive/)，本表保留一行（状态更新）。
 
-## 验收方式（2026-10-20 用户裁定）
+## 验收与归档
 
-自 REQ-016 起，完成实现、适用的任务收尾检查（见 [../testing.md](../testing.md) §1）与自审查且无待修复问题，即通过该需求验收；将证据写入需求文档，更新为 done 并归档，无需逐项等待单独验收。REQ-018 曾按用户要求保留 active 等待人工页面测试；四项测试现已通过并获清理归档授权，例外流程已结束。S1 整体外部审查已于 2026-10-21 完成；Codex 技术验收及用户最终验收通过，S1 周期已结束，证据与处置已归入 REQ-020 的 S1 周期归档记录。REQ-014/015 已完成的独立验收记录保留为历史证据。
+自REQ-016起，实现、[任务收尾检查](../testing.md#1-自动检查)及自审查无待修复问题，即通过验收并归档；额外外审或人工测试按用户安排。验收记录参照[REQ-001](./archive/REQ-2026-001-reset-panel-cancel.md)，仅保留最终结论、实现结果、关键检查证据与未覆盖边界；同范围多轮自测／外审／补验合并，不逐轮罗列过程。
 
 ## 约定
 
 - ID 格式 `REQ-YYYY-NNN`（如 `REQ-2026-001`）；对应 GitHub Issue 时在"来源"列写 `owner/repo#123`。
 - 需求落地后：回写受影响的 `../design/` 快照，并在代码/测试注释标注 `@req REQ-YYYY-NNN`（或 `@issue #123`）。
-- 每个需求最终只保留 1 个文档（背景 / 方案要点 / 验收标准 / 验收记录 / 变更记录）；验收报告、交接清单、实施计划等中间产物精炼后提炼进需求文档，随即删除，不单独留档。
-- S1 临时交接例外已于 2026-10-21 结束：整体外审和用户最终验收通过，交接内容提炼入 REQ-020 后删除，恢复每个需求仅一份归档文档的常规流程。
+- 每个需求最终只保留 1 个文档（背景 / 方案要点 / 验收标准 / 验收记录）；验收报告、交接清单、实施计划等中间产物精炼后提炼进需求文档，随即删除，不单独留档。
+- 需求文档保留需求与实现摘要、具体验收步骤及最终证据；详细设计、卡表与来源放在 ../design/，可复用验证代码放在 scripts/validation/；../testing.md 只维护通用门槛，不追加任务记录。版本差异通过Git提交追溯。
 - 模板：[REQ-TEMPLATE.md](./REQ-TEMPLATE.md)。

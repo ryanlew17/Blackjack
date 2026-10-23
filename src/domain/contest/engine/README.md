@@ -1,8 +1,8 @@
-# 竞赛引擎（S1＋S2资源、数字与积分联动）
+# 竞赛引擎
 
 @req REQ-2026-015 @req REQ-2026-016 @req REQ-2026-019 @req REQ-2026-020 @req REQ-2026-022 @req REQ-2026-023 @req REQ-2026-024
 
-纯TypeScript的Match／Game／Round／Turn状态机。正常页面仍是标准无道具BO5；资源、数字、积分及有限联动可通过显式规则及独立随机端口使用。正式卡池／应用接线在025，页面在026；引擎入口不导入候选目录、执行定义或预设。
+纯TypeScript的Match／Game／Round／Turn状态机。正常页面使用标准含道具BO5，由应用显式注入冻结的资源／执行配置及独立随机端口；核心引擎入口不导入道具目录、执行定义或预设。
 
 ## 权威命令与随机
 
@@ -22,7 +22,7 @@
 
 活道具只在stock／hands，出卡及费用立即销毁；destroyed是审计，不能再次领取。TableEffect以effectId作为目标，sourceInstanceId只关联已销毁来源；最多五格，自己的同类全局替换可腾己方格，对方位置不能抵扣。先校验容量／目标／费用，再消费／执行；清除不撤销已完成的即效部分。
 
-`trumpLegality.ts`只按授权观察列举命令；effects.ts是唯一执行入口。29个数字／留场及悔牌定义在trumps/numberDefinitions.ts，24个积分／补给／封锁及赌命定义在trumps/interactionDefinitions.ts，须显式注入，不代表候选目录或生产白名单已准入。绑定增减统一求和后最低1，按数字ID跟随交换；回堆或删除清除绑定。共振锁定非暗牌明牌数；移花只对明确八类记录换控制方，保留来源／次数／顺序，不重放onPlay。
+`trumpLegality.ts`只按授权观察列举命令；effects.ts是唯一执行入口。29个数字／留场及悔牌定义在trumps/numberDefinitions.ts，24个积分／补给／封锁及赌命定义在trumps/interactionDefinitions.ts，由trumps/admitted.ts聚合为53个正式准入定义，再由应用显式注入。绑定增减统一求和后最低1，按数字ID跟随交换；回堆或删除清除绑定。共振锁定非暗牌明牌数；移花只对明确八类记录换控制方，保留来源／次数／顺序，不重放onPlay。
 
 effectOperations.ts提供共享可逆变更，undo.ts按上一手实际差量逆转。悔牌不回滚整场快照、Turn、费用、旧卡体、库存额度或随机；撤销删除生成新ID，恢复留场生成新effectId并重映射绑定。揭牌／窥序知识不失忆；Stay不覆盖上一手，结算与非出牌变更关闭窗口，不能跨Round撤销。
 
@@ -40,4 +40,4 @@ onPlay补给与触发使用内部EffectRecorder，在发布每个回放帧之前
 
 Round清理留场、倍率、抽数修正、窥序与事务窗口，保留未用道具、库存及当前Game审计；Game结束清空旧资源，新Game用新命名空间重建。初始、生成、活牌与删除按来源核账，不以固定11活数字或每Game用卡≤2M约束所有生成玩法。
 
-prototype.ts、testHelpers.ts、numberEffectTestHelpers.ts、预设和执行定义均不在生产依赖图。025复用现有执行定义完成卡池／应用准入，026接界面，027接主动技，028最后接组合AI；没有竞赛牌面存储或经典规则耦合。
+prototype.ts与各测试助手不进入生产依赖图；正式预设和执行定义经精确文件白名单准入。主动技与组合AI尚未实现；没有竞赛牌面存储或经典规则耦合。

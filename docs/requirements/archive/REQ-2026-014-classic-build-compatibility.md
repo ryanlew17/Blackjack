@@ -1,13 +1,11 @@
 # REQ-2026-014: S1 经典模式重构与构建兼容
 
 状态: done
-进度: 独立验收通过，v0.1.4 已发布并完成上传资产回读复验（2026-10-18）
 来源: 用户（2026-10-18 S1 拆分）
 关联设计: docs/architecture.md、docs/adr/ADR-002-singlefile-release-build.md、docs/design/state-and-animation.md、docs/design/persistence.md、docs/design/ui.md、docs/testing.md
 影响模块: src 现有经典入口与模块导入、构建依赖边界及必要测试
 实施前提: 无；作为 S1 第一项，先验收再启动竞赛功能接线
-开发分支: main（直接开发）
-目标发布版本: 0.1.4
+发布版本: v0.1.4
 非目标: 竞赛入口、任何新增 feature、图鉴调用、规则或存档版本调整
 
 ## 背景
@@ -16,14 +14,14 @@ REQ-012/013 已完成目录迁移和图鉴数据前置开发，但该批明确�
 
 ## 方案要点
 
-- 直接在 main 开发，完成验收后发布 v0.1.4，仅交付架构迁移及兼容性修正。同步 package.json、锁文件的项目版本和产物版本显示；不升级经典规则或存档版本。需求登记阶段未修改版本或发布；实际实施、独立验收与发布结果见下方记录。
+- 直接在 main 开发，完成验收后发布 v0.1.4，仅交付架构迁移及兼容性修正。同步 package.json、锁文件的项目版本和产物版本显示；不升级经典规则或存档版本。
 
 - 在实施开始时读取最新正式 GitHub Release，固定 tag、提交 SHA、实际分发文件及其校验值作为对照。当前仓库记录版本为 v0.1.3，但不以本地 package.json 或 HEAD 代替远端 Release 证据。若实施期间出现新 Release，明确记录是否更新对照，不混用基线。
 - 审查入口、相对导入、共享组件、设置信封和打包依赖，仅作维持已有行为所需的重构／修正。已经正确的路径不为满足“重构”而再次搬迁。
 - 正常入口保持经典模式；不新增模式选择、道具、图鉴、难度或调试入口，不调用竞赛候选目录、实验预设、图鉴查询／进度 API，不产生竞赛存储写入。现有候选数据可以保留在源码和测试中，静态双语字符串存在不等于调用数据系统。
 - 保留 relative base、单文件构建、版本显示机制、经典 rulesVersion/save version、存储键、设置、游戏规则、文案、视觉和操作方式。
 - “产物与最新 Release 完全一致”除发布版本标识更新为 0.1.4 及相应分发元数据外，按用户可见功能、规则结果、界面、交互、存档兼容与运行方式验收；同时记录包结构与字节差异。目录和构建工具可能改变压缩字节，不能把功能等价报告成二进制相同，也不能借字节差异放行行为变化。
-- 本需求实施时必须执行正常构建并用新产物与 Release 实际产物对照；需求登记时未构建，实际开发与发布均已执行正常构建。若无法取得 Release 产物，验收保持未通过，不以当前源码自证一致。
+- 本需求实施时必须执行正常构建并用新产物与 Release 实际产物对照；若无法取得 Release 产物，验收保持未通过，不以当前源码自证一致。
 
 ## 验收标准
 
@@ -38,40 +36,9 @@ REQ-012/013 已完成目录迁移和图鉴数据前置开发，但该批明确�
 
 ## 验收记录
 
-### 2026-10-18 开发自验（独立验收前的历史记录）
+2026-10-18 独立验收通过，v0.1.4已发布并完成上传资产复验。
 
-- 分支 `main`，开始实施的 HEAD 为 `225a17b0943e9e3c7555d342089d3be8915c6789`。开发自验时改动位于工作区，尚未提交、打 tag 或创建 Release；后续独立验收与发布见下节。
-- 开始时通过 GitHub API 读取最新正式 [v0.1.3 Release](https://github.com/ryanlew17/Blackjack/releases/tag/v0.1.3)，Release ID `394096100`，远端 tag 为 commit `38662185d5a25c06fd2928da96d8fcbc1ae35d6b`。实际下载 asset `582190838`（`The-Green-Room-v0.1.3.zip`，135,205 bytes），SHA-256 `703a60ed5b428c4bf8afa19760831b05a74f0aeaa024a0f12fbc124ff38ec0a9` 与 GitHub digest 一致。交接前复查最新正式 Release 未变，未混用基线。
-- REQ-012 已正确迁移经典路径，本次没有再次搬迁或改写经典产品逻辑。新增 `src/architecture.test.ts` 的生产入口递归依赖检查，阻止间接静态／动态竞赛导入及测试助手进入入口；三次临时负向注入均被拒绝并已恢复。项目与锁文件版本同步为 `0.1.4`，关于页仍由既有 `__APP_VERSION__` 注入。
-- 自动门槛：Vitest **109/109**（经典 64 + 数据／架构 45）、typecheck、format:check、正常 `npm run build` 全部通过。构建产物 `index.html` 429,176 bytes，gzip 136.02 kB；relative base、单文件插件和依赖版本未改。
-- 源码自审：以 v0.1.3 tag 的 25 个原有文件为对照，归一化模块路径、语法格式／注释及已验收的 `contest.*` 静态字典新增项后，AST 结构一致。实际 Vite 生产模块图包含 21 个 src 模块，竞赛模块为 0；存储检查仅出现 `green-room.blackjack.v1`。规则和存档均保持 v2。
-- Chrome `155.0.8059.85`，Playwright CLI：两套实际产物分别经 localhost（候选使用正常生产 preview）、干净解压 `file://`、实际 LAN `http://192.168.31.41:4180` 执行相同固定输入。16 份报告共 **692 次检查断言**，均通过，控制台／页面错误 0。三种运行方式各有 22 个功能状态和 3 个恢复／互导状态检查点，两产物逐项一致；比较完整 game/settings/version/rulesVersion，仅忽略每次正常生成的 revision/savedAt。
-- 覆盖发牌及重复点击、要牌、分牌与第二手刷新、分 A、分牌 21、分后加倍、保险购买／放弃／不足／天然、奇数筹码晚投降、赔付与历史、动画中实际刷新、模拟恢复可见、真实下载／导入往返、两个版本实际下载文件互导、非法导入不写入、双向跨标签冲突、存储失败继续游戏及导出、旧档／损坏自动存档保护、键盘／焦点和设置持久化。LAN 实测 `isSecureContext: false`、`crypto.randomUUID: undefined`。
-- 1440px／320px × en／zh × 下注、分牌、保险、结算、历史、设置、关于共 28 组：DOM 文本（归一化版本号）及按钮几何一致，无横向溢出；24 组截图字节相同，4 组关于页仅预期版本差异，另行遮罩版本字段后 4/4 字节相同。320px 使用触屏模拟操作。
-- 已验收 ZIP `The-Green-Room-v0.1.4.zip` 为 136,743 bytes，SHA-256 `8bca631e0b934becb88bc9415947d4cf435dd766f09cb21fe8d9ad5b227aa1bc`。包内仍为 `index.html`、`favicon.svg`、`LICENSE`；内联 CSS、favicon、LICENSE 与基线逐字节一致，HTML 增加 8,402 bytes，ZIP 增加 1,538 bytes。既有未调用的候选字典仍会进入共享 i18n 负载；这不表示图鉴系统生效，也不声称二进制相同。
-- 基础代码审查未发现待修复问题。开发证据已汇总为本记录；原始脚本、报告、截图、夹具及下载为本地临时产物，验收与发布收尾后清理。正式发布 ZIP 保留于 `output/release/` 并上传 GitHub Release。
-- 本次未新增 WebKit／Firefox 实测，不代表重跑历史三引擎矩阵；320px 为模拟触屏，未使用实体手机。visibilitychange 为合成事件，未模拟真实系统后台节流；未做音效听感验收。这些开发自验边界未被后续独立结论扩写为未执行的平台覆盖。
-
-### 2026-10-18 独立验收：绿灯，可发布
-
-用户在本会话提供独立验收 Agent 的正式结论：“绿灯（可发布）”。验收 Agent 按临时 handoff 的工作顺序完成代码审查、正式基线核验、四项门槛复跑、产物比对及生产 preview／file://／明文 HTTP 三种路径浏览器冒烟，未发现产品缺陷，确认候选 0.1.4 达到发布条件。用户随后明确授权清理临时产物、归档本需求及 commit、push、tag、Release。
-
-临时 handoff 的结论、关键复跑范围、产物哈希及已知边界已提炼进本文，删除 handoff。REQ-015–020 尚未开始；后续仅从 v0.1.4 发布基线另建竞赛开发分支，不向本次经典发布加入功能。
-
-### v0.1.4 发布记录
-
-- 发布提交：[af657cf06f8911d33a1a345850880b4856644b81](https://github.com/ryanlew17/Blackjack/commit/af657cf06f8911d33a1a345850880b4856644b81)，已推送至 `main`；annotated tag `v0.1.4` 远端回读解析至同一提交。后续收尾提交仅同步文档，不移动发布 tag。
-- 正式 [The Green Room v0.1.4 Release](https://github.com/ryanlew17/Blackjack/releases/tag/v0.1.4)，Release ID `416539361`，发布时间 2026-10-18 23:45:18（Asia/Shanghai），非 draft／prerelease，设为最新正式版本。
-- 实际上传资产：[The-Green-Room-v0.1.4.zip](https://github.com/ryanlew17/Blackjack/releases/download/v0.1.4/The-Green-Room-v0.1.4.zip)，asset ID `653827955`，136,743 bytes。SHA-256 `8bca631e0b934becb88bc9415947d4cf435dd766f09cb21fe8d9ad5b227aa1bc`；GitHub digest、重新下载字节、已验收候选与本地正式 ZIP 完全一致。
-- 下载后在干净目录解压，仍仅包含 `index.html`、`favicon.svg`、`LICENSE`，每个文件与正常构建一致。HTML SHA-256 `59b101eef0d0e09abda001ebcdf7bfb688052cc6366ed0d76ea3678449aa6603`；保留相对 base 和内联 JS／CSS。
-- 发布后使用实际重新下载的产物在 Chrome `155.0.8059.85` 执行 `file://` 与 `http://192.168.31.41:4180/` 两路径复验，2 份报告共 **156 次断言通过**、控制台／页面错误 0；每条路径的 22 个完整功能状态与原正式基线一致。覆盖完整对局、分牌／保险／投降、重复点击、历史、动画中实际刷新、真实下载导入往返、跨标签冲突、键盘／焦点及设置。LAN 再次实测非安全上下文且 randomUUID 缺失，仅出现经典存储键。
-- 文件协议验证采用 CLI 正式支持的本地文件访问配置，限本次临时隔离会话，验证后关闭；键盘复跑在重载后等待绘制完成再发出原生输入，以避免自动化启动时序偶发超时，未修改产品或分发包。
-- 发布收尾复跑 109/109 测试、typecheck、format:check、正常 build 全部通过；文档相对链接已核对。主需求已归档，临时 handoff、开发证据包、脚本、截图／夹具／临时下载及发布复验解压目录均按授权清理。正式 ZIP 与双语发布说明保留于 `output/release/`，最终下载以 GitHub Release 资产为准。
-
-## 变更记录
-
-- 2026-10-18：完成经典构建兼容开发、自验与基础代码审查，项目候选版本 0.1.4；交付临时 handoff，等待独立评审和后续发布。
-
-- 2026-10-18：独立验收绿灯，按用户授权归档并删除临时 handoff，开始 v0.1.4 发布收尾。
-
-- 2026-10-18：main 提交、推送及 v0.1.4 tag／Release 完成；实际上传包回读校验与两路径 156 次断言通过，清理临时产物并完成需求归档闭环。
+- 对照实际[v0.1.3发布包](https://github.com/ryanlew17/Blackjack/releases/tag/v0.1.3)，经典功能／存档与28组双语桌面／320px画面一致，仅版本显示按计划更新；入口无竞赛／图鉴调用，规则及存档v2、旧存储键、相对base和单文件保持不变。
+- 自动检查：109/109、typecheck、format:check、build通过。Chrome 155在preview、干净file://及LAN明文HTTP执行692项对照断言；上传包回读后file://／LAN再验156项，均通过且零控制台／页面错误。
+- 正式[发布包](https://github.com/ryanlew17/Blackjack/releases/download/v0.1.4/The-Green-Room-v0.1.4.zip)为136,743 bytes，SHA-256 `8bca631e0b934becb88bc9415947d4cf435dd766f09cb21fe8d9ad5b227aa1bc`，GitHub digest与下载字节一致；tag指向[af657cf](https://github.com/ryanlew17/Blackjack/commit/af657cf06f8911d33a1a345850880b4856644b81)。包内仅index.html、favicon.svg、LICENSE，HTML 429,176 bytes；功能等价不代表二进制相同。
+- 边界：未新增WebKit／Firefox、实体手机、真实后台节流或听感验证；visibilitychange仅合成事件。
