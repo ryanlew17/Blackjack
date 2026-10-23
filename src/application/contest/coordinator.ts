@@ -45,6 +45,8 @@ export function createContestCoordinator(
   let current: MatchState | null = null;
   let generation = 0;
   let effectId = 0;
+  let recentEvents: MatchEventView[] = [];
+  let pendingEvents: MatchEventView[] = [];
   let replaying = false;
   let thinking = false;
   let paused = false;
@@ -57,6 +59,8 @@ export function createContestCoordinator(
     paused: false,
     event: null,
     effectId: 0,
+    inputId: 0,
+    recentEvents: Object.freeze([]),
     trumpCommands: Object.freeze([]),
     actions: Object.freeze([]),
   });
@@ -72,6 +76,8 @@ export function createContestCoordinator(
       paused,
       event,
       effectId,
+      inputId: generation,
+      recentEvents: Object.freeze([...recentEvents]),
       actions: Object.freeze(
         actionable ? [...legalMatchActions(actionable)] : [],
       ),
@@ -89,10 +95,17 @@ export function createContestCoordinator(
     for (const listener of listeners) listener();
   }
 
+  function remember(event: MatchEventView) {
+    recentEvents = [...recentEvents.slice(-47), event];
+  }
+  function finishFeedback() {
+    for (const event of pendingEvents) remember(event);
+  }
   function cancelPending() {
     generation++;
     clearTimeout(timer);
     timer = undefined;
+    pendingEvents = [];
     replaying = false;
     thinking = false;
   }
@@ -154,6 +167,7 @@ export function createContestCoordinator(
 
   function commit(result: MatchTransition, resetView = false) {
     cancelPending();
+    if (current?.roundNumber !== result.state.roundNumber) recentEvents = [];
     current = result.state;
     const projected = projectMatchTransition(result, "human");
     if (!projected.events.length) {
@@ -162,17 +176,18 @@ export function createContestCoordinator(
     }
     replaying = true;
     const id = generation;
-    let index = 0;
+    pendingEvents = [...projected.events];
     publish(resetView ? null : view.match);
     const step = () => {
       if (id !== generation) return;
       timer = undefined;
-      const event = projected.events[index++];
+      const event = pendingEvents.shift();
       if (!event) {
         ready();
         return;
       }
       effectId++;
+      remember(event);
       publish(event.state, event);
       if (id !== generation) return;
       options.onEvent?.(event);
@@ -186,6 +201,7 @@ export function createContestCoordinator(
   }
 
   function begin() {
+    recentEvents = [];
     paused = false;
     commit(createMatch(random, options.roundRules, options.trumpSetup), true);
   }
@@ -209,6 +225,7 @@ export function createContestCoordinator(
     exit() {
       cancelPending();
       current = null;
+      recentEvents = [];
       paused = false;
       publish(null);
     },
@@ -228,11 +245,13 @@ export function createContestCoordinator(
     skipAnimations() {
       if (!current) return;
       // Visibility/skip also invalidates idle target selections and pending AI decisions.
+      finishFeedback();
       cancelPending();
       ready();
     },
     pause() {
       if (!current || paused) return;
+      finishFeedback();
       cancelPending();
       paused = true;
       publish(observeMatch(current, "human"));

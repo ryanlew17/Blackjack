@@ -9,6 +9,9 @@ export function ContestRules({ t }: { t: Copy }) {
         <li>{t.contestRuleTurns}</li>
         <li>{t.contestRuleResult}</li>
         <li>{t.contestRuleScore}</li>
+        <li>{t.contestRuleResources}</li>
+        <li>{t.contestRuleEffects}</li>
+        <li>{t.contestRuleBaseline}</li>
       </ol>
       <p className="small-note">{t.contestMemoryHint}</p>
     </>

@@ -115,12 +115,20 @@ export function beginTurn(
 ): RoundTransition {
   let state: RoundState = { ...original, turn };
   const events: RoundEvent[] = [];
+  // @req REQ-2026-026: the boundary itself closes the old transaction, even for an unrelated lock.
+  const closeUndoWindow = () => {
+    if (state.lastPlay?.type !== "trump") return;
+    state = { ...state, lastPlay: null };
+    events.push({
+      type: "undo-window-closed",
+      reason: "turn-boundary",
+      state: freezeData(state),
+    });
+  };
   const remove = (id: string) => {
     const removed = removeEffect(state, id);
-    state = {
-      ...removed.state,
-      lastPlay: state.lastPlay?.type === "trump" ? null : state.lastPlay,
-    };
+    state = removed.state;
+    closeUndoWindow();
     for (const d of removed.deltas)
       if (d.type === "effect-removed")
         events.push({
@@ -148,11 +156,9 @@ export function beginTurn(
       continue;
     const active = isEffectActive(record, state.trumps!.table);
     if (active && record.copiedDefinitionId) {
+      closeUndoWindow();
       const grant = grantTrumps(
-        {
-          ...state,
-          lastPlay: state.lastPlay?.type === "trump" ? null : state.lastPlay,
-        },
+        state,
         turn.player,
         1,
         "trigger",

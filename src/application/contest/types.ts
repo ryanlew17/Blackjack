@@ -28,6 +28,9 @@ export interface ContestView {
   readonly paused: boolean;
   readonly event: MatchEventView | null;
   readonly effectId: number;
+  // @req REQ-2026-026: bounded, authorized feedback survives the last replay frame.
+  readonly inputId: number;
+  readonly recentEvents: readonly MatchEventView[];
   readonly trumpCommands: readonly ContestTrumpAction[];
   readonly actions: readonly MatchCommand["type"][];
 }

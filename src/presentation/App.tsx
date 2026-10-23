@@ -5,6 +5,8 @@ import { useContest } from "../application/contest/useContest";
 import { ModeSelect } from "./shell/ModeSelect";
 import { ContestTable } from "./contest/table/ContestTable";
 import { ContestControls } from "./contest/table/ContestControls";
+import { ContestTrumps } from "./contest/table/ContestTrumps";
+import { ContestFeedback } from "./contest/table/ContestFeedback";
 import { ContestRules } from "./contest/table/ContestRules";
 import { useGame } from "../application/classic/useGame";
 import { legalActions, type GameCommand } from "../domain/classic/game";
@@ -38,7 +40,12 @@ export default function App() {
   const api = useGame(systemReduced),
     { game: g, settings } = api;
   // @req REQ-2026-018: settings/classic progress survive mode changes; matches do not.
-  const contest = useContest({ settings, systemReduced });
+  // @req REQ-2026-026: the standard production entrance now has a usable trump hand.
+  const contest = useContest({
+    settings,
+    systemReduced,
+    preset: "s2-development",
+  });
   const [mode, setMode] = useState<Mode>("home");
   const previousMode = useRef(mode);
   useEffect(() => {
@@ -270,6 +277,8 @@ export default function App() {
               send={contest.send}
               onRestart={restartContest}
             />
+            <ContestTrumps view={contest} t={t} send={contest.send} />
+            <ContestFeedback view={contest} t={t} />
             <footer className="contest-footer">{t.contestMemoryHint}</footer>
           </main>
         )}

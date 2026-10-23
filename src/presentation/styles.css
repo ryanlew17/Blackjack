@@ -1269,6 +1269,7 @@ h1[tabindex="-1"]:focus {
 .contest-game-strip {
   grid-row: 1;
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   gap: 12px;
   color: #adbf9e;
@@ -1532,6 +1533,257 @@ h1[tabindex="-1"]:focus {
   font-size: 10px;
   line-height: 1.7;
   padding: 20px 0 26px;
+}
+
+/* @req REQ-2026-026: collapsible resources follow primary actions, with no fixed overlays. */
+.hidden-multiplier {
+  font-size: 9px;
+  color: #efd698;
+}
+.contest-center .trump-symbiosis,
+.contest-center .trump-sudden-death {
+  grid-column: 1 / -1;
+  color: #e5cf99;
+  margin: 0 0 7px;
+}
+.contest-trumps {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 10px;
+  min-width: 0;
+}
+.contest-trumps details,
+.trump-activity {
+  border: 1px solid #b6c69e33;
+  border-radius: 10px;
+  background: #ffffff03;
+  min-width: 0;
+}
+.contest-trumps summary,
+.trump-activity summary {
+  cursor: pointer;
+  padding: 11px 13px;
+  color: #d4d8bc;
+  font-size: 11px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.trump-hand-panel summary span + span {
+  margin-left: 18px;
+  color: #a6ba9b;
+}
+.contest-trumps summary b {
+  font-weight: 500;
+  color: #e7cc8a;
+}
+.trump-inventory,
+.contest-trumps .small-note {
+  margin: 8px 13px;
+  font-size: 11px;
+  line-height: 1.7;
+}
+.trump-inventory {
+  color: #d5c99d;
+}
+.trump-hand-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(190px, 100%), 1fr));
+  gap: 9px;
+  padding: 3px 12px 12px;
+}
+.trump-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid #adc19644;
+  border-radius: 9px;
+  text-align: left;
+  background: #193c2c;
+  overflow-wrap: anywhere;
+  line-height: 1.6;
+}
+.trump-card strong {
+  color: #e3d2a2;
+  font-size: 13px;
+}
+.trump-card small {
+  color: #b8c7ad;
+  font-size: 11px;
+}
+.trump-card > span {
+  color: #a6b799;
+  font-size: 10px;
+  margin-top: auto;
+}
+.trump-ready {
+  border-color: #d8bd7299;
+}
+.trump-ready > span {
+  color: #f0d192;
+}
+.trump-table-side {
+  padding: 0 13px 8px;
+}
+.trump-table-side h3 {
+  font-size: 12px;
+  font-weight: 500;
+  color: #e5d5ac;
+}
+.trump-effect-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.trump-effect-list li {
+  border-left: 2px solid #9ebc7d;
+  padding: 9px 12px;
+  background: #ffffff04;
+  overflow-wrap: anywhere;
+}
+.trump-effect-list strong {
+  font-size: 12px;
+  color: #e2d8b5;
+}
+.trump-effect-list p,
+.trump-effect-list span,
+.trump-effect-list .effect-warning {
+  display: block;
+  margin: 5px 0 0;
+  font-size: 11px;
+  line-height: 1.6;
+  color: #aebf9f;
+  font-weight: 400;
+}
+.trump-effect-list .trump-suppressed {
+  border-left-color: #b79a71;
+}
+.trump-effect-list .effect-warning {
+  color: #edc690;
+}
+.trump-private-note {
+  padding: 12px;
+  border: 1px dashed #b9cb8c66;
+  border-radius: 10px;
+  color: #e4d5ad;
+  font-size: 12px;
+}
+.trump-private-note small {
+  display: block;
+  color: #b1c49c;
+  margin-top: 5px;
+}
+.trump-chooser {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+.trump-chooser .modal-intro,
+.trump-chooser .small-note {
+  margin: 0;
+}
+.trump-choices {
+  border: 1px solid #adbe9b44;
+  border-radius: 8px;
+  min-width: 0;
+  margin: 0;
+  padding: 9px;
+}
+.trump-choices legend,
+.trump-declaration > span {
+  padding: 0 6px;
+  color: #e8d8a4;
+  font-size: 12px;
+}
+.trump-choices label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 5px;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.trump-choices input {
+  accent-color: #e1c98b;
+  margin: 4px 0 0;
+  flex-shrink: 0;
+}
+.trump-declaration {
+  display: grid;
+  gap: 9px;
+  min-width: 0;
+}
+.trump-declaration select {
+  width: 100%;
+  min-width: 0;
+  color: #e5d9b4;
+  background: #203b2d;
+  padding: 13px 8px;
+  border: 1px solid #adbe9b66;
+  border-radius: 6px;
+}
+.trump-declaration small {
+  font-size: 11px;
+  line-height: 1.6;
+  color: #b0c09f;
+}
+.trump-dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.trump-dialog-actions button {
+  min-width: min(125px, 100%);
+  max-width: 100%;
+}
+.contest-feedback {
+  min-width: 0;
+  margin: 0 0 12px;
+}
+.trump-latest {
+  color: #bacaac;
+  font-size: 11px;
+  line-height: 1.7;
+  margin: 8px 0;
+  overflow-wrap: anywhere;
+}
+.trump-activity ol {
+  padding: 0 22px 12px 32px;
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.8;
+  color: #b3c3a3;
+}
+.trump-score-breakdown {
+  border: 1px solid #d6bd7766;
+  padding: 13px;
+  border-radius: 9px;
+  margin-bottom: 9px;
+  color: #dfd3a9;
+  font-size: 12px;
+  line-height: 1.7;
+}
+.trump-score-breakdown dl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+}
+.trump-score-breakdown dl > div {
+  display: flex;
+  gap: 7px;
+}
+.trump-score-breakdown dd {
+  margin: 0;
+  color: #efd69e;
+}
+.trump-score-breakdown ul:empty {
+  display: none;
 }
 
 @media (min-width: 1500px) {

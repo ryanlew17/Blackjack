@@ -115,6 +115,9 @@ export function projectRoundEvent(
 ): RoundEventView {
   const state = observeRound(event.state, viewer);
   switch (event.type) {
+    // @req REQ-2026-026: explain public boundary closure without projecting inverse deltas.
+    case "undo-window-closed":
+      return freezeData({ type: event.type, reason: event.reason, state });
     case "table-effect":
       return freezeData({
         type: event.type,

@@ -75,6 +75,7 @@ export type RoundEvent = (
   | TrumpEventPayload
   | ResourceEventPayload
   | TableEventPayload
+  | { readonly type: "undo-window-closed"; readonly reason: "turn-boundary" }
   | {
       readonly type: "deal";
       readonly player: PlayerId;
@@ -143,6 +144,7 @@ export type RoundEventView = (
   | TrumpEventPayload
   | ResourceEventView
   | TableEventPayload
+  | { readonly type: "undo-window-closed"; readonly reason: "turn-boundary" }
   | {
       readonly type: "deal";
       readonly player: PlayerId;

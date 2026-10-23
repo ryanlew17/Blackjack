@@ -64,6 +64,8 @@ describe("private authority and projected replay", () => {
       paused: false,
       event: null,
       effectId: 0,
+      inputId: 0,
+      recentEvents: [],
       trumpCommands: [],
       actions: [],
     });

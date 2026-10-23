@@ -12,14 +12,14 @@ export const en = {
   contestTag: "A DIFFERENT KIND OF 21",
   contestMode: "Contest",
   contestIntro:
-    "One shared deck. Alternating turns. Take on an opponent in a standard best-of-five match, without trumps.",
+    "One shared number deck. Chain trumps, change the target, and duel in a standard best-of-five match.",
   startContest: "Start a match",
   contestMemoryHint:
     "This match stays in memory. Leaving or refreshing abandons it.",
   homeFooter: "Local play. Virtual stakes. Your own pace.",
   home: "Home",
   backHome: "Back to home",
-  standardBo5: "Standard · BO5 · No trumps",
+  standardBo5: "Standard · BO5 · Trumps",
   matchScore: "MATCH WINS",
   firstToGames: "First to",
   contestYou: "You",
@@ -41,7 +41,7 @@ export const en = {
   contestReplaying: "Playing the action…",
   contestDealing: "Cards in motion…",
   contestTurnHint:
-    "Hit or stay ends your turn. Two consecutive stays reveal both hands.",
+    "Use trumps below, then Hit or Stay. Two quiet stays reveal both hands.",
   contestPaused: "Match paused",
   opponentThinking: "Opponent is thinking…",
   contestRevealing: "Revealing the round…",
@@ -49,7 +49,8 @@ export const en = {
   roundWon: "You win the round.",
   roundLost: "Opponent wins the round.",
   roundTied: "An even hand.",
-  roundPointHint: "One point to the round winner.",
+  roundPointHint:
+    "Round points include active effects. See the point breakdown below.",
   roundTieHint: "A tie adds no points. The next round has a new first player.",
   gameWon: "The game is yours.",
   gameLost: "Opponent takes the game.",
@@ -73,15 +74,129 @@ export const en = {
   keepPlaying: "Keep playing",
   contestRulesTitle: "Contest rules",
   contestRulesIntro:
-    "Standard best of five, without trumps. Win three games to take the match.",
+    "Standard best of five with trumps. Win three games to take the match.",
   contestRuleDeck:
     "Each round shares one deck containing the numbers 1–11, once each. Both players receive two cards. Your first card is private; your opponent’s first card stays hidden until the reveal.",
   contestRuleTurns:
-    "Players alternate Hit or Stay. Staying does not lock your hand: if play returns to you, you can choose again. Even at or above 21, you must act. Two consecutive stays end the round.",
+    "Chain trumps in your turn, then Hit or Stay to pass play. Staying does not lock your hand. Even at or above the current target, you must act. Two consecutive turns ending in Stay without playing a trump or hitting end the round.",
   contestRuleResult:
-    "The higher total at or below 21 wins. A hand over 21 loses to one within 21; if both exceed 21, the lower total wins. Equal totals tie.",
+    "The higher total within the current card target wins. An over-target hand loses to one within the target; if both exceed it, the lower total wins. Equal totals tie. Trumps can change the target from 21.",
   contestRuleScore:
-    "A round win earns one point; ties earn none. First to 5 wins a game. At 4 : 4 the target becomes 7, at 6 : 6 it becomes 9, and so on. The first player alternates every round, including across games.",
+    "A round win normally earns one base point plus up to two bonus points after attack and defense. Ceasefire removes bonuses; Full Guard can prevent all points. Ties add none. First to 5 wins a game; 4 : 4 extends the target to 7, then 6 : 6 to 9. First play alternates each round.",
+
+  // @req REQ-2026-026: playable trump interaction and projected feedback.
+  trumpFixtureTitle: "REQ-026 isolated review fixture",
+  trumpFixtureWarning:
+    "Review only. Fixed cards and a controlled opponent; this page is not part of the normal app or release build.",
+  trumpFixtureStep: "Advance fixture opponent",
+  trumpFixtureSkip: "Skip committed replay",
+  trumpUnknown: "Trump",
+  trumpArea: "Trump hand and table effects",
+  trumpHand: "Your trumps",
+  trumpOpponentCount: "Opponent holds",
+  trumpStocks: "Stock left · You {own} · Opponent {opponent}",
+  trumpHandHint:
+    "Inspect a card, then use it. You can play several trumps before Hit or Stay.",
+  trumpAvailable: "Available · inspect",
+  trumpReadOnly: "Inspect conditions",
+  trumpEmptyHand:
+    "No trumps in hand. New rounds and some Hits can provide more.",
+  trumpUse: "Use trump",
+  trumpUseHint:
+    "This card is destroyed when used. Your turn continues after the effects finish.",
+  trumpUnavailable:
+    "No legal play now. Check this card’s conditions, available table space, targets and cost. Inspecting or cancelling consumes nothing.",
+  trumpChoose: "Choose…",
+  trumpTarget: "Choose a target",
+  trumpOwnTarget: "Choose your effect to exchange",
+  trumpEffectChoice: "{owner} · {name} · #{position}",
+  trumpNumberChoice: "{owner} · Number {value} · face-up #{position}",
+  trumpDeclaration: "Declare a stock card type",
+  trumpDeclarationHint:
+    "This is the public rulebook, not a view of hidden stock. A miss still consumes the trump.",
+  trumpCost: "Pay {count} other trump(s) · {selected} selected",
+  trumpCostHint:
+    "Selected cards are destroyed as a cost. Their effects do not activate, and Regret does not refund them.",
+  trumpTable: "Table effects · You / Opponent",
+  trumpTableHint:
+    "Up to five effects per side, oldest first. These are effect records; their source cards are already destroyed.",
+  trumpEmptyTable: "No table effects.",
+  trumpSuppressed: "Suppressed · ownership changes do not release the binding",
+  trumpBoundTarget: "Bound to: {target}",
+  trumpExpiry: "Expires after {player}’s Turn {turn}",
+  trumpWatch: "Watching the first trump played in Turn {turn}",
+  trumpRecorded: "Recorded: {name}",
+  trumpCharges: "Uses remaining: {count}",
+  trumpPeek: "Your current deck peek:",
+  trumpPeekHint:
+    "Private knowledge. This disappears when the deck order changes.",
+  trumpHiddenDouble: "Hidden ×2",
+  trumpSymbiosisPending:
+    "Symbiosis: hidden contributions combine only at settlement.",
+  trumpCurrentTurn: "Turn {turn}",
+  trumpFeedback: "Trump activity and round points",
+  trumpFeedbackHint: "Trump effects and point sources appear here.",
+  trumpActivity: "Recent activity",
+  trumpPlayed: "{player} used {name}; the card is destroyed.",
+  trumpDrawMiss:
+    "{name}: requested number unavailable; the trump was still consumed.",
+  trumpDrawn: "{name}: drew number {value}.",
+  trumpReturned: "{name}: number {value} returned to the deck bottom.",
+  trumpPlaced:
+    "{name}: table effect installed. Current target and totals are shown above.",
+  trumpCleared:
+    "{name}: a table effect was cleared, including any dependent bindings.",
+  trumpNumberGenerated: "{name}: generated a new number {value}.",
+  trumpNumberDeleted:
+    "{name}: number {value} deleted without returning to the deck.",
+  trumpSwapped: "{name}: the latest face-up cards were exchanged.",
+  trumpModified: "{name}: the public hidden-card multiplier changed.",
+  trumpRevealed: "{name}: the hidden card was publicly revealed.",
+  trumpPeeked:
+    "{name}: private deck knowledge updated. Only the current valid peek is displayed.",
+  trumpRotated: "{name}: deck order changed; old position knowledge expired.",
+  trumpExchanged:
+    "{name}: control of the selected effects exchanged; bindings and expiry stay unchanged.",
+  trumpUndone:
+    "{name}: the last reversible play was undone. Spent trumps, costs and knowledge are not refunded.",
+  trumpSuddenDeath:
+    "Sudden Death: the next decisive round wins this game; a tie continues.",
+  trumpEffectRemoved: "A table effect ended or was removed.",
+  trumpEffectUpdated: "A table effect’s public record was updated.",
+  trumpUndoBoundary:
+    "A Turn boundary expired an effect or resolved a pending record. The previous trump can no longer be undone, even when that record was unrelated.",
+  trumpSupplyBlocked: "{player}: supply blocked by an active effect.",
+  trumpSupplyZero:
+    "{player}: no trump received (hand full or no eligible stock). Spent cards stay consumed.",
+  trumpOpponentSupply:
+    "{player}: supply processed; unpublished identities remain hidden.",
+  trumpReceived: "{player} drew {name} from stock.",
+  trumpGenerated:
+    "{player} generated {name}; this does not consume a stock copy.",
+  trumpTransferred: "{player} received the transferred {name}.",
+  trumpStockDeleted: "A stock copy of {name} was deleted.",
+  trumpStockMiss:
+    "No stock copy of {name} was deleted; the played trump was still consumed.",
+  trumpCostPaid: "{player} paid {name} as a cost; its effect did not activate.",
+  trumpRoundCleanup:
+    "Round effects cleared. Unplayed trumps and remaining stock carry into the next round.",
+  trumpGameCleanup:
+    "Game resources cleared. The next game starts with fresh stocks.",
+  trumpTargetExtended: "Game point target extended to {target}.",
+  trumpScoreAward: "{player} · round points +{points}",
+  trumpScoreBase: "Base",
+  trumpScoreAttack: "Attack",
+  trumpScoreDefense: "Defense",
+  trumpScoreBonus: "Final bonus",
+  trumpScoreGuarded:
+    "Full Guard prevented all points, including the base point. This round is still complete.",
+  trumpScoreCeasefire: "Ceasefire removed all bonus points.",
+  contestRuleResources:
+    "Each game starts with two trumps plus one for each new round. Ordinary Hits have a 30% supply gate. Your hand holds eight; each side can keep five table effects. Stock draws are without replacement.",
+  contestRuleEffects:
+    "A played trump and its costs are destroyed, even if the effect misses. Use several trumps in one turn; Hit or Stay ends it. Clearing an effect does not recover its card. Regret only reverses the last eligible play, never costs, randomness or known information.",
+  contestRuleBaseline:
+    "The current opponent draws trumps but only chooses Hit or Stay. Trump-combination AI and active skills arrive in later development.",
 
   // @req REQ-2026-013: catalog copy; no codex page is mounted yet.
   "contest.trump.draw-2.name": "Draw 2",
@@ -424,13 +539,13 @@ export const zh: Copy = {
   contestTag: "另一种二十一点",
   contestMode: "竞赛模式",
   contestIntro:
-    "共享数字牌，交替行动。与对手展开标准五局三胜对弈，当前不含道具。",
+    "共享数字牌堆，连续使用道具、改变目标点数，开始一场标准五局三胜对决。",
   startContest: "开始比赛",
   contestMemoryHint: "比赛仅保留在内存中，离开或刷新即放弃。",
   homeFooter: "本地单机 · 虚拟筹码 · 随心游玩",
   home: "首页",
   backHome: "返回首页",
-  standardBo5: "标准 · 五局三胜 · 无道具",
+  standardBo5: "标准 · 五局三胜 · 含道具",
   matchScore: "胜局比分",
   firstToGames: "胜场所需局数",
   contestYou: "你",
@@ -451,7 +566,7 @@ export const zh: Copy = {
   firstPlayer: "本回合先手",
   contestReplaying: "正在回放行动…",
   contestDealing: "正在发牌…",
-  contestTurnHint: "要牌或停牌结束本次行动。连续两次停牌后，双方揭牌结算。",
+  contestTurnHint: "可在下方连续用卡，再要牌或停牌。双方连续安静停牌后揭牌。",
   contestPaused: "比赛已暂停",
   opponentThinking: "对手正在思考…",
   contestRevealing: "正在揭牌结算…",
@@ -459,7 +574,7 @@ export const zh: Copy = {
   roundWon: "你赢下了这一回合。",
   roundLost: "对手赢下了这一回合。",
   roundTied: "这一手，平分秋色。",
-  roundPointHint: "本回合胜方获得 1 分。",
+  roundPointHint: "本回合积分包含生效道具修正，明细见下方。",
   roundTieHint: "平局不计分，下一回合轮换先手。",
   gameWon: "这一局，属于你。",
   gameLost: "对手赢下了这一局。",
@@ -479,15 +594,110 @@ export const zh: Copy = {
   restartContestBody: "当前比赛将被替换为新的标准五局三胜比赛。",
   keepPlaying: "继续比赛",
   contestRulesTitle: "竞赛规则",
-  contestRulesIntro: "标准五局三胜，当前无道具。先赢下三局，即获整场胜利。",
+  contestRulesIntro: "含道具的标准五局三胜，先赢下三局，即获整场胜利。",
   contestRuleDeck:
     "每回合共享 1–11 各一张的数字牌。双方各发两张，首张为暗牌：自己的暗牌自己可见，对手暗牌到结算揭牌才公开。",
   contestRuleTurns:
-    "双方交替要牌或停牌。停牌不锁定手牌，再次轮到你时仍可重新选择。即使达到或超过 21 点，也需要行动。连续两次停牌后，回合结束。",
+    "本次行动可连续使用道具，再要牌或停牌交权。停牌不锁死手牌，轮回自己时可重新决策；达到或超过当前目标仍需行动。双方连续完成未用卡、未要牌的安静停牌后揭牌结算。",
   contestRuleResult:
-    "均未超过 21 点时，点数较大者胜；仅一方超过时，未超过者胜；双方均超过时，点数较小者胜。点数相同为平局。",
+    "在当前牌面目标内点数较大者胜；超出目标者输给未超出者，双方都超出时点数较小者胜，相同则平局。道具可以改变默认21点目标。",
   contestRuleScore:
-    "回合胜方加 1 分，平局不加分。每局先得 5 分者胜；4 : 4 时目标递延为 7，6 : 6 时为 9，以此类推。每回合轮换先手，跨局也继续轮换。",
+    "回合胜方通常取得基础1分，加上进攻减防御后最多2分额外分。息战清额外分，护身可令本回合得0分；平局0分。先达5分胜局，4:4递延到7分、6:6递延到9分。每回合轮换先手。",
+
+  // @req REQ-2026-026: playable trump interaction and projected feedback.
+  trumpFixtureTitle: "REQ-026 隔离审查夹具",
+  trumpFixtureWarning:
+    "仅供审查：固定牌与受控对手。本页不属于正常入口或发布构建。",
+  trumpFixtureStep: "推进夹具对手",
+  trumpFixtureSkip: "跳过已提交回放",
+  trumpUnknown: "道具",
+  trumpArea: "道具手牌与留场效果",
+  trumpHand: "你的道具",
+  trumpOpponentCount: "对手持有",
+  trumpStocks: "剩余库存 · 你 {own} · 对手 {opponent}",
+  trumpHandHint: "点选道具查看详情并使用。要牌或停牌前，可连续使用多张道具。",
+  trumpAvailable: "可用 · 查看",
+  trumpReadOnly: "查看使用条件",
+  trumpEmptyHand: "当前没有道具。新回合与部分普通要牌可获得补给。",
+  trumpUse: "使用道具",
+  trumpUseHint: "使用后本牌立即销毁。效果回放完毕后仍由你行动。",
+  trumpUnavailable:
+    "当前没有合法用法。请核对本牌条件、留场容量、目标与费用；查看或取消均不消耗道具。",
+  trumpChoose: "请选择…",
+  trumpTarget: "选择目标",
+  trumpOwnTarget: "选择要交换的己方效果",
+  trumpEffectChoice: "{owner} · {name} · 第{position}项",
+  trumpNumberChoice: "{owner} · 数字{value} · 第{position}张明牌",
+  trumpDeclaration: "声明要删除的库存类型",
+  trumpDeclarationHint:
+    "此列表来自公开规则目录，不代表隐藏库存。未命中仍会消耗道具。",
+  trumpCost: "支付另外{count}张道具 · 已选{selected}张",
+  trumpCostHint: "所选道具作为费用销毁，不发动其效果；悔牌也不会返还费用。",
+  trumpTable: "留场效果 · 你／对手",
+  trumpTableHint:
+    "双方各最多五项，按从旧到新排列。这些是效果记录，来源道具牌已经销毁。",
+  trumpEmptyTable: "当前没有留场效果。",
+  trumpSuppressed: "受压制 · 转移控制权不会解除绑定",
+  trumpBoundTarget: "绑定目标：{target}",
+  trumpExpiry: "在{player}的第{turn}行动轮结束后到期",
+  trumpWatch: "记录第{turn}行动轮的首张已用道具",
+  trumpRecorded: "已记录：{name}",
+  trumpCharges: "剩余触发次数：{count}",
+  trumpPeek: "你当前窥见的堆顶：",
+  trumpPeekHint: "仅你可见。牌堆顺序变化后，此片段失效。",
+  trumpHiddenDouble: "暗牌×2",
+  trumpSymbiosisPending: "共生：在揭牌结算时合并双方暗牌贡献。",
+  trumpCurrentTurn: "行动轮 {turn}",
+  trumpFeedback: "道具反馈与回合积分",
+  trumpFeedbackHint: "道具效果与积分来源将在此显示。",
+  trumpActivity: "近期行动记录",
+  trumpPlayed: "{player}使用{name}，本牌已销毁。",
+  trumpDrawMiss: "{name}：指定数字不可得，道具仍已消耗。",
+  trumpDrawn: "{name}：抽到数字{value}。",
+  trumpReturned: "{name}：数字{value}已返回牌堆末尾。",
+  trumpPlaced: "{name}：效果已留场；当前目标与有效点数见牌桌。",
+  trumpCleared: "{name}：已清除留场效果及其依赖绑定。",
+  trumpNumberGenerated: "{name}：生成新的数字{value}。",
+  trumpNumberDeleted: "{name}：数字{value}已删除，不返回牌堆。",
+  trumpSwapped: "{name}：双方末张明牌已交换。",
+  trumpModified: "{name}：公开暗牌倍率已更新。",
+  trumpRevealed: "{name}：暗牌已向双方公开。",
+  trumpPeeked: "{name}：私有堆顶信息已更新，仅显示当前仍有效的窥序片段。",
+  trumpRotated: "{name}：牌堆顺序已改变，旧位置情报失效。",
+  trumpExchanged: "{name}：所选效果控制权已交换，绑定与原到期行动轮保持不变。",
+  trumpUndone:
+    "{name}：已撤销上一手的可逆效果；已消耗道具、费用与既知信息不回退。",
+  trumpSuddenDeath: "赌命：下一次决胜回合决定本局胜方，平局继续。",
+  trumpEffectRemoved: "一项留场效果已结束或移除。",
+  trumpEffectUpdated: "留场效果的公开记录已更新。",
+  trumpUndoBoundary:
+    "行动轮边界使效果到期或处理了待办，上一手道具的悔牌窗口已关闭，即使该记录与上一手无关。",
+  trumpSupplyBlocked: "{player}：本次补给被生效中的封锁阻止。",
+  trumpSupplyZero:
+    "{player}：本次领取为零（手满或无可领取库存），已消耗道具不退还。",
+  trumpOpponentSupply: "{player}：补给已处理，未公开身份保持隐藏。",
+  trumpReceived: "{player}从库存抽取{name}。",
+  trumpGenerated: "{player}生成{name}，不扣除库存副本。",
+  trumpTransferred: "{player}取得转移的{name}。",
+  trumpStockDeleted: "已删除一张{name}库存副本。",
+  trumpStockMiss: "未删除{name}库存副本，已打出的道具仍消耗。",
+  trumpCostPaid: "{player}支付{name}作为费用，未发动其效果。",
+  trumpRoundCleanup: "回合效果已清理，未使用道具与剩余库存保留到下一回合。",
+  trumpGameCleanup: "本局资源已清空，下一局重新建立库存。",
+  trumpTargetExtended: "胜局目标分已递延至{target}。",
+  trumpScoreAward: "{player} · 本回合积分 +{points}",
+  trumpScoreBase: "基础分",
+  trumpScoreAttack: "进攻",
+  trumpScoreDefense: "防御",
+  trumpScoreBonus: "封顶额外分",
+  trumpScoreGuarded: "护身抵消了包括基础分在内的全部积分，本回合仍已完整结算。",
+  trumpScoreCeasefire: "息战清除了全部额外分。",
+  contestRuleResources:
+    "每局开始取得两张道具，每个新回合再补一张。普通要牌有30%补给门控，手持上限八张、双方各最多五项留场；库存抽取不放回。",
+  contestRuleEffects:
+    "合法出卡及费用立即销毁，效果未命中也消耗。同一行动轮可连续用卡，要牌或停牌才交权。清除效果不回收卡体；悔牌仅撤销上一手可逆效果，不返还费用、不倒退随机与已知信息。",
+  contestRuleBaseline:
+    "当前对手会领取道具，但只选择要牌或停牌；道具组合AI与主动技将在后续开发中接入。",
 
   // @req REQ-2026-013: catalog copy; no codex page is mounted yet.
   "contest.trump.draw-2.name": "指定抽牌·2",

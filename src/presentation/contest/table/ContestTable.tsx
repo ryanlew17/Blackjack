@@ -2,6 +2,7 @@
 import type { ContestView } from "../../../application/contest/types";
 import type { MatchObservation } from "../../../domain/contest/engine";
 import type { Copy } from "../../i18n";
+import { text } from "./trumpView";
 import { NumberCard } from "./NumberCard";
 
 export function ContestTable({
@@ -44,6 +45,9 @@ export function ContestTable({
         data-round={match.roundNumber}
       >
         <div className="contest-game-strip">
+          {round.turn && (
+            <span>{text(t.trumpCurrentTurn, { turn: round.turn.number })}</span>
+          )}
           <span>
             {t.contestGame} <b>{game.number}</b>
             <i aria-hidden="true"> / </i>
@@ -72,6 +76,11 @@ export function ContestTable({
                     ? `${hand.visibleTotal} + ?`
                     : hand.total}
                 </span>
+                {round.hiddenMultipliers[player] === 2 && (
+                  <span className="hidden-multiplier">
+                    {t.trumpHiddenDouble}
+                  </span>
+                )}
                 <span className="hand-turn-note">
                   {active ? t.currentActor : "\u00a0"}
                 </span>
@@ -90,6 +99,13 @@ export function ContestTable({
           );
         })}
         <div className="contest-center">
+          {round.phase !== "settled" &&
+            round.trumps?.table.some(
+              (e) => e.kind === "symbiosis" && !e.suppressed,
+            ) && <p className="trump-symbiosis">{t.trumpSymbiosisPending}</p>}
+          {round.suddenDeath && (
+            <p className="trump-sudden-death">{t.trumpSuddenDeath}</p>
+          )}
           <div className="card-target">
             <span>{t.cardTarget}</span>
             <strong>{round.pointTarget}</strong>

@@ -93,7 +93,7 @@ afterEach(() => {
 });
 
 describe("S2 production controller", () => {
-  it("opts in to a frozen standard BO5, reproducible for both sides, while the page default has no resources", () => {
+  it("opts in to a frozen standard BO5, reproducible for both sides, while the controller default has no resources", () => {
     const { api } = setup();
     expect(api.snapshot()!.rules).toMatchObject({
       difficulty: "standard",
@@ -407,4 +407,75 @@ it("finishes a full resource BO5 without any Storage method or length access or 
     expect([...store.data]).toEqual([
       ["green-room.blackjack.v1", "untouched classic save"],
     ]);
+});
+
+// @req REQ-2026-026: cancellation cannot erase already committed feedback or grow an unbounded log.
+it("retains the committed award and effects when replay is paused, then clears feedback for the next round", () => {
+  const { api } = setup();
+  api.send(choice(api, "pressure-supply"));
+  api.pause();
+  expect(
+    api
+      .getSnapshot()
+      .recentEvents.some(
+        (e) =>
+          e.type === "round" &&
+          e.event.type === "trump" &&
+          e.event.effect === "placed",
+      ),
+  ).toBe(true);
+  const oldInput = api.getSnapshot().inputId;
+  api.resume();
+  expect(api.getSnapshot().inputId).toBe(oldInput);
+  for (
+    let steps = 0;
+    steps < 6 && api.snapshot()!.phase === "playing";
+    steps++
+  ) {
+    expect(api.send("Stay")).toBe(true);
+    api.skipAnimations();
+    vi.runAllTimers();
+  }
+  expect(api.snapshot()!.phase).toBe("round-complete");
+  expect(
+    api.getSnapshot().recentEvents.find((e) => e.type === "round-scored"),
+  ).toMatchObject({ score: { increment: 2 } });
+  api.send("NextRound");
+  api.skipAnimations();
+  expect(
+    api.getSnapshot().recentEvents.every((e) => e.state.roundNumber === 2),
+  ).toBe(true);
+  api.exit();
+  expect(api.getSnapshot().recentEvents).toEqual([]);
+});
+it("bounds feedback during a long legal same-Turn combination and starts a new match without old records", () => {
+  const trumps = S2_DEVELOPMENT_PRESET.round.trumps;
+  const api = createContestCoordinator({
+    controlledPlayers: ["human", "ai"],
+    roundRules: {
+      ...S2_DEVELOPMENT_PRESET.round,
+      trumps: {
+        ...trumps,
+        resources: { ...trumps.resources, stock: { "shared-supply": 80 } },
+      },
+    },
+    random: {
+      numbers: () => 0.25,
+      trumpGate: () => 0.99,
+      trumpSelection: () => 0,
+    },
+  });
+  api.start();
+  api.skipAnimations();
+  for (let i = 0; i < 25; i++) {
+    const command = api.getSnapshot().trumpCommands[0];
+    expect(api.sendCommand({ ...command, player: "human" })).toBe(true);
+    api.skipAnimations();
+    expect(api.getSnapshot().recentEvents.length).toBeLessThanOrEqual(48);
+  }
+  expect(api.getSnapshot().recentEvents).toHaveLength(48);
+  expect(api.snapshot()!.round.turn?.number).toBe(1);
+  api.restart();
+  expect(api.getSnapshot().recentEvents).toHaveLength(1);
+  api.exit();
 });
