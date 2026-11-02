@@ -1,3 +1,4 @@
+// @req REQ-2026-027: omit unauthorized Round events from Match replay.
 // @req REQ-2026-024: project the authoritative score breakdown.
 // @req REQ-2026-016: match scores are public; round secrets remain projected.
 import { freezeData } from "../immutable";
@@ -22,6 +23,9 @@ export function observeMatch(
     wins: state.wins,
     game: state.game,
     roundNumber: state.roundNumber,
+    ...(state.nextFirstPlayer
+      ? { nextFirstPlayer: state.nextFirstPlayer }
+      : {}),
     round: observeRound(state.round, viewer),
     winner: state.winner,
   });
@@ -30,15 +34,17 @@ export function observeMatch(
 export function projectMatchEvent(
   event: MatchEvent,
   viewer: PlayerId,
-): MatchEventView {
+): MatchEventView | null {
   const state = observeMatch(event.state, viewer);
   switch (event.type) {
-    case "round":
-      return freezeData({
-        type: event.type,
-        event: projectRoundEvent(event.event, viewer),
-        state,
-      });
+    case "round": {
+      const projected = projectRoundEvent(event.event, viewer);
+      return projected
+        ? freezeData({ type: event.type, event: projected, state })
+        : null;
+    }
+    case "first-player-overridden":
+      return freezeData({ type: event.type, player: event.player, state });
     case "round-scored":
       return freezeData({
         type: event.type,
@@ -69,6 +75,9 @@ export function projectMatchTransition(
 ): MatchTransitionView {
   return freezeData({
     state: observeMatch(result.state, viewer),
-    events: result.events.map((event) => projectMatchEvent(event, viewer)),
+    events: result.events.flatMap((event) => {
+      const projected = projectMatchEvent(event, viewer);
+      return projected ? [projected] : [];
+    }),
   });
 }

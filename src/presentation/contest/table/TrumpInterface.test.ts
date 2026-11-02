@@ -3,6 +3,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import {
+  createMatch,
   legalMatchActions,
   legalTrumpCommands,
   observeMatch,
@@ -20,7 +21,14 @@ import {
   play,
   table,
 } from "../../../domain/contest/engine/interactionTestHelpers";
+import { fixedRandom } from "../../../domain/contest/engine/testHelpers";
+import { NUMBER_TRUMP_DEFINITIONS } from "../../../domain/contest/trumps/numberDefinitions";
 import type { ContestView } from "../../../application/contest/types";
+import {
+  fixture as recoveryFixture,
+  skill as activateRecoveryFixture,
+  play as playRecoveryFixture,
+} from "../../../domain/contest/engine/skillBarrierTestHelpers";
 import { en, zh } from "../../i18n";
 import { ContestTrumps } from "./ContestTrumps";
 import { ContestFeedback, feedbackMessage } from "./ContestFeedback";
@@ -39,6 +47,8 @@ function viewFor(state: MatchState, result?: MatchTransition): ContestView {
     inputId: 7,
     recentEvents: result ? projectMatchTransition(result, "human").events : [],
     actions: legalMatchActions(match),
+    reaction: null,
+    skillCommands: [],
     trumpCommands: legalTrumpCommands(match.round).map(
       ({ player: _player, ...c }) => ({ ...c, inputId: 7 }),
     ),
@@ -266,3 +276,95 @@ describe("S2 trump interface information and command boundary", () => {
     expect(result.state.phase).toBe("round-complete");
   });
 });
+
+// @req REQ-2026-027: a public redirected failure names the actual effect controller in both dictionaries.
+it.each([en, zh])(
+  "renders a real redirected no-target outcome using the controller and translated feedback",
+  (t) => {
+    let coin = true;
+    const shuffle = fixedRandom([10, 8, 11, 9]),
+      unexpected = () => {
+        throw new Error("Unexpected randomness");
+      };
+    const random = {
+      numbers: () => (coin ? ((coin = false), 0.25) : shuffle()),
+      trumpGate: unexpected,
+      trumpSelection: unexpected,
+      skillSelection: unexpected,
+      skillEffects: unexpected,
+    };
+    let state = createMatch(
+      random,
+      {
+        version: 1,
+        pointTarget: 21,
+        skills: {
+          difficulty: "standard",
+          playableDifficulties: ["standard"],
+          selected: { human: "soul-transfer", ai: "spirit-sight" },
+        },
+        trumps: { tableCapacity: 5, definitions: NUMBER_TRUMP_DEFINITIONS },
+      },
+      {
+        human: [{ instanceId: "human-return", definitionId: "return" }],
+        ai: [{ instanceId: "ai-return", definitionId: "return" }],
+      },
+    ).state;
+    state = play(state, "return").state;
+    state = transitionMatch(
+      state,
+      {
+        type: "ActivateSkill",
+        player: "human",
+        skillId: "soul-transfer",
+        turnNumber: 1,
+        roundNumber: 1,
+      },
+      random,
+    ).state;
+    state = act(state, "Stay").state;
+    const result = play(state, "return");
+    const event = projectMatchTransition(result, "human").events.find(
+      (e) =>
+        e.type === "round" &&
+        e.event.type === "trump" &&
+        e.event.effect === "ineffective",
+    )!;
+    expect(feedbackMessage(event, t)).toBe(
+      text(t.trumpIneffective, {
+        player: t.contestYou,
+        name: trumpName("return", t),
+      }),
+    );
+    expect(render(viewFor(result.state, result), t)).toContain(
+      text(t.trumpIneffective, {
+        player: t.contestYou,
+        name: trumpName("return", t),
+      }),
+    );
+  },
+);
+
+// @req REQ-2026-027: authorized real recovery renders the same outcome in both dictionaries.
+it.each([en, zh])(
+  "explains real skill recovery without claiming to remove a seal",
+  (t) => {
+    const f = recoveryFixture({
+      human: "spirit-sight",
+      humanTrumps: ["skill-revival"],
+    });
+    const state = activateRecoveryFixture(f.state, "human", f.random).state;
+    const result = playRecoveryFixture(state, "skill-revival", f.random);
+    const expected = text(t.trumpSkillRecovered, {
+      player: t.contestYou,
+      name: t["contest.trump.skill-revival.name"],
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ContestFeedback, {
+        view: viewFor(result.state, result),
+        t,
+      }),
+    );
+    expect(markup).toContain(expected);
+  },
+);

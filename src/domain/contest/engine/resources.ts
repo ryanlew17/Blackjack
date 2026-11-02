@@ -1,3 +1,4 @@
+// @req REQ-2026-027: omit shared ability sequence gaps from every table observation.
 // @req REQ-2026-024: bound Embargo interception and generated stock origins.
 // @req REQ-2026-022: finite no-replacement stock; generated cards have a separate origin.
 import { freezeData } from "../immutable";
@@ -82,9 +83,12 @@ export function observeTrumps(
     ownHand: state.hands[viewer],
     opponentHandCount: state.hands[opponentOf(viewer)].length,
     stockCounts: { human: state.stock.human.length, ai: state.stock.ai.length },
-    table: state.table.map((t) =>
-      isEffectActive(t, state.table) ? t : { ...t, suppressed: true },
-    ),
+    table: state.table.map((t) => {
+      const { activationSequence: _privateOrder, ...visible } = t;
+      return isEffectActive(t, state.table)
+        ? visible
+        : { ...visible, suppressed: true };
+    }),
     destroyed: state.destroyed.map((d) => ({
       owner: d.owner,
       reason: d.reason,
@@ -126,6 +130,7 @@ export function generateTrump(
   sourceId: string,
   rules: TrumpRules,
   destination: "hand" | "stock" = "hand",
+  skillId?: "endless-life",
 ): { readonly state: TrumpState; readonly instance: TrumpInstance | null } {
   if (!sourceId || !Object.hasOwn(rules.definitions, definitionId))
     throw new RangeError("Invalid trump generation");
@@ -145,7 +150,7 @@ export function generateTrump(
   const instance: TrumpInstance = {
     instanceId: "game-" + state.game + ":generated-" + serial,
     definitionId,
-    origin: { type: "generated", sourceId },
+    origin: { type: "generated", sourceId, ...(skillId ? { skillId } : {}) },
   };
   return freezeData({
     state: {
@@ -253,6 +258,23 @@ export function grantTrumps(
   if (!Number.isSafeInteger(count) || count < 0)
     throw new RangeError("Invalid grant count");
   if (!original.trumps) return { state: original, events: [], deltas: [] };
+  // The public seal precedes inventory/capacity probes and does not consume a one-shot Embargo.
+  if (count > 0 && original.skills?.seal)
+    return freezeData({
+      state: original,
+      deltas: [],
+      events: [
+        {
+          type: "resource",
+          operation: "blocked",
+          cause,
+          player,
+          instance: null,
+          public: false,
+          state: original,
+        },
+      ],
+    });
   let state = original;
   const events: RoundEvent[] = [],
     deltas: EffectDelta[] = [];

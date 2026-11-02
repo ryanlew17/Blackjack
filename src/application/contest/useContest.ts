@@ -13,7 +13,7 @@ import type { ContestInput, ContestControllerOptions } from "./types";
 
 export interface UseContestOptions extends Pick<
   ContestControllerOptions,
-  "random" | "opponent" | "preset"
+  "random" | "opponent" | "preset" | "prepareSkills"
 > {
   readonly settings: Pick<Settings, "motion" | "muted" | "volume">;
   readonly systemReduced?: boolean;
@@ -25,6 +25,7 @@ export function useContest({
   random,
   opponent,
   preset,
+  prepareSkills,
 }: UseContestOptions) {
   const preferences = useRef(settings);
   preferences.current = settings;
@@ -36,6 +37,7 @@ export function useContest({
       random,
       opponent,
       preset,
+      prepareSkills,
       reducedMotion: reduced,
       onEvent(event) {
         const pref = preferences.current;
@@ -55,6 +57,11 @@ export function useContest({
     controller.subscribe,
     controller.getSnapshot,
     controller.getSnapshot,
+  );
+  const preparation = useSyncExternalStore(
+    controller.subscribePreparation,
+    controller.getPreparationSnapshot,
+    controller.getPreparationSnapshot,
   );
   useEffect(() => {
     controller.setReducedMotion(reduced);
@@ -86,6 +93,13 @@ export function useContest({
   );
   return {
     ...view,
+    preparation,
+    selectSkill: controller.selectSkill,
+    cancelSkillSelection: controller.cancelSkillSelection,
+    confirmSkill(inputId: number) {
+      unlockAudio();
+      return controller.confirmSkill(inputId);
+    },
     start,
     restart,
     send,

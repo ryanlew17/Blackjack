@@ -19,10 +19,12 @@ export function ContestTrumps({
   view,
   t,
   send,
+  onChoiceChange,
 }: {
   view: ContestView;
   t: Copy;
   send: (action: ContestTrumpAction) => boolean;
+  onChoiceChange?: (open: boolean) => void;
 }) {
   const [selection, setSelection] = useState<{
     id: string;
@@ -48,6 +50,11 @@ export function ContestTrumps({
       else if (trigger.current) summary.current?.focus();
     }
   }, [selected, selection]);
+  const choosing = !!selected;
+  useEffect(() => {
+    onChoiceChange?.(choosing);
+    return () => onChoiceChange?.(false);
+  }, [choosing, onChoiceChange]);
   if (!match || !trumps) return null;
   return (
     <section className="contest-trumps" aria-label={t.trumpArea}>

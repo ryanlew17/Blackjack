@@ -1,4 +1,4 @@
-// @req REQ-2026-025: 54 registered identities, 53 admitted executions; no second effect schema.
+// @req REQ-2026-025: 54 registered identities and admitted executions; no second effect schema.
 import { freezeData } from "../immutable";
 import { TRUMP_IDS, isTrumpId, type TrumpId } from "./ids";
 import { ADMITTED_TRUMP_DEFINITIONS, isAdmittedTrumpId } from "./admitted";

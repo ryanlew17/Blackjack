@@ -1,7 +1,7 @@
 # design/codex-data — 图鉴数据系统
 
 > 适用范围：已实现的目录／图鉴纯数据API及后续接线边界；图鉴页面和元进度存储尚未接入。
-> 当前目录登记54个稳定道具ID，53个具备已准入执行定义；回仙待[主动技需求](../requirements/active/REQ-2026-027-contest-active-skills.md)实现后准入。
+> 当前目录登记54个稳定道具ID，全部具备已准入执行定义；回仙的合法恢复依赖已选择且实际成功过的技能。
 
 ## 数据与入口
 
@@ -16,7 +16,7 @@
 | `src/domain/contest/codex/index.ts`          | 纯数据API，不读写DOM／存储                                  |
 | `src/presentation/i18n.ts`                   | en／zh-CN名称与说明                                         |
 
-目录中53项为 `playable: true`、`admission: admitted`；回仙为 `playable: false`、`admission: pending-skill`、`execution: null`。execution直接引用numberDefinitions／interactionDefinitions，不复制另一套效果描述。原创来源使用项目设计标识，原版来源与差异见[道具资料](./contest-trumps.md#c-原版资料与完整引入台账)。
+目录54项均为 `playable: true`、`admission: admitted`；execution直接引用numberDefinitions／interactionDefinitions／skillDefinitions，不复制另一套效果描述。原创来源使用项目设计标识，原版来源与差异见[道具资料](./contest-trumps.md#c-原版资料与完整引入台账)。
 
 普通库存资格取决于难度副本数和执行准入，两者分开校验；目录完整不代表所有定义均可生成。数量表是唯一难度资格依据，无earliestDifficulty。目录、库存预设与运行实例分离并深冻结；历史21卡实验值只用于原基线回归，不表示当前可玩卡池或五档平衡。
 
@@ -29,7 +29,7 @@
 - `opponent-hidden`没有cardId，不能读取隐藏身份；`custom`不解锁。此处standard指非自定义比赛，与standard难度不同。
 - `markViewed(progress, cardId)`仅更新已解锁项；重复操作不变。
 - 更新返回新的冻结进度与newlyUnlocked；未知ID返回错误码，不抛UI文案、不自行持久化。非法命令不产生遭遇，难度升级不调用遭遇API。
-- `listCodexItems`按目录顺序返回三态；未解锁仅含ID与状态，已解锁含只读定义和数量可用性，不能把回仙元数据当生产准入。
+- `listCodexItems`按目录顺序返回三态；未解锁仅含ID与状态，已解锁含只读定义和数量可用性，数量为0的难度仍不能从普通库存取得该定义。
 - `firstUnviewedId`、`codexSummary`用于首项与统计；`listUnlockedIds`不代替自定义卡池准入／依赖校验。
 
 ## 负载与信息边界

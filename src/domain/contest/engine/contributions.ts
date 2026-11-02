@@ -1,6 +1,6 @@
 // @req REQ-2026-024: interpret suppression for numeric contributions and transferred records.
 // @req REQ-2026-023: one contribution model for authority, authorized views and best draw.
-import type { PlayerId } from "../types";
+import type { PlayerId, NumberValue } from "../types";
 import type { NumberInstance } from "./numberCards";
 import type { RoundState } from "./types";
 import type { TableEffect } from "./effectTypes";
@@ -23,20 +23,27 @@ export function transferable(effect: TableEffect): boolean {
     TRANSFERABLE_TABLE_IDS.some((id) => id === effect.definitionId)
   );
 }
+// @req REQ-2026-027: Metamorphosis substitutes a settlement base before multipliers/bindings.
+export function numberValue(
+  state: RoundState,
+  card: NumberInstance,
+): NumberValue {
+  return state.settlementValues?.[card.instanceId] ?? card.value;
+}
 export function contribution(
   state: RoundState,
   player: PlayerId,
   card: NumberInstance,
 ): number {
   if (card.instanceId === state.hiddenCards[player])
-    return card.value * state.hiddenMultipliers[player];
+    return numberValue(state, card) * state.hiddenMultipliers[player];
   const adjustment = (state.trumps?.table ?? [])
     .filter(
       (t) =>
         isEffectActive(t, state.trumps!.table) && t.cardId === card.instanceId,
     )
     .reduce((sum, t) => sum + (t.adjustment ?? 0), 0);
-  return Math.max(1, card.value + adjustment);
+  return Math.max(1, numberValue(state, card) + adjustment);
 }
 export function effectiveTotals(
   state: RoundState,

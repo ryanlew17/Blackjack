@@ -1,3 +1,4 @@
+// @req REQ-2026-027: transaction payer and redirected effect controller are distinct.
 // @req REQ-2026-024: extend inverse deltas and remove dependent suppression on number deletion.
 // @req REQ-2026-023: numeric contributions, authorized information and reversible effects.
 // @req REQ-2026-022: one live region per identity, even with duplicate values.
@@ -21,6 +22,13 @@ type DeltaKinds<K extends string, T> = {
   [P in K]: { readonly type: P } & T;
 }[K];
 export type EffectDelta =
+  | {
+      readonly type: "skill-recovery";
+      readonly player: PlayerId;
+      readonly uses: number;
+      readonly permission: number;
+      readonly publicUses: number;
+    }
   | {
       readonly type: "number-move";
       readonly instanceId: string;
@@ -93,6 +101,7 @@ export type CardTransaction =
   | {
       readonly type: "trump";
       readonly player: PlayerId;
+      readonly effectPlayer?: PlayerId;
       readonly instanceId: string;
       readonly deltas: readonly EffectDelta[];
     };
@@ -117,6 +126,17 @@ export function generateNumber(
 ): RoundState {
   if (!NUMBER_VALUES.includes(value) || !sourceId)
     throw new RangeError("Invalid number generation");
+  const length =
+    player === null ? state.deck.length : state.hands[player].length;
+  if (
+    !Number.isSafeInteger(index) ||
+    index < 0 ||
+    index > length ||
+    (player !== null && state.hiddenCards[player] !== null && index === 0)
+  )
+    throw new RangeError(
+      "Generated face-up numbers must preserve the logical hidden slot",
+    );
   const card: NumberInstance = {
     instanceId:
       "round-" + state.numberScope + ":generated-" + state.nextNumberId,

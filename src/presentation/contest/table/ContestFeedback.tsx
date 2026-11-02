@@ -1,8 +1,10 @@
+// @req REQ-2026-027: redirected outcomes name the effect controller and explain legal no-effect resolution.
 // @req REQ-2026-026: narrate projected facts; never infer hidden failures or calculate awards.
 import type { ContestView } from "../../../application/contest/types";
 import type { MatchEventView } from "../../../domain/contest/engine";
 import type { Copy } from "../../i18n";
 import { playerName, text, trumpName } from "./trumpView";
+import { SKILL_CATALOG } from "../../../domain/contest/skills/catalog";
 
 export function feedbackMessage(event: MatchEventView, t: Copy): string | null {
   if (event.type === "round-scored")
@@ -16,6 +18,33 @@ export function feedbackMessage(event: MatchEventView, t: Copy): string | null {
     return text(t.trumpTargetExtended, { target: event.to });
   if (event.type !== "round") return null;
   const e = event.event;
+  if (e.type === "skill") {
+    const definition = SKILL_CATALOG[e.skillId];
+    const templates = {
+      prepared:
+        definition.visibility === "secret"
+          ? t.skillEventSecretPrepared
+          : t.skillEventPrepared,
+      succeeded:
+        e.skillId === "mind-grip"
+          ? t.skillEventControlled
+          : t.skillEventSucceeded,
+      ineffective: t.skillEventIneffective,
+      cancelled: t.skillEventCancelled,
+      expired: t.skillEventExpired,
+    };
+    return text(
+      e.amount !== undefined ? t.skillEventAdjustment : templates[e.status],
+      {
+        player: playerName(e.player, t),
+        name: t[definition.nameKey],
+        amount:
+          e.amount !== undefined && e.amount > 0
+            ? `+${e.amount}`
+            : (e.amount ?? ""),
+      },
+    );
+  }
   if (e.type === "undo-window-closed") return t.trumpUndoBoundary;
   if (e.type === "table-effect")
     return e.operation === "removed"
@@ -71,10 +100,12 @@ export function feedbackMessage(event: MatchEventView, t: Copy): string | null {
     exchanged: t.trumpExchanged,
     undone: t.trumpUndone,
     "sudden-death": t.trumpSuddenDeath,
+    ineffective: t.trumpIneffective,
+    "skill-recovered": t.trumpSkillRecovered,
   };
   return text(templates[e.effect], {
     name,
-    player: playerName(e.player, t),
+    player: playerName(e.effectPlayer ?? e.player, t),
     value: e.card ?? "",
   });
 }

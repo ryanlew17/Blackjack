@@ -1,24 +1,38 @@
+// @req REQ-2026-027: skill activation shares the authoritative command boundary without ending the Turn.
 // @req REQ-2026-024: resolve draw modifiers and finite Turn boundaries before returning.
 // @req REQ-2026-023: numeric contributions, authorized information and reversible effects.
 // @req REQ-2026-015/022: authoritative outcomes, including resource grants, precede replay.
+import { SKILL_CATALOG } from "../skills/catalog";
+import { completeReactionBoundary, passReaction } from "./reactions";
 import { playTrump } from "./effects";
 import type { TrumpState, SuddenDeathMarker } from "./effectTypes";
 import { createTrumpState, grantTrumps } from "./resources";
 import { freezeData } from "../immutable";
 import type { PlayerId } from "../types";
 import { compareTotals } from "./comparison";
-import { effectiveTotals } from "./contributions";
-import { legalActions } from "./legalActions";
-import { createNumberDeck, randomUnit } from "./numbers";
+import { legalActions, ordinaryHitAvailable } from "./legalActions";
+import { ordinaryHit } from "./ordinaryHit";
+import { finishTurnSkills } from "./skillTurns";
+import { createNumberDeck } from "./numbers";
+import { settleRoundSkills } from "./skillSettlement";
+import {
+  activateSkill,
+  startSkillRound,
+  pendingSkills,
+  updateSkillActivation,
+} from "./skills";
+import type { SkillState } from "./skillTypes";
 import { initialNumberInstances } from "./numberCards";
-import { numberRandom, resourceRandom } from "./resourceTypes";
-import type { ContestRandom, ResourceRandomSources } from "./resourceTypes";
+import { numberRandom, resourceRandom, skillRandom } from "./resourceTypes";
+import type {
+  ContestRandom,
+  ResourceRandomSources,
+  SkillRandomSources,
+} from "./resourceTypes";
 import { observeRound } from "./observation";
 import { DEFAULT_ROUND_RULES, snapshotRoundRules } from "./rules";
 import { nextTurn, opponentOf } from "./turn";
 import { beginTurn } from "./triggers";
-import { affectsTurn, isEffectActive } from "./tableEffects";
-import { moveNumber, removeEffect } from "./effectOperations";
 import type {
   RoundCommand,
   RoundEvent,
@@ -35,10 +49,12 @@ export function createRound(
   numberScope = 1,
   gameStart = false,
   suddenDeath?: SuddenDeathMarker,
+  skills?: SkillState,
 ): RoundTransition {
   if (firstPlayer !== "human" && firstPlayer !== "ai")
     throw new RangeError("Invalid first player");
   const snapshot = snapshotRoundRules(rules);
+  if (snapshot.skills) skillRandom(random);
   const policy = snapshot.trumps?.resources;
   const sources = policy ? resourceRandom(random) : undefined;
   const setup =
@@ -48,6 +64,9 @@ export function createRound(
     rules: snapshot,
     ...(setup ? { trumps: setup } : {}),
     ...(suddenDeath ? { suddenDeath } : {}),
+    ...(snapshot.skills
+      ? { skills: startSkillRound(snapshot.skills, skills, gameStart) }
+      : {}),
     firstPlayer,
     phase: "dealing",
     hands: { human: [], ai: [] },
@@ -124,19 +143,46 @@ export function createRound(
     });
     events[events.length - 1] = { ...events[events.length - 1], state };
   }
-  return freezeData({ state, events });
+  const boundary = beginTurn(state, state.turn!, sources);
+  state = boundary.state;
+  events.push(...boundary.events);
+  events[events.length - 1] = { ...events[events.length - 1], state };
+  return completeReactionBoundary({ state, events });
 }
 
 export function transition(
   original: RoundState,
   command: RoundCommand,
-  random?: ResourceRandomSources,
+  random?: ResourceRandomSources & Partial<SkillRandomSources>,
+): RoundTransition {
+  const result = executeCommand(original, command, random);
+  if (
+    result.state === original ||
+    command.type === "PassReaction" ||
+    (command.type === "ActivateSkill" &&
+      SKILL_CATALOG[command.skillId].visibility === "secret")
+  )
+    return result;
+  return completeReactionBoundary(result);
+}
+function executeCommand(
+  original: RoundState,
+  command: RoundCommand,
+  random?: ResourceRandomSources & Partial<SkillRandomSources>,
 ): RoundTransition {
   if (
     (command.player !== "human" && command.player !== "ai") ||
     !legalActions(observeRound(original, command.player)).includes(command.type)
   )
     return { state: original, events: [] };
+  if (command.type === "PassReaction") return passReaction(original, command);
+  if (command.type === "ActivateSkill")
+    return activateSkill(
+      original,
+      command,
+      observeRound(original, command.player),
+      random,
+    );
   if (command.type === "PlayTrump")
     return playTrump(
       original,
@@ -145,129 +191,79 @@ export function transition(
       random,
     );
   const turn = original.turn!;
-  if (command.type === "Hit") {
-    const policy = original.rules.trumps?.resources;
-    const sources = policy ? resourceRandom(random) : undefined;
-    const table = original.trumps?.table ?? [];
-    const heavy = table.some(
-      (t) =>
-        t.kind === "heavy-hit" &&
-        affectsTurn(t, turn) &&
-        isEffectActive(t, table),
+  if (command.type === "ResolveForcedTurn") {
+    if (command.turnNumber !== turn.number || turn.controlledBy === undefined)
+      return { state: original, events: [] };
+    const entry = pendingSkills(original).find(
+      (p) =>
+        p.player === turn.controlledBy &&
+        p.activation.effect?.type === "mind-grip" &&
+        p.activation.effect.targetTurn === turn.number,
     );
-    const count = heavy ? 2 : original.hitDrawCounts[command.player];
-    const safeguards = table.filter(
-      (t) =>
-        t.kind === "safe-hit" &&
-        t.owner === command.player &&
-        isEffectActive(t, table),
+    if (!entry) return { state: original, events: [] };
+    let state = updateSkillActivation(
+      original,
+      entry.player,
+      entry.activation.sequence,
+      { status: "succeeded" },
     );
-    let state = original;
-    const events: RoundEvent[] = [];
-    const remove = (id: string) => {
-      const removed = removeEffect(state, id);
-      state = removed.state;
-      for (const d of removed.deltas)
-        if (d.type === "effect-removed")
-          events.push({
-            type: "table-effect",
-            operation: "removed",
-            effectId: d.effectId,
-            state,
-          });
-    };
-    for (let index = 0; index < count && state.deck.length; index++) {
-      const card = state.deck[0];
-      state = freezeData({
-        ...state,
-        hands: {
-          ...state.hands,
-          [command.player]: [...state.hands[command.player], card],
-        },
-        deck: state.deck.slice(1),
-        deckRevision: state.deckRevision + 1,
-        lastPlay: {
-          type: "number",
-          player: command.player,
-          instanceId: card.instanceId,
-        },
-        quietStays: 0,
-      });
-      events.push({
-        type: "hit",
-        player: command.player,
-        card: card.value,
+    const events: RoundEvent[] = [
+      {
+        type: "skill",
+        player: entry.player,
+        skillId: "mind-grip",
+        public: true,
+        status: "succeeded",
         state,
-      });
-      if (index === 0 && safeguards.length) {
-        if (effectiveTotals(state)[command.player] > state.pointTarget) {
-          state = moveNumber(state, card.instanceId, {
-            player: null,
-            index: state.deck.length,
-          }).state;
-          const source = state.trumps!.destroyed.find(
-            (d) => d.instance.instanceId === safeguards[0].sourceInstanceId,
-          )!.instance;
-          events.push({
-            type: "trump",
-            player: command.player,
-            instance: source,
-            effect: "return",
-            card: card.value,
-            state,
-          });
-        }
-        for (const record of safeguards) remove(record.effectId);
-      }
+      },
+    ];
+    for (
+      let count = 0;
+      count < 3 && ordinaryHitAvailable(observeRound(state, turn.player));
+      count++
+    ) {
+      const hit = ordinaryHit(state, random);
+      state = hit.state;
+      events.push(...hit.events);
     }
-    const followingTurn = nextTurn(turn);
-    state = freezeData({ ...state, turn: followingTurn });
-    // Preserve the established final-Hit handover frame, including any Safe Hit return frames.
-    let lastHit = events.length - 1;
-    while (events[lastHit].type !== "hit") lastHit--;
-    for (let i = lastHit; i < events.length; i++)
-      events[i] = {
-        ...events[i],
-        state: freezeData({ ...events[i].state, turn: followingTurn }),
-      };
-    if (policy && randomUnit(sources!.trumpGate) < policy.hitProbability) {
-      const caches = state.trumps!.table.filter(
-        (t) =>
-          t.kind === "supply-cache" &&
-          t.owner === command.player &&
-          isEffectActive(t, state.trumps!.table),
-      );
-      const grant = grantTrumps(
-        state,
-        command.player,
-        caches.length ? 2 : 1,
-        "hit",
-        sources!.trumpSelection,
-        undefined,
-        turn,
-      );
-      state = grant.state;
-      events.push(...grant.events);
-      for (const record of caches) remove(record.effectId);
-    }
-    const boundary = beginTurn(state, nextTurn(turn), sources);
-    state = boundary.state;
-    events.push(...boundary.events);
-    events[events.length - 1] = { ...events[events.length - 1], state };
-    return freezeData({ state, events });
+    const stayed = stayTurn(state, random);
+    return freezeData({
+      state: stayed.state,
+      events: [...events, ...stayed.events],
+    });
   }
-  const quiet = !turn.usedTrump;
+  if (command.type === "Hit") {
+    const hit = ordinaryHit(original, random, nextTurn(turn));
+    const ended = finishTurnSkills(hit.state, turn);
+    const boundary = beginTurn(ended.state, nextTurn(turn), random);
+    const events = [...hit.events, ...ended.events, ...boundary.events];
+    events[events.length - 1] = {
+      ...events[events.length - 1],
+      state: boundary.state,
+    };
+    return freezeData({ state: boundary.state, events });
+  }
+  return stayTurn(original, random);
+}
+function stayTurn(
+  original: RoundState,
+  random?: ResourceRandomSources & Partial<SkillRandomSources>,
+): RoundTransition {
+  const turn = original.turn!;
+  const ended = finishTurnSkills(original, turn);
+  const quiet = !turn.usedTrump && !turn.usedSkill;
   const quietStays = quiet ? ((original.quietStays + 1) as 1 | 2) : 0;
   const closing = quietStays === 2;
   let state: RoundState = freezeData({
-    ...original,
+    ...ended.state,
     phase: closing ? "revealing" : "acting",
     turn: closing ? null : nextTurn(turn),
     quietStays,
     ...(closing ? { lastPlay: null } : {}),
   });
   const events: RoundEvent[] = [
-    { type: "stay", player: command.player, quiet, state },
+    ...ended.events,
+    { type: "stay", player: turn.player, quiet, state },
   ];
   if (closing) {
     for (const player of [state.firstPlayer, opponentOf(state.firstPlayer)]) {
@@ -286,10 +282,10 @@ export function transition(
         state,
       });
     }
-    const result = compareTotals(
-      effectiveTotals(state, true),
-      state.pointTarget,
-    );
+    const skills = settleRoundSkills(state, random);
+    state = skills.state;
+    events.push(...skills.events);
+    const result = compareTotals(skills.totals, state.pointTarget);
     state = freezeData({ ...state, phase: "settled", result });
     events.push({ type: "settled", result, state });
   }

@@ -1,3 +1,4 @@
+// @req REQ-2026-027: shared pending order stays private in authorized table views.
 // @req REQ-2026-024: explicit scoring, resource and finite Turn-effect contracts.
 // @req REQ-2026-019/022/023: card bodies, audit and independent effect records.
 import type { NumberValue, PlayerId } from "../types";
@@ -80,7 +81,8 @@ export type TrumpEffect =
         | "trim"
         | "exchange-table"
         | "undo-last"
-        | "sudden-death";
+        | "sudden-death"
+        | "recover-skill-use";
     };
 export interface TrumpDefinition {
   readonly onPlay: readonly TrumpEffect[];
@@ -102,7 +104,11 @@ export type TrumpOrigin =
       readonly owner: PlayerId;
       readonly game: number;
     }
-  | { readonly type: "generated"; readonly sourceId: string };
+  | {
+      readonly type: "generated";
+      readonly sourceId: string;
+      readonly skillId?: "endless-life";
+    };
 export interface TrumpInstance extends TrumpSeed {
   readonly origin: TrumpOrigin;
 }
@@ -123,6 +129,8 @@ export interface TableEffect {
   readonly affectedPlayer?: PlayerId;
   readonly expiresAfterTurn?: number;
   readonly targetEffectId?: string;
+  /** Private shared ability order, omitted from every observation. */
+  readonly activationSequence?: number;
   readonly watchedTurn?: number;
   readonly copiedDefinitionId?: string;
 }
@@ -145,7 +153,7 @@ export interface TrumpObservation {
   readonly ownHand: readonly TrumpInstance[];
   readonly opponentHandCount: number;
   readonly stockCounts: Readonly<Record<PlayerId, number>>;
-  readonly table: readonly TableEffect[];
+  readonly table: readonly Omit<TableEffect, "activationSequence">[];
   readonly destroyed: readonly {
     readonly owner: PlayerId;
     readonly reason: TrumpDestruction["reason"];
@@ -165,6 +173,8 @@ export interface TrumpEventPayload {
   readonly type: "trump";
   readonly player: PlayerId;
   readonly instance: TrumpInstance;
+  /** Only present after public interception; costs and card ownership still belong to player. */
+  readonly effectPlayer?: PlayerId;
   readonly effect:
     | "played"
     | "draw"
@@ -180,7 +190,9 @@ export interface TrumpEventPayload {
     | "rotated"
     | "exchanged"
     | "undone"
-    | "sudden-death";
+    | "sudden-death"
+    | "ineffective"
+    | "skill-recovered";
   readonly card?: NumberValue | null;
   readonly targetId?: string;
   /** Only the actor receives these values; never spread this payload into a view. */

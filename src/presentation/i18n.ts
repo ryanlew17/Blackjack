@@ -1,4 +1,104 @@
 export const en = {
+  // @req REQ-2026-027: skill states and reactions use authorized information.
+  skillArea: "Active skills",
+  skillDetails: "Read {name}",
+  skillActivate: "Activate {name}",
+  skillUses: "{remaining}/{initial} left",
+  skillUsesUnknown: "{min}–{max}/{initial} · unrevealed",
+  skillStateReady: "Ready",
+  skillStatePending: "Prepared",
+  skillStateActive: "Active",
+  skillStateLocked: "Locked",
+  skillStateSealed: "Sealed",
+  skillStateExhausted: "No uses left",
+  skillStateUsed: "Used this game",
+  skillStateWaiting: "Your turn only",
+  skillStateReaction: "Reaction available",
+  skillStateWaitReaction: "Wait for a reaction",
+  skillStateConditions: "Conditions unmet",
+  skillStateUnknown: "Unrevealed",
+  skillStateSelected: "Selected",
+  skillStateResolved: "Resolved",
+  skillStateIneffective: "No effect",
+  skillStateCancelled: "Cancelled",
+  skillStateExpired: "Expired",
+  skillLockHint: "Locked by Dispel All Arts until this game ends.",
+  skillConditionHint:
+    "Read the skill conditions. Activate during your own stable turn when they are met.",
+  skillChoiceBlocked: "Finish choosing a trump first.",
+  skillReactionTitle: "Your skill response",
+  skillReactionHint:
+    "The opponent is waiting. Use your skill sphere to prepare Twin Bloom, or let the turn continue.",
+  skillPass: "Let opponent continue",
+  skillEventPrepared: "{player} prepared {name}.",
+  skillEventSecretPrepared: "{player} secretly prepared {name}.",
+  skillEventSucceeded: "{player}: {name} took effect.",
+  skillEventIneffective:
+    "{player}: {name} had no effect; its use remains spent.",
+  skillEventCancelled: "{player}: {name} was cancelled; its use remains spent.",
+  skillEventExpired: "{player}: {name} expired before taking effect.",
+  skillEventAdjustment:
+    "{player}: {name} applied a settlement adjustment of {amount}.",
+  skillEventControlled: "{player}: {name} took control of the turn.",
+  contestRuleSkills:
+    "Choose one skill before the match; your opponent picks once at random from the same list. Uses carry across games, normally one activation per game. Skill Revival restores a use and an extra activation after a skill has succeeded. Secret states stay private; when a reaction is offered, choose whether to use your skill or pass.",
+
+  skillSelectionTitle: "Choose your active skill",
+  skillSelectionIntro:
+    "Choose one skill for this standard match. After confirmation, your opponent picks once at random from the same list. You cannot change skills during a match.",
+  skillSelectionLegend: "Available skills",
+  skillSelectionUses: "{count} uses per match · normally once per game",
+  skillSelectionConfirm: "Confirm and start match",
+  trumpIneffective: "{player}: {name} had no effect.",
+  trumpSkillRecovered:
+    "{player}: {name} restored one skill use and one activation this game. Existing skill seals remain.",
+  // @req REQ-2026-027: registered skill text; execution admission is separate.
+  "contest.skill.pickpocket.name": "Pickpocket",
+  "contest.skill.pickpocket.description":
+    "Before ending your turn, randomly transfer one opposing trump to your hand. Requires an opposing trump and your trump count below hand limit minus one. The instance and its origin are preserved.",
+  "contest.skill.tempt-fate.name": "Invite Misfortune",
+  "contest.skill.tempt-fate.description":
+    "Prepare in your turn. At round settlement, add a uniform random integer from 1 to the opponent’s effective hidden-card value plus 1 to your total. If you lose, you act first next round; alternation continues from that player.",
+  "contest.skill.scapegoat.name": "Scapegoat",
+  "contest.skill.scapegoat.description":
+    "Before ending your turn, if public information confirms the opponent is over target and has a face-up card, take their last face-up card. Snapshot its value v; subtract a uniform random integer from 1 to v plus 1 from your settlement total.",
+  "contest.skill.craft-gift.name": "Resourcefulness",
+  "contest.skill.craft-gift.description":
+    "Before ending your turn, with no trumps in hand, draw up to two trumps from your remaining stock. This does not end the turn or trigger a Hit supply check.",
+  "contest.skill.metamorphosis.name": "Metamorphosis",
+  "contest.skill.metamorphosis.description":
+    "Prepare secretly in your turn. After the settlement reveal, independently replace the settlement value of every number instance still worth 1 with a uniform value from 2 to 11. Instances and the number deck stay in place.",
+  "contest.skill.frame.name": "Frame Up",
+  "contest.skill.frame.description":
+    "Prepare in your turn. At settlement, add a uniform random integer from 1 to your effective hidden-card value plus 1 to the opponent’s total. If you win, the opponent acts first next round; alternation continues from them.",
+  "contest.skill.fortune.name": "Fortune",
+  "contest.skill.fortune.description":
+    "Before ending your turn, retrieve Best Draw from your remaining stock if present and your hand has room. A missing card or a full hand still spends this skill use; availability does not reveal the stock.",
+  "contest.skill.spirit-sight.name": "Spirit Sight",
+  "contest.skill.spirit-sight.description":
+    "In your own turn before Hit or Stay, privately learn the value in the opponent’s logical hidden-card slot. Activation is public; the value is only for you. Cannot activate after that slot is publicly revealed.",
+  "contest.skill.provoke.name": "Provocation",
+  "contest.skill.provoke.description":
+    "Watch the opponent’s next turn. Before their first decision, if they hold no trumps, supply one from stock under normal limits. If they consume no trump that turn, add 99 to their settlement total this round. Expires if the round ends first.",
+  "contest.skill.soul-transfer.name": "Soul Transfer",
+  "contest.skill.soul-transfer.description":
+    "Secretly prepare in your turn with your trump count below hand limit minus one. Redirect the opponent’s next legal trump effect to your perspective, then generate Regret if there is room. They still pay, destroy the original card and keep the turn. Expires at round end.",
+  "contest.skill.nullify.name": "Dispel All Arts",
+  "contest.skill.nullify.description":
+    "Delete both non-exempt trump hands. Cancel the opponent’s pending skill effects regardless of secrecy and lock their skill for this game, except Endless Life. Block both players’ stock grants and new skills through the next two complete rounds; game end clears the seal. Endless Life and its directly generated cards keep their explicit immunity.",
+  "contest.skill.self-renewal.name": "Self Renewal",
+  "contest.skill.self-renewal.description":
+    "Before ending your turn, if you are over target and have a face-up card, delete the face-up card with the highest effective contribution. Break ties by most recently acquired. It does not return to the deck.",
+  "contest.skill.twin-bloom.name": "Twin Bloom",
+  "contest.skill.twin-bloom.description":
+    "Secretly prepare only in a stable opposing-turn reaction window. At your next turn start, replace your face-up numbers and trump hand with new instances copied from the opponent then. Keep your hidden card; do not copy skills, table effects or origin exemptions.",
+  "contest.skill.mind-grip.name": "Mind Grip",
+  "contest.skill.mind-grip.description":
+    "Take over the opponent’s next turn after turn-start effects: perform up to three legal ordinary Hits, then automatically Stay. Continue when over target, respect draw locks and stop at an empty deck. The whole sequence is one turn.",
+  "contest.skill.endless-life.name": "Endless Life",
+  "contest.skill.endless-life.description":
+    "From your next turn until this game ends, generate one uniformly chosen eligible admitted trump at each of your turn starts, subject to hand capacity and without using stock. This skill and its direct creations have explicit immunity to Dispel All Arts; other deletion effects still apply.",
+
   // @req REQ-2026-018: mode entrance and projected contest table.
   homeEyebrow: "A SEAT AT THE GREEN ROOM",
   homeTitle: "Choose your table.",
@@ -12,8 +112,8 @@ export const en = {
   contestTag: "A DIFFERENT KIND OF 21",
   contestMode: "Contest",
   contestIntro:
-    "One shared number deck. Chain trumps, change the target, and duel in a standard best-of-five match.",
-  startContest: "Start a match",
+    "Choose an active skill, chain trumps and duel over one shared number deck in a standard best-of-five match.",
+  startContest: "Choose a skill",
   contestMemoryHint:
     "This match stays in memory. Leaving or refreshing abandons it.",
   homeFooter: "Local play. Virtual stakes. Your own pace.",
@@ -41,7 +141,7 @@ export const en = {
   contestReplaying: "Playing the action…",
   contestDealing: "Cards in motion…",
   contestTurnHint:
-    "Use trumps below, then Hit or Stay. Two quiet stays reveal both hands.",
+    "Use trumps or your skill, then Hit or Stay. Two quiet stays reveal both hands.",
   contestPaused: "Match paused",
   opponentThinking: "Opponent is thinking…",
   contestRevealing: "Revealing the round…",
@@ -196,7 +296,7 @@ export const en = {
   contestRuleEffects:
     "A played trump and its costs are destroyed, even if the effect misses. Use several trumps in one turn; Hit or Stay ends it. Clearing an effect does not recover its card. Regret only reverses the last eligible play, never costs, randomness or known information.",
   contestRuleBaseline:
-    "The current opponent draws trumps but only chooses Hit or Stay. Trump-combination AI and active skills arrive in later development.",
+    "The opponent chooses a skill before the match but currently only plays Hit or Stay. It does not actively use trumps or skills.",
 
   // @req REQ-2026-013: catalog copy; no codex page is mounted yet.
   "contest.trump.draw-2.name": "Draw 2",
@@ -358,7 +458,7 @@ export const en = {
     "Undo the last eligible play’s actual effects. Destroyed cards, costs, randomness, turns and known information stay committed; undoing deletion creates a new identity.",
   "contest.trump.skill-revival.name": "Skill Revival",
   "contest.trump.skill-revival.description":
-    "Registered for the active-skill stage; not admitted yet. Will restore one successfully used skill charge up to its initial cap and allow an extra activation this game.",
+    "After the selected skill has succeeded in this match, restore one use up to its initial cap and allow one extra activation this game. Existing skill seals remain.",
   "contest.trump.sudden-death.name": "Sudden Death",
   "contest.trump.sudden-death.description":
     "The next decisive round wins this game directly, including through Full Guard. Ties carry the marker forward; does not win the match directly or allow a second marker.",
@@ -527,6 +627,102 @@ export const en = {
 };
 export type Copy = typeof en;
 export const zh: Copy = {
+  // @req REQ-2026-027: skill states and reactions use authorized information.
+  skillArea: "主动技",
+  skillDetails: "查看{name}说明",
+  skillActivate: "发动{name}",
+  skillUses: "剩余{remaining}/{initial}次",
+  skillUsesUnknown: "{min}–{max}/{initial}次 · 未公开",
+  skillStateReady: "可发动",
+  skillStatePending: "待生效",
+  skillStateActive: "生效中",
+  skillStateLocked: "已锁定",
+  skillStateSealed: "封锁中",
+  skillStateExhausted: "次数已用尽",
+  skillStateUsed: "本局已用",
+  skillStateWaiting: "等待己方行动轮",
+  skillStateReaction: "可反应",
+  skillStateWaitReaction: "等待反应窗口",
+  skillStateConditions: "条件未满足",
+  skillStateUnknown: "未公开",
+  skillStateSelected: "已选择",
+  skillStateResolved: "已生效",
+  skillStateIneffective: "未生效",
+  skillStateCancelled: "已取消",
+  skillStateExpired: "已过期",
+  skillLockHint: "已被破万法锁定，持续至本局结束。",
+  skillConditionHint: "查看技能条件，在自己的稳定行动轮且满足条件时发动。",
+  skillChoiceBlocked: "请先完成或取消道具选择。",
+  skillReactionTitle: "等待你的技能反应",
+  skillReactionHint: "对手正在等待。可点击技能球布置双生花，或放行让对手继续。",
+  skillPass: "放行，继续对手行动",
+  skillEventPrepared: "{player}已布置{name}。",
+  skillEventSecretPrepared: "{player}已隐身布置{name}。",
+  skillEventSucceeded: "{player}的{name}已生效。",
+  skillEventIneffective: "{player}的{name}未生效，次数不返还。",
+  skillEventCancelled: "{player}的{name}已取消，次数不返还。",
+  skillEventExpired: "{player}的{name}未生效即已过期。",
+  skillEventAdjustment: "{player}的{name}：结算点数调整{amount}。",
+  skillEventControlled: "{player}的{name}已接管行动轮。",
+  contestRuleSkills:
+    "战前必选一项技能，对手从同一列表等概率随机选择一次。剩余次数跨局保留，通常每局发动一次；技能成功生效后，回仙可恢复一次并增加当局发动许可。隐身状态仅本人可见；出现反应窗口时，可发动技能或放行。",
+
+  trumpIneffective: "{player}的{name}未产生效果。",
+  trumpSkillRecovered:
+    "{player}的{name}恢复了1次技能次数，并增加本局1次发动许可；原有禁用仍生效。",
+  // @req REQ-2026-027: registered skill text; execution admission is separate.
+  skillSelectionTitle: "选择你的主动技",
+  skillSelectionIntro:
+    "为本场标准比赛选择一项技能。确认后，对手从同一列表等概率随机选择一次；比赛中不能更换技能。",
+  skillSelectionLegend: "本档可用技能",
+  skillSelectionUses: "每场{count}次 · 通常每局发动一次",
+  skillSelectionConfirm: "确认并开始比赛",
+  "contest.skill.pickpocket.name": "探囊",
+  "contest.skill.pickpocket.description":
+    "自己的行动轮结束前，对方有道具且己方道具手牌数小于上限减一时，等概率转移对方一张道具到己方，保留实例与来源。",
+  "contest.skill.tempt-fate.name": "招灾",
+  "contest.skill.tempt-fate.description":
+    "自己的行动轮布置；本回合结算己方总点数增加均匀随机整数1至对方有效暗牌值加1。若己方输掉回合，下回合己方先手，此后继续轮换。",
+  "contest.skill.scapegoat.name": "替罪",
+  "contest.skill.scapegoat.description":
+    "自己的行动轮结束前，公开信息已确认对方爆牌且有明牌时，转移其末张明牌到己方并记录当时牌值v；本回合结算己方总点数减去均匀随机整数1至v加1。",
+  "contest.skill.craft-gift.name": "巧物",
+  "contest.skill.craft-gift.description":
+    "自己的行动轮结束前，道具手牌为空时，从己方剩余库存普通抽取最多两张道具，不结束行动轮、不触发Hit补给门控。",
+  "contest.skill.metamorphosis.name": "变形",
+  "contest.skill.metamorphosis.description":
+    "自己的行动轮隐身布置；本回合结算揭牌后，将双方场上牌值仍为1的每个数字实例的结算牌值独立等概率变为2至11，不移动实例、不改数字堆。",
+  "contest.skill.frame.name": "嫁祸",
+  "contest.skill.frame.description":
+    "自己的行动轮布置；本回合结算对方总点数增加均匀随机整数1至己方有效暗牌值加1。若己方赢下回合，下回合对方先手，此后继续轮换。",
+  "contest.skill.fortune.name": "强运",
+  "contest.skill.fortune.description":
+    "自己的行动轮结束前，定向检索己方库存中的精准抽牌，有牌且有容量则移至手牌；缺牌或满手仍消耗次数，发动条件不预告隐藏库存。",
+  "contest.skill.spirit-sight.name": "灵闻",
+  "contest.skill.spirit-sight.description":
+    "自己的稳定行动轮中、Hit或Stay提交前，立即获知对方逻辑暗牌槽位的牌值。发动行为公开，牌值仅向本人授权；对方暗牌已公共揭示时不可发动。",
+  "contest.skill.provoke.name": "激发",
+  "contest.skill.provoke.description":
+    "监控对方下一行动轮；首次决策前若其无道具，按库存及封锁规则补一张。该行动轮未合法消费道具则本回合结算对方总点数加99；主动技、Hit补给和费用弃牌不算出道具，本回合先结束则过期。",
+  "contest.skill.soul-transfer.name": "魂迁",
+  "contest.skill.soul-transfer.description":
+    "自己的行动轮、道具手牌数小于上限减一时隐身布置；拦截对方下一次合法出道具，以己方视角重解释效果。成功时按容量生成一张悔牌；原出牌方仍支付费用、销毁原卡并保留行动权，回合结束未拦截则过期。",
+  "contest.skill.nullify.name": "破万法",
+  "contest.skill.nullify.description":
+    "删除双方非豁免道具手牌，无视隐身取消对方待生效技能并锁定至本局结束，生生不息除外；本回合余下及之后两个完整回合禁止双方库存补给和新技能发动，Game结束提前解除。生生不息及其直接生成牌的明确豁免保留。",
+  "contest.skill.self-renewal.name": "天行健",
+  "contest.skill.self-renewal.description":
+    "自己的行动轮结束前，己方已爆牌且有明牌时，删除己方有效贡献最高的一张明牌，同点取最后取得者；不回数字堆、不改其他牌。",
+  "contest.skill.twin-bloom.name": "双生花",
+  "contest.skill.twin-bloom.description":
+    "仅在对方行动轮的稳定反应窗口隐身布置；己方下个行动轮开始时，删除己方明牌和道具手牌，按此时对方相应区域生成新实例。保留自己的暗牌，不复制技能、次数、留场或来源豁免。",
+  "contest.skill.mind-grip.name": "夺心魄",
+  "contest.skill.mind-grip.description":
+    "接管对方下个行动轮，在起始效果后顺序执行最多三次合法普通Hit，再自动Stay；爆牌继续，遵守禁抽与空堆限制，不重洗或补造，整个序列只交权一次。",
+  "contest.skill.endless-life.name": "生生不息",
+  "contest.skill.endless-life.description":
+    "己方下个行动轮起至本Game结束，每次己方行动轮开始按容量等概率生成一张本档可用且已准入的道具，不消耗库存。本技能发动、待办、持续状态及直接生成牌明确免疫破万法，仍可受其他明确删除效果影响。",
+
   // @req REQ-2026-018: mode entrance and projected contest table.
   homeEyebrow: "绿房间，为你留座",
   homeTitle: "选一张牌桌，入座。",
@@ -539,8 +735,8 @@ export const zh: Copy = {
   contestTag: "另一种二十一点",
   contestMode: "竞赛模式",
   contestIntro:
-    "共享数字牌堆，连续使用道具、改变目标点数，开始一场标准五局三胜对决。",
-  startContest: "开始比赛",
+    "选择主动技、连续使用道具，在共享数字牌堆上开始标准五局三胜对决。",
+  startContest: "选择技能",
   contestMemoryHint: "比赛仅保留在内存中，离开或刷新即放弃。",
   homeFooter: "本地单机 · 虚拟筹码 · 随心游玩",
   home: "首页",
@@ -566,7 +762,7 @@ export const zh: Copy = {
   firstPlayer: "本回合先手",
   contestReplaying: "正在回放行动…",
   contestDealing: "正在发牌…",
-  contestTurnHint: "可在下方连续用卡，再要牌或停牌。双方连续安静停牌后揭牌。",
+  contestTurnHint: "可用道具或发动技能，再要牌或停牌。双方连续安静停牌后揭牌。",
   contestPaused: "比赛已暂停",
   opponentThinking: "对手正在思考…",
   contestRevealing: "正在揭牌结算…",
@@ -697,7 +893,7 @@ export const zh: Copy = {
   contestRuleEffects:
     "合法出卡及费用立即销毁，效果未命中也消耗。同一行动轮可连续用卡，要牌或停牌才交权。清除效果不回收卡体；悔牌仅撤销上一手可逆效果，不返还费用、不倒退随机与已知信息。",
   contestRuleBaseline:
-    "当前对手会领取道具，但只选择要牌或停牌；道具组合AI与主动技将在后续开发中接入。",
+    "对手会在战前选技，但目前只执行要牌或停牌，不主动使用道具或发动技能。",
 
   // @req REQ-2026-013: catalog copy; no codex page is mounted yet.
   "contest.trump.draw-2.name": "指定抽牌·2",
@@ -859,7 +1055,7 @@ export const zh: Copy = {
     "撤销上一笔可撤销出牌的实际效果；不退已销毁卡体、费用、随机、行动权或已知信息，撤销删除创建新身份。",
   "contest.trump.skill-revival.name": "回仙",
   "contest.trump.skill-revival.description":
-    "已登记，主动技阶段完成前不准入；届时恢复已成功生效技能一次次数且不超初始上限，并增加本局一次发动许可。",
+    "本场所选主动技曾成功生效后，恢复1次次数且不超初始上限，并增加本局1次发动许可；不解除已有禁用。",
   "contest.trump.sudden-death.name": "赌命",
   "contest.trump.sudden-death.description":
     "本回合决胜方直接赢本局，护身不能阻止；平局将标记顺延，不直接赢整场，已有标记不可重复。",

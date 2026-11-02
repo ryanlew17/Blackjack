@@ -1,3 +1,4 @@
+// @req REQ-2026-027: production admission includes Skill Revival with real skill prerequisites.
 // @req REQ-2026-025: final admitted definitions through real commands, never marker effects.
 import { describe, expect, it } from "vitest";
 import {
@@ -36,13 +37,32 @@ function fixture(
   human: readonly string[],
   ai: readonly string[] = [],
   first: PlayerId = "human",
+  withSkill = false,
 ) {
   const shuffle = fixedRandom([10, 8, 11, 9]);
   let coin = true;
+  const numbers = () =>
+    coin ? ((coin = false), first === "human" ? 0.25 : 0.75) : shuffle();
   return createMatch(
-    () =>
-      coin ? ((coin = false), first === "human" ? 0.25 : 0.75) : shuffle(),
-    rules,
+    withSkill
+      ? {
+          numbers,
+          skillSelection: noRandom,
+          skillEffects: noRandom,
+          trumpSelection: noRandom,
+          trumpGate: noRandom,
+        }
+      : numbers,
+    withSkill
+      ? {
+          ...rules,
+          skills: {
+            difficulty: "standard",
+            playableDifficulties: ["standard"],
+            selected: { human: "spirit-sight", ai: "spirit-sight" },
+          },
+        }
+      : rules,
     {
       human: human.map((definitionId, i) => ({
         definitionId,
@@ -128,7 +148,7 @@ function checkFrames(result: MatchTransition) {
   }
 }
 
-describe("final 53-card admission", () => {
+describe("final 54-card admission", () => {
   it.each(ADMITTED_TRUMP_IDS)(
     "executes %s, consumes the body once, and keeps the actor through every frame",
     (id) => {
@@ -147,7 +167,20 @@ describe("final 53-card admission", () => {
         ],
         id === "normalize" ? ["double-hidden"] : opposing ? ["pressure"] : [],
         id === "normalize" || opposing ? "ai" : "human",
+        id === "skill-revival",
       );
+      if (id === "skill-revival")
+        state = transitionMatch(
+          state,
+          {
+            type: "ActivateSkill",
+            player: "human",
+            skillId: "spirit-sight",
+            turnNumber: 1,
+            roundNumber: 1,
+          },
+          noRandom,
+        ).state;
       if (id === "normalize" || opposing) {
         state = play(
           state,
@@ -320,7 +353,7 @@ describe("final 53-card admission", () => {
 
 describe("admitted stock and generation boundaries", () => {
   it.each(DIFFICULTIES)(
-    "exhausts actual %s stock once per instance and excludes Skill Revival",
+    "exhausts actual %s stock once per instance and admits Skill Revival at its configured quantity",
     (difficulty) => {
       const resources = createResourcePreset(difficulty, ADMITTED_TRUMP_IDS);
       const trumps = {
@@ -348,9 +381,15 @@ describe("admitted stock and generation boundaries", () => {
       expect(
         drawTrump(s, "human", undefined, "destroy-all").instance,
       ).toBeNull();
-      expect(() =>
-        generateTrump(s, "human", "skill-revival", "skill", trumps),
-      ).toThrow(RangeError);
+      const revived = generateTrump(
+        s,
+        "human",
+        "skill-revival",
+        "skill",
+        trumps,
+      );
+      expect(revived.instance?.definitionId).toBe("skill-revival");
+      expect(revived.state.stock.human).toEqual([]);
       expect(() =>
         generateTrump(s, "human", "test-marker", "skill", trumps),
       ).toThrow(RangeError);

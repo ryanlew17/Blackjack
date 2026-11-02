@@ -35,6 +35,7 @@ export function SavesPanel({
 }) {
   const [fileError, setFileError] = useState<FileError | null>(null);
   const input = useRef<HTMLInputElement>(null);
+  const importTrigger = useRef<HTMLButtonElement>(null);
   // @req REQ-2026-011: a version/corrupt placeholder snapshot must not be exportable.
   const legacy = problem === "version" || problem === "corrupt";
   const exportSave = () => {
@@ -82,6 +83,7 @@ export function SavesPanel({
           </button>
         )}
         <button
+          ref={importTrigger}
           className="secondary"
           disabled={conflict}
           onClick={() => input.current?.click()}
@@ -121,7 +123,14 @@ export function SavesPanel({
             >
               {t.confirmImport}
             </button>
-            <button className="secondary" onClick={onCancelImport}>
+            <button
+              className="secondary"
+              onClick={() => {
+                // @req REQ-2026-027: removing the preview must not strand keyboard focus.
+                onCancelImport();
+                importTrigger.current?.focus();
+              }}
+            >
               {t.cancel}
             </button>
           </div>

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 // @req REQ-2026-018: render only the application's current replay observation.
 import type { ContestView } from "../../../application/contest/types";
 import type { MatchObservation } from "../../../domain/contest/engine";
@@ -10,11 +11,13 @@ export function ContestTable({
   busy,
   reduced,
   t,
+  skills,
 }: {
   match: MatchObservation;
   busy: boolean;
   reduced: boolean;
   t: Copy;
+  skills?: ReactNode;
 }) {
   const { round, game, wins } = match;
   return (
@@ -98,36 +101,39 @@ export function ContestTable({
             </section>
           );
         })}
-        <div className="contest-center">
-          {round.phase !== "settled" &&
-            round.trumps?.table.some(
-              (e) => e.kind === "symbiosis" && !e.suppressed,
-            ) && <p className="trump-symbiosis">{t.trumpSymbiosisPending}</p>}
-          {round.suddenDeath && (
-            <p className="trump-sudden-death">{t.trumpSuddenDeath}</p>
-          )}
-          <div className="card-target">
-            <span>{t.cardTarget}</span>
-            <strong>{round.pointTarget}</strong>
-          </div>
-          <div className="game-points" aria-label={t.gamePoints}>
-            <span>{t.gamePoints}</span>
-            <strong>
-              <b>{game.points.human}</b>
-              <i aria-hidden="true">:</i>
-              <b>{game.points.ai}</b>
-            </strong>
-            <small>
-              {t.firstToPoints} <b>{game.target}</b>
-            </small>
-            {game.target > match.rules.initialGameTarget && (
-              <em>{t.targetExtended}</em>
+        <div className={`contest-middle${skills ? " with-skills" : ""}`}>
+          {skills}
+          <div className="contest-center">
+            {round.phase !== "settled" &&
+              round.trumps?.table.some(
+                (e) => e.kind === "symbiosis" && !e.suppressed,
+              ) && <p className="trump-symbiosis">{t.trumpSymbiosisPending}</p>}
+            {round.suddenDeath && (
+              <p className="trump-sudden-death">{t.trumpSuddenDeath}</p>
             )}
+            <div className="card-target">
+              <span>{t.cardTarget}</span>
+              <strong>{round.pointTarget}</strong>
+            </div>
+            <div className="game-points" aria-label={t.gamePoints}>
+              <span>{t.gamePoints}</span>
+              <strong>
+                <b>{game.points.human}</b>
+                <i aria-hidden="true">:</i>
+                <b>{game.points.ai}</b>
+              </strong>
+              <small>
+                {t.firstToPoints} <b>{game.target}</b>
+              </small>
+              {game.target > match.rules.initialGameTarget && (
+                <em>{t.targetExtended}</em>
+              )}
+            </div>
+            <p>
+              {t.firstPlayer}:{" "}
+              {round.firstPlayer === "human" ? t.contestYou : t.contestOpponent}
+            </p>
           </div>
-          <p>
-            {t.firstPlayer}:{" "}
-            {round.firstPlayer === "human" ? t.contestYou : t.contestOpponent}
-          </p>
         </div>
       </section>
     </>
@@ -139,7 +145,10 @@ export function ContestStatus({ view, t }: { view: ContestView; t: Copy }) {
   let title = t.contestDealing;
   let detail = t.contestTurnHint;
   if (view.paused) title = t.contestPaused;
-  else if (view.thinking) title = t.opponentThinking;
+  else if (view.reaction) {
+    title = t.skillReactionTitle;
+    detail = t.skillReactionHint;
+  } else if (view.thinking) title = t.opponentThinking;
   else if (view.busy)
     title =
       m?.phase === "resolving" || m?.round.phase === "revealing"

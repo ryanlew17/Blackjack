@@ -108,6 +108,7 @@ describe("module architecture", () => {
           "./domain/contest/trumps/ids.ts",
           "./domain/contest/trumps/numberDefinitions.ts",
           "./domain/contest/trumps/interactionDefinitions.ts",
+          "./domain/contest/trumps/skillDefinitions.ts",
         ]).toContain(file);
       // @req REQ-2026-020: admit only the completed no-trump baseline.
       if (file.includes("/contest/ai/"))
@@ -160,7 +161,7 @@ describe("module architecture", () => {
     expect(visited).toContain("./presentation/contest/table/ContestTable.tsx");
   });
   // @req REQ-2026-021/025: planned identities and explicit execution admission agree.
-  it("admits the 51 planned definitions and two additions while reserving Skill Revival", async () => {
+  it("admits the 51 planned definitions and all three additions", async () => {
     const { TRUMP_CATALOG } = await import("./domain/contest/trumps/catalog");
     const { isTrumpId, TRUMP_IDS } =
       await import("./domain/contest/trumps/ids");
@@ -184,7 +185,7 @@ describe("module architecture", () => {
       "skill-revival",
       "sudden-death",
     ]);
-    expect(TRUMP_CATALOG["skill-revival"].playable).toBe(false);
+    expect(TRUMP_CATALOG["skill-revival"].playable).toBe(true);
     expect(research).not.toContain("| 最早出现 |");
     for (const row of rows) {
       const id = row[0].slice(1, -1);

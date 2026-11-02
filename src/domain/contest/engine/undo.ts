@@ -1,5 +1,6 @@
 // @req REQ-2026-024: reverse trigger, marker and stock changes with capacity preflight.
 // @req REQ-2026-023: reverse committed effect deltas, never payments/RNG/turns or knowledge.
+import { changeSkillRecovery } from "./skillRecovery";
 import { freezeData } from "../immutable";
 import type { RoundState } from "./types";
 import type { CardTransaction, EffectDelta } from "./numberCards";
@@ -39,7 +40,15 @@ export function undoLastPlay(
     deltas.push(...m.deltas);
   };
   for (const delta of [...transaction.deltas].reverse()) {
-    if (delta.type === "number-move") {
+    if (delta.type === "skill-recovery") {
+      apply(
+        changeSkillRecovery(state, delta.player, {
+          uses: -delta.uses,
+          permission: -delta.permission,
+          publicUses: -delta.publicUses,
+        }),
+      );
+    } else if (delta.type === "number-move") {
       apply(moveNumber(state, number(delta.instanceId), delta.from));
     } else if (delta.type === "numbers-swapped") {
       apply(

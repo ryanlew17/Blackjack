@@ -4,13 +4,16 @@ import type { TrumpDefinition } from "../engine/effectTypes";
 import { TRUMP_IDS, type TrumpId } from "./ids";
 import { NUMBER_TRUMP_DEFINITIONS } from "./numberDefinitions";
 import { INTERACTION_TRUMP_DEFINITIONS } from "./interactionDefinitions";
+import { SKILL_TRUMP_DEFINITIONS } from "./skillDefinitions";
 
-export type AdmittedTrumpId = Exclude<TrumpId, "skill-revival">;
+// @req REQ-2026-027: Skill Revival completes the 54-card production set.
+export type AdmittedTrumpId = TrumpId;
 export const ADMITTED_TRUMP_DEFINITIONS: Readonly<
   Record<AdmittedTrumpId, TrumpDefinition>
 > = freezeData({
   ...NUMBER_TRUMP_DEFINITIONS,
   ...INTERACTION_TRUMP_DEFINITIONS,
+  ...SKILL_TRUMP_DEFINITIONS,
 } satisfies Record<AdmittedTrumpId, TrumpDefinition>);
 
 export function isAdmittedTrumpId(value: unknown): value is AdmittedTrumpId {

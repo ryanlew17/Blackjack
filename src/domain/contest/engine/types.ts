@@ -1,3 +1,4 @@
+// @req REQ-2026-027: skill rules, private runtime, scoped commands and authorized observations.
 // @req REQ-2026-023: numeric contributions, authorized information and reversible effects.
 // @req REQ-2026-022: instance identity/resource migration preserves existing rule regressions.
 // @req REQ-2026-015: authoritative round data stays inside the engine boundary.
@@ -13,6 +14,20 @@ import type {
   SuddenDeathMarker,
   TableEventPayload,
 } from "./effectTypes";
+import type {
+  SkillRules,
+  SkillState,
+  SkillObservation,
+  ActivateSkillCommand,
+  ResolveForcedTurnCommand,
+  SkillEventPayload,
+  SkillEventView,
+} from "./skillTypes";
+import type {
+  ReactionState,
+  ReactionView,
+  PassReactionCommand,
+} from "./reactions";
 import type { NumberInstance, CardTransaction } from "./numberCards";
 import type { NumberValue, PlayerId } from "../types";
 
@@ -20,11 +35,16 @@ export interface RoundRules {
   readonly version: 1;
   readonly pointTarget: number;
   readonly trumps?: TrumpRules;
+  readonly skills?: SkillRules;
 }
 export interface TurnState {
   readonly player: PlayerId;
   readonly number: number;
   readonly usedTrump: boolean;
+  /** Public skill use interrupts quiet Stay without claiming a trump was consumed. */
+  readonly usedSkill?: boolean;
+  /** Public takeover; normal commands stay closed until its atomic continuation commits. */
+  readonly controlledBy?: PlayerId;
 }
 export interface RoundResult {
   readonly winner: PlayerId | null;
@@ -59,10 +79,18 @@ export interface RoundState {
   /** REQ-022 resource hook; REQ-024 supplies card-driven modifiers. */
   readonly hitDrawCounts: Readonly<Record<PlayerId, 1 | 2>>;
   readonly turn: TurnState | null;
+  /** Private idempotence marker, reset by each new Round. */
+  readonly startedTurnNumber?: number;
+  /** Complete public command boundaries only; secret preparation never advances it. */
+  readonly reactionState?: ReactionState;
   readonly quietStays: 0 | 1 | 2;
   readonly revealed: readonly PlayerId[];
   readonly result: RoundResult | null;
+  /** Settlement-only values retain instance identities and never rewrite raw cards or the deck. */
+  readonly settlementValues?: Readonly<Record<string, NumberValue>>;
+  readonly settlementTotals?: Readonly<Record<PlayerId, number>>;
   readonly trumps?: TrumpState;
+  readonly skills?: SkillState;
   readonly suddenDeath?: SuddenDeathMarker;
 }
 export type RoundCommand =
@@ -70,8 +98,12 @@ export type RoundCommand =
       readonly type: "Hit" | "Stay";
       readonly player: PlayerId;
     }
-  | PlayTrumpCommand;
+  | PlayTrumpCommand
+  | ActivateSkillCommand
+  | ResolveForcedTurnCommand
+  | PassReactionCommand;
 export type RoundEvent = (
+  | SkillEventPayload
   | TrumpEventPayload
   | ResourceEventPayload
   | TableEventPayload
@@ -133,9 +165,13 @@ export interface RoundObservation {
   readonly lastPlay: {
     readonly type: "number" | "trump";
     readonly player: PlayerId;
+    readonly effectPlayer?: PlayerId;
     readonly instanceId: string;
   } | null;
+  readonly reaction?: ReactionView;
   readonly trumps?: TrumpObservation;
+  readonly skills?: SkillObservation;
+  readonly skillSeal?: { readonly throughRound: number };
   readonly suddenDeath?: SuddenDeathMarker;
   /** Public capacity feasibility for each of the viewer's own possible payments; no inverse identities. */
   readonly undoableTrumpIds?: readonly string[];
@@ -143,6 +179,7 @@ export interface RoundObservation {
 export type RoundEventView = (
   | TrumpEventPayload
   | ResourceEventView
+  | SkillEventView
   | TableEventPayload
   | { readonly type: "undo-window-closed"; readonly reason: "turn-boundary" }
   | {
@@ -218,6 +255,8 @@ export interface MatchState {
   /** Global, increasing across games; identifies the command's current round. */
   readonly roundNumber: number;
   readonly round: RoundState;
+  /** Consumed once by NextRound, including across a Game boundary. */
+  readonly nextFirstPlayer?: PlayerId;
   /** Private, fixed setup for the next Game; never part of an observation. */
   readonly trumpSetup?: TrumpSetup;
   readonly winner: PlayerId | null;
@@ -237,6 +276,7 @@ export type MatchEvent = (
       readonly from: number;
       readonly to: number;
     }
+  | { readonly type: "first-player-overridden"; readonly player: PlayerId }
   | { readonly type: "round-cleanup" }
   | { readonly type: "game-won"; readonly winner: PlayerId }
   | { readonly type: "game-cleanup" }
@@ -253,6 +293,7 @@ export interface MatchObservation {
   readonly game: ContestGameState;
   readonly roundNumber: number;
   readonly round: RoundObservation;
+  readonly nextFirstPlayer?: PlayerId;
   readonly winner: PlayerId | null;
 }
 export type MatchEventView = (
@@ -267,6 +308,7 @@ export type MatchEventView = (
       readonly from: number;
       readonly to: number;
     }
+  | { readonly type: "first-player-overridden"; readonly player: PlayerId }
   | { readonly type: "round-cleanup" }
   | { readonly type: "game-won"; readonly winner: PlayerId }
   | { readonly type: "game-cleanup" }

@@ -1,3 +1,4 @@
+// @req REQ-2026-027: off-turn effect controllers bind a recipient to its next actual Turn.
 // @req REQ-2026-015: internal consumption seam for REQ-019, not a public player command.
 import { freezeData } from "../immutable";
 import type { PlayerId } from "../types";
@@ -26,4 +27,9 @@ export function recordTrumpConsumption(
     quietStays: 0,
     turn: { ...state.turn, usedTrump: true },
   });
+}
+
+/** The next actual Turn for a recipient, also when an off-turn controller redirects an effect. */
+export function nextTurnNumberFor(turn: TurnState, player: PlayerId): number {
+  return turn.number + (turn.player === player ? 2 : 1);
 }

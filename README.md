@@ -6,7 +6,7 @@ A local-first, single-player Blackjack game for the browser. Play the classic gr
 
 ## Features
 
-- **Two tables**: Classic restores your saved table; Contest starts a standard best-of-five duel with alternating turns, round points, an extending game target, playable trump hands, and a deterministic Hit/Stay opponent.
+- **Two tables**: Classic restores your saved table; Contest starts with a choice of active skill, then a standard best-of-five duel with alternating turns, round points, an extending game target, playable trump hands, and a deterministic Hit/Stay opponent.
 - **Full classic rules**: hit, stand, double down, split, insurance, late surrender, undo or clear wagers, and all in.
 - **Action hints**: when split, double, or surrender is available, a one-line explainer appears under the action buttons — reachable on touch screens, with desktop tooltips kept.
 - **Responsive 2D table**: custom SVG cards and chips, smooth animations, keyboard controls, and reduced-motion support.
@@ -36,7 +36,7 @@ Download the latest release build, unzip it, and double-click `index.html` — n
 
 ## Contest Mode
 
-A duel variant inspired by the 21-point game in _Resident Evil 7_. Each round starts with a shared deck containing the numbers 1–11 once each; both players receive two cards and first cards stay private until revealed. Use several trumps in your turn, choosing targets or paying costs when required, then hit or stay to pass play. Two consecutive quiet stays end the round. The standard best-of-five is first to three game wins: game points start with a target of 5 and extend at 4:4, 6:6, and so on. Trump effects can change the card target and round points; the result shows the actual scoring sources. The current opponent receives trumps but only hits or stays. Active skills, difficulty selection, the codex, and combination-search AI are on the roadmap. Full rules live in [contest-rules.md](./docs/design/contest-rules.md).
+A duel variant inspired by the 21-point game in _Resident Evil 7_. Each round starts with a shared deck containing the numbers 1–11 once each; both players receive two cards and first cards stay private until revealed. Use several trumps in your turn, choosing targets or paying costs when required, then hit or stay to pass play. Two consecutive quiet stays end the round. The standard best-of-five is first to three game wins: game points start with a target of 5 and extend at 4:4, 6:6, and so on. Trump effects can change the card target and round points; the result shows the actual scoring sources. Before starting, choose one of ten standard skills; your opponent picks once at random from the same list. Use your separate skill sphere during a legal window and read either skill’s description by selecting its name. Uses last for the match, normally one activation per game; secret preparations stay private. Cancel before confirmation to return home without starting a match. The current opponent chooses a skill and receives trumps but only hits or stays—it does not activate skills or play trumps yet. Difficulty selection, the codex, and combination-search AI are on the roadmap. Full rules live in [contest-rules.md](./docs/design/contest-rules.md).
 
 ## Saves & privacy
 
@@ -59,7 +59,7 @@ The launcher checks for Node.js, installs dependencies on first run, starts the 
 
 ## Roadmap
 
-Classic rules and saves are complete and stable (v2). The Contest Mode program is in progress: the standard best-of-five with playable trumps is available, while active skills, difficulty selection, the codex, custom matches, and smarter AI are still planned. LAN/online play, accounts, and cloud saves are explicit non-goals. See the [technical roadmap](./docs/roadmap.md) and [requirements index](./docs/requirements/index.md).
+Classic rules and saves are complete and stable (v2). The Contest Mode program is in progress: the standard best-of-five with playable trumps and active skills is available, while difficulty selection, the codex, custom matches, and smarter AI are still planned. LAN/online play, accounts, and cloud saves are explicit non-goals. See the [technical roadmap](./docs/roadmap.md) and [requirements index](./docs/requirements/index.md).
 
 ## Documentation
 

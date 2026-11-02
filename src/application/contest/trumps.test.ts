@@ -111,7 +111,7 @@ describe("S2 production controller", () => {
     });
     expect(
       Object.keys(api.snapshot()!.rules.round.trumps!.definitions),
-    ).toHaveLength(53);
+    ).toHaveLength(54);
     expect(Object.isFrozen(api.snapshot()!.rules.round)).toBe(true);
     expect(api).not.toHaveProperty("sendCommand");
     expect(JSON.stringify(api.snapshot())).not.toContain('"deck":');
@@ -124,6 +124,7 @@ describe("S2 production controller", () => {
     expect(plain.snapshot()!.round.trumps).toBeUndefined();
     expect(plain.getSnapshot().trumpCommands).toEqual([]);
   });
+  // @req REQ-2026-027: five streams share one lazy initialization.
   it("starts S2 with lazy independent defaults without an injected resource source", () => {
     const seed = vi.spyOn(Math, "random").mockReturnValue(0.25);
     const api = createContestController({ preset: "s2-development" });
@@ -132,10 +133,10 @@ describe("S2 production controller", () => {
     vi.runAllTimers();
     expect(api.snapshot()!.rules.trumpDealing).toBe(true);
     expect(api.getSnapshot().busy).toBe(false);
-    expect(seed).toHaveBeenCalledTimes(3);
+    expect(seed).toHaveBeenCalledTimes(5);
     api.restart();
     vi.runAllTimers();
-    expect(seed).toHaveBeenCalledTimes(3);
+    expect(seed).toHaveBeenCalledTimes(5);
   });
   it.each(["Hit", "Stay"] as const)(
     "commits multiple real trumps and grants before replay, then permits %s",

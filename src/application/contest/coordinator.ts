@@ -1,8 +1,10 @@
+// @req REQ-2026-027: opt-in skill matches require independent default random streams.
 // @req REQ-2026-017/019/025: private authority and shared replay for normal/scripted consumers.
 import {
   createMatch,
   legalMatchActions,
   legalTrumpCommands,
+  legalSkillCommands,
   observeMatch,
   projectMatchTransition,
   transitionMatch,
@@ -36,7 +38,7 @@ export function createContestCoordinator(
 ) {
   const random =
     options.random ??
-    (options.roundRules?.trumps?.resources
+    (options.roundRules?.trumps?.resources || options.roundRules?.skills
       ? createContestRandomSources()
       : Math.random);
   const opponent = options.opponent ?? baselinePolicy;
@@ -62,6 +64,8 @@ export function createContestCoordinator(
     inputId: 0,
     recentEvents: Object.freeze([]),
     trumpCommands: Object.freeze([]),
+    skillCommands: Object.freeze([]),
+    reaction: null,
     actions: Object.freeze([]),
   });
 
@@ -69,6 +73,9 @@ export function createContestCoordinator(
     const busy = replaying || thinking;
     const actionable =
       current && !busy && !paused ? observeMatch(current, "human") : null;
+    const reaction = actionable?.round.reaction;
+    const skills = actionable ? legalSkillCommands(actionable.round) : [];
+    const activate = reaction?.player === "human" ? skills[0] : undefined;
     view = Object.freeze({
       match,
       busy,
@@ -78,8 +85,31 @@ export function createContestCoordinator(
       effectId,
       inputId: generation,
       recentEvents: Object.freeze([...recentEvents]),
+      reaction:
+        reaction && activate
+          ? freezeData({
+              activate: { ...activate, inputId: generation },
+              pass: {
+                type: "PassReaction" as const,
+                player: "human" as const,
+                turnNumber: reaction.turnNumber,
+                reactionBoundary: reaction.boundary,
+                inputId: generation,
+              },
+            })
+          : null,
       actions: Object.freeze(
-        actionable ? [...legalMatchActions(actionable)] : [],
+        actionable
+          ? legalMatchActions(actionable).filter(
+              (action) => action !== "ResolveForcedTurn",
+            )
+          : [],
+      ),
+      skillCommands: freezeData(
+        skills.map(({ player: _player, ...command }) => ({
+          ...command,
+          inputId: generation,
+        })),
       ),
       trumpCommands: freezeData(
         actionable
@@ -160,7 +190,58 @@ export function createContestCoordinator(
 
   function ready() {
     replaying = false;
+    // Public cover windows must not reveal a secret use. Silently pass when this recipient
+    // cannot activate; the baseline AI also passes through this exact authority boundary.
+    const reaction = current
+      ? observeMatch(current, "human").round.reaction
+      : undefined;
+    if (current && reaction && !paused) {
+      const canActivate =
+        legalSkillCommands(observeMatch(current, reaction.player).round)
+          .length > 0;
+      if (
+        !canActivate ||
+        (reaction.player === "ai" && !controlled.includes("ai"))
+      ) {
+        const result = transitionMatch(
+          current,
+          {
+            type: "PassReaction",
+            player: reaction.player,
+            turnNumber: reaction.turnNumber,
+            reactionBoundary: reaction.boundary,
+            roundNumber: current.roundNumber,
+          },
+          random,
+        );
+        if (result.state !== current) {
+          commit(result);
+          return;
+        }
+      }
+    }
+    const id = generation;
     publish(current ? observeMatch(current, "human") : null);
+    if (id !== generation || paused) return;
+    // A pending explicit reaction gates both ordinary AI and the entire forced continuation.
+    if (current && observeMatch(current, "human").round.reaction) return;
+    // The controlled command remains atomic after this stable authorization boundary.
+    // A controlled Turn bypasses the decision policy and commits every Hit/Stay before replay.
+    const turn = current?.round.turn;
+    if (current?.phase === "playing" && turn?.controlledBy !== undefined) {
+      const result = transitionMatch(
+        current,
+        {
+          type: "ResolveForcedTurn",
+          player: turn.player,
+          turnNumber: turn.number,
+          roundNumber: current.roundNumber,
+        },
+        random,
+      );
+      if (result.state !== current) commit(result);
+      return;
+    }
     // An event is not a turn: always read the committed actor after replay.
     scheduleOpponent();
   }
@@ -200,10 +281,10 @@ export function createContestCoordinator(
     step();
   }
 
-  function begin() {
+  function begin(roundRules = options.roundRules) {
     recentEvents = [];
     paused = false;
-    commit(createMatch(random, options.roundRules, options.trumpSetup), true);
+    commit(createMatch(random, roundRules, options.trumpSetup), true);
   }
 
   return {
@@ -216,9 +297,9 @@ export function createContestCoordinator(
     },
     /** Authoritative human observation, useful for results; never a full state. */
     snapshot: () => (current ? observeMatch(current, "human") : null),
-    start() {
+    start(roundRules = options.roundRules) {
       if (current) return false;
-      begin();
+      begin(roundRules);
       return true;
     },
     restart: begin,
@@ -229,8 +310,20 @@ export function createContestCoordinator(
       paused = false;
       publish(null);
     },
-    sendCommand(action: RoundCommand | { readonly type: "NextRound" }) {
+    sendCommand(
+      action: (RoundCommand | { readonly type: "NextRound" }) & {
+        readonly inputId?: number;
+      },
+    ) {
       if (!current || replaying || thinking || paused) return false;
+      if (
+        (action.type === "PassReaction" ||
+          (action.type === "ActivateSkill" &&
+            (action.skillId === "twin-bloom" ||
+              action.inputId !== undefined))) &&
+        action.inputId !== generation
+      )
+        return false;
       if (action.type !== "NextRound" && !controlled.includes(action.player))
         return false;
       const result = transitionMatch(
@@ -239,7 +332,21 @@ export function createContestCoordinator(
         random,
       );
       if (result.state === current) return false;
-      commit(result);
+      if (action.type === "ActivateSkill" && action.skillId === "twin-bloom") {
+        // Secret preparation and the common pass share one application submission/generation.
+        const passed = transitionMatch(
+          result.state,
+          {
+            type: "PassReaction",
+            player: action.player,
+            turnNumber: action.turnNumber,
+            reactionBoundary: action.reactionBoundary!,
+            roundNumber: current.roundNumber,
+          },
+          random,
+        );
+        commit({ state: passed.state, events: result.events });
+      } else commit(result);
       return true;
     },
     skipAnimations() {

@@ -105,5 +105,5 @@ S1 TrumpSetup 是私有固定资源夹具，仍用 table／discarded 保存打�
 ## 关联材料
 
 - [历史51卡、运行契约与原版完整台账](../../design/contest-trumps.md)
-- [主动技及生成渠道](../active/REQ-2026-027-contest-active-skills.md) · [末项组合AI](../active/REQ-2026-028-contest-combination-ai.md)
+- [主动技及生成渠道](./REQ-2026-027-contest-active-skills.md) · [末项组合AI](../active/REQ-2026-028-contest-combination-ai.md)
 - [界面约定](../../design/ui.md) · [竞赛存档边界](../../contracts/contest-save-format.md)

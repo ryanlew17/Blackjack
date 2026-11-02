@@ -6,7 +6,13 @@ export interface ResourceRandomSources {
   readonly trumpGate: RandomSource;
   readonly trumpSelection: RandomSource;
 }
-export interface ContestRandomSources extends ResourceRandomSources {
+// @req REQ-2026-027: independent real selection/effect ports; search owns a different source in REQ-028.
+export interface SkillRandomSources {
+  readonly skillSelection: RandomSource;
+  readonly skillEffects: RandomSource;
+}
+export interface ContestRandomSources
+  extends ResourceRandomSources, Partial<SkillRandomSources> {
   /** Coin flip and number-deck shuffle only. */
   readonly numbers: RandomSource;
 }
@@ -45,4 +51,19 @@ export function resourceRandom(
   )
     throw new RangeError("Trump resources require separate injected streams");
   return random;
+}
+
+export function skillRandom(random: ContestRandom): SkillRandomSources {
+  if (
+    typeof random === "function" ||
+    typeof random.skillSelection !== "function" ||
+    typeof random.skillEffects !== "function"
+  )
+    throw new RangeError(
+      "Skills require separate injected selection and effect streams",
+    );
+  return {
+    skillSelection: random.skillSelection,
+    skillEffects: random.skillEffects,
+  };
 }

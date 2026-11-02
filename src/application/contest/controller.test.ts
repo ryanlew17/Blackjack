@@ -67,6 +67,9 @@ describe("private authority and projected replay", () => {
       inputId: 0,
       recentEvents: [],
       trumpCommands: [],
+      skillCommands: [],
+      // @req REQ-2026-027: no decision exists until an explicit skill match reaches a stable boundary.
+      reaction: null,
       actions: [],
     });
     expect(controller.snapshot()).toBeNull();

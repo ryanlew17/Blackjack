@@ -4,6 +4,11 @@ import { useSystemReducedMotion } from "./shared/useSystemReducedMotion";
 import { useContest } from "../application/contest/useContest";
 import { ModeSelect } from "./shell/ModeSelect";
 import { ContestTable } from "./contest/table/ContestTable";
+import { ContestSkills } from "./contest/table/ContestSkills";
+import { SkillSelection } from "./contest/SkillSelection";
+import { SKILL_CATALOG } from "../domain/contest/skills/catalog";
+import type { PlayerId } from "../domain/contest/types";
+import { text } from "./contest/table/trumpView";
 import { ContestControls } from "./contest/table/ContestControls";
 import { ContestTrumps } from "./contest/table/ContestTrumps";
 import { ContestFeedback } from "./contest/table/ContestFeedback";
@@ -33,7 +38,8 @@ type Panel =
   | "history"
   | "reset"
   | "leaveContest"
-  | "restartContest";
+  | "restartContest"
+  | "skillInfo";
 
 export default function App() {
   const systemReduced = useSystemReducedMotion();
@@ -41,19 +47,23 @@ export default function App() {
     { game: g, settings } = api;
   // @req REQ-2026-018: settings/classic progress survive mode changes; matches do not.
   // @req REQ-2026-026: the standard production entrance now has a usable trump hand.
+  // @req REQ-2026-027: normal entry requires a skill choice before creating the Match.
   const contest = useContest({
     settings,
     systemReduced,
     preset: "s2-development",
+    prepareSkills: true,
   });
   const [mode, setMode] = useState<Mode>("home");
-  const previousMode = useRef(mode);
+  const screen =
+    mode === "contest" ? (contest.preparation ? "preparation" : "table") : mode;
+  const previousScreen = useRef(screen);
   useEffect(() => {
-    if (previousMode.current !== mode) {
+    if (previousScreen.current !== screen) {
       document.querySelector<HTMLElement>("main h1")?.focus();
-      previousMode.current = mode;
+      previousScreen.current = screen;
     }
-  }, [mode]);
+  }, [screen]);
   const t = settings.language === "zh" ? zh : en;
   const reduced =
     settings.motion === "reduce" ||
@@ -61,6 +71,9 @@ export default function App() {
   const [panel, setPanel] = useState<Panel | null>(null);
   const [pending, setPending] = useState<SaveEnvelope | null>(null);
   const [focusAbout, setFocusAbout] = useState(false);
+  const [skillInfoPlayer, setSkillInfoPlayer] = useState<PlayerId>("human");
+  const [trumpChoosing, setTrumpChoosing] = useState(false);
+  const inspectedSkill = contest.match?.round.skills?.[skillInfoPlayer];
   const actions = legalActions(g);
   const blocked =
     api.busy ||
@@ -83,6 +96,11 @@ export default function App() {
     setPanel(next);
   };
   const goHome = () => {
+    if (contest.preparation) {
+      if (contest.cancelSkillSelection(contest.preparation.inputId))
+        setMode("home");
+      return;
+    }
     if (mode === "contest" && contest.match?.phase !== "complete") {
       openPanel("leaveContest");
     } else {
@@ -91,7 +109,10 @@ export default function App() {
     }
   };
   const restartContest = () => {
-    if (contest.match?.phase === "complete" && panel === null)
+    if (contest.preparation) {
+      contest.restart();
+      closePanel();
+    } else if (contest.match?.phase === "complete" && panel === null)
       contest.restart();
     else openPanel("restartContest");
   };
@@ -242,46 +263,75 @@ export default function App() {
             </footer>
           </main>
         )}
-        {mode === "contest" && (
-          <main className="contest-page">
-            <div className="mode-breadcrumb">
-              <button onClick={goHome}>
-                <span aria-hidden="true">←</span>
-                {t.backHome}
-              </button>
-              <span>{t.contestMode}</span>
-            </div>
-            <section className="contest-heading">
-              <div>
-                <div className="eyebrow">
-                  <span className="status-dot" />
-                  {t.contestTag}
-                </div>
-                <h1 tabIndex={-1}>{t.contestMode}</h1>
-              </div>
-              <button onClick={() => openPanel("rules")}>
-                {t.contestRulesTitle} ↗
-              </button>
-            </section>
-            {contest.match && (
-              <ContestTable
-                match={contest.match}
-                busy={contest.busy}
-                reduced={reduced}
-                t={t}
-              />
-            )}
-            <ContestControls
-              view={contest}
+        {mode === "contest" &&
+          (contest.preparation ? (
+            <SkillSelection
+              preparation={contest.preparation}
               t={t}
-              send={contest.send}
-              onRestart={restartContest}
+              onSelect={contest.selectSkill}
+              onConfirm={contest.confirmSkill}
+              onCancel={(inputId) => {
+                if (contest.cancelSkillSelection(inputId)) setMode("home");
+              }}
             />
-            <ContestTrumps view={contest} t={t} send={contest.send} />
-            <ContestFeedback view={contest} t={t} />
-            <footer className="contest-footer">{t.contestMemoryHint}</footer>
-          </main>
-        )}
+          ) : (
+            <main className="contest-page">
+              <div className="mode-breadcrumb">
+                <button onClick={goHome}>
+                  <span aria-hidden="true">←</span>
+                  {t.backHome}
+                </button>
+                <span>{t.contestMode}</span>
+              </div>
+              <section className="contest-heading">
+                <div>
+                  <div className="eyebrow">
+                    <span className="status-dot" />
+                    {t.contestTag}
+                  </div>
+                  <h1 tabIndex={-1}>{t.contestMode}</h1>
+                </div>
+                <button onClick={() => openPanel("rules")}>
+                  {t.contestRulesTitle} ↗
+                </button>
+              </section>
+              {contest.match && (
+                <ContestTable
+                  match={contest.match}
+                  busy={contest.busy}
+                  reduced={reduced}
+                  t={t}
+                  skills={
+                    <ContestSkills
+                      view={contest}
+                      t={t}
+                      send={contest.send}
+                      choosing={trumpChoosing}
+                      reduced={reduced}
+                      onInspect={(player) => {
+                        setSkillInfoPlayer(player);
+                        openPanel("skillInfo");
+                      }}
+                    />
+                  }
+                />
+              )}
+              <ContestControls
+                view={contest}
+                t={t}
+                send={contest.send}
+                onRestart={restartContest}
+              />
+              <ContestTrumps
+                view={contest}
+                t={t}
+                send={contest.send}
+                onChoiceChange={setTrumpChoosing}
+              />
+              <ContestFeedback view={contest} t={t} />
+              <footer className="contest-footer">{t.contestMemoryHint}</footer>
+            </main>
+          ))}
         {panel && (
           <Modal
             closeLabel={t.close}
@@ -290,16 +340,35 @@ export default function App() {
                 ? mode === "contest"
                   ? t.contestRulesTitle
                   : t.rulesTitle
-                : panel === "leaveContest"
-                  ? t.leaveContestTitle
-                  : panel === "restartContest"
-                    ? t.restartContestTitle
-                    : panel === "reset"
-                      ? t.resetTitle
-                      : t[panel]
+                : panel === "skillInfo"
+                  ? inspectedSkill
+                    ? t[SKILL_CATALOG[inspectedSkill.id].nameKey]
+                    : t.skillArea
+                  : panel === "leaveContest"
+                    ? t.leaveContestTitle
+                    : panel === "restartContest"
+                      ? t.restartContestTitle
+                      : panel === "reset"
+                        ? t.resetTitle
+                        : t[panel]
             }
             close={closePanel}
           >
+            {panel === "skillInfo" && inspectedSkill && (
+              <>
+                <p className="modal-intro">
+                  {t[SKILL_CATALOG[inspectedSkill.id].descriptionKey]}
+                </p>
+                <p className="small-note">
+                  {text(t.skillSelectionUses, {
+                    count: inspectedSkill.initialUses,
+                  })}
+                </p>
+                {inspectedSkill.disabled && (
+                  <p className="small-note">{t.skillLockHint}</p>
+                )}
+              </>
+            )}
             {panel === "rules" &&
               (mode === "contest" ? (
                 <ContestRules t={t} />

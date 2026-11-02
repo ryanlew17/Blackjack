@@ -1,10 +1,13 @@
+// @req REQ-2026-027: authorize logical hidden-slot knowledge and filter private skill events.
 // @req REQ-2026-024: project public capacity feasibility and exact continuous-effect state.
 // @req REQ-2026-023: numeric contributions, authorized information and reversible effects.
 // @req REQ-2026-015: UI and strategies receive ONLY these projected values.
-import { observeTrumps } from "./effects";
+import { observeReaction } from "./reactions";
+import { observeSkills } from "./skills";
+import { observeTrumps } from "./resources";
 import { freezeData } from "../immutable";
 import type { PlayerId } from "../types";
-import { contribution, effectiveTotals } from "./contributions";
+import { contribution, effectiveTotals, numberValue } from "./contributions";
 import { canUndoWith } from "./undo";
 import { isEffectActive } from "./tableEffects";
 import type {
@@ -27,7 +30,12 @@ function handView(
   const cards: NumberCardView[] = state.hands[player].map((card) => {
     const faceDown = card.instanceId === state.hiddenCards[player] && !revealed;
     return {
-      value: faceDown && player !== viewer ? null : card.value,
+      value:
+        faceDown &&
+        player !== viewer &&
+        state.skills?.knownHiddenCards[viewer] !== card.instanceId
+          ? null
+          : numberValue(state, card),
       faceDown,
     };
   });
@@ -35,6 +43,7 @@ function handView(
     cards,
     visibleTotal:
       state.result?.totals[player] ??
+      state.settlementTotals?.[player] ??
       state.hands[player]
         .filter(
           (card) => revealed || card.instanceId !== state.hiddenCards[player],
@@ -42,7 +51,9 @@ function handView(
         .reduce((sum, card) => sum + contribution(state, player, card), 0),
     total: cards.some((card) => card.value === null)
       ? null
-      : (state.result?.totals[player] ?? effectiveTotals(state)[player]),
+      : (state.result?.totals[player] ??
+        state.settlementTotals?.[player] ??
+        effectiveTotals(state)[player]),
   };
 }
 
@@ -50,6 +61,7 @@ export function observeRound(
   state: RoundState,
   viewer: PlayerId,
 ): RoundObservation {
+  const reaction = observeReaction(state);
   return freezeData({
     viewer,
     rules: state.rules,
@@ -95,8 +107,14 @@ export function observeRound(
           type: state.lastPlay.type,
           player: state.lastPlay.player,
           instanceId: state.lastPlay.instanceId,
+          ...(state.lastPlay.type === "trump" && state.lastPlay.effectPlayer
+            ? { effectPlayer: state.lastPlay.effectPlayer }
+            : {}),
         }
       : null,
+    ...(reaction ? { reaction } : {}),
+    ...(state.skills ? { skills: observeSkills(state, viewer) } : {}),
+    ...(state.skills?.seal ? { skillSeal: state.skills.seal } : {}),
     ...(state.trumps ? { trumps: observeTrumps(state.trumps, viewer) } : {}),
     ...(state.suddenDeath ? { suddenDeath: state.suddenDeath } : {}),
     ...(state.trumps && state.lastPlay?.type === "trump"
@@ -112,9 +130,22 @@ export function observeRound(
 export function projectRoundEvent(
   event: RoundEvent,
   viewer: PlayerId,
-): RoundEventView {
+): RoundEventView | null {
+  if (event.type === "skill" && !event.public && event.player !== viewer)
+    return null;
   const state = observeRound(event.state, viewer);
   switch (event.type) {
+    case "skill":
+      return freezeData({
+        type: event.type,
+        player: event.player,
+        skillId: event.skillId,
+        status: event.status,
+        ...(event.card !== undefined ? { card: event.card } : {}),
+        ...(event.targetId ? { targetId: event.targetId } : {}),
+        ...(event.amount !== undefined ? { amount: event.amount } : {}),
+        state,
+      });
     // @req REQ-2026-026: explain public boundary closure without projecting inverse deltas.
     case "undo-window-closed":
       return freezeData({ type: event.type, reason: event.reason, state });
@@ -145,9 +176,11 @@ export function projectRoundEvent(
         player: event.player,
         instance: event.instance,
         effect: event.effect,
+        ...(event.effectPlayer ? { effectPlayer: event.effectPlayer } : {}),
         ...(event.card !== undefined ? { card: event.card } : {}),
         ...(event.targetId ? { targetId: event.targetId } : {}),
-        ...(event.privateCards !== undefined && event.player === viewer
+        ...(event.privateCards !== undefined &&
+        (event.effectPlayer ?? event.player) === viewer
           ? { privateCards: event.privateCards }
           : {}),
         state,
@@ -186,6 +219,9 @@ export function projectRoundTransition(
 ): RoundTransitionView {
   return freezeData({
     state: observeRound(result.state, viewer),
-    events: result.events.map((event) => projectRoundEvent(event, viewer)),
+    events: result.events.flatMap((event) => {
+      const projected = projectRoundEvent(event, viewer);
+      return projected ? [projected] : [];
+    }),
   });
 }

@@ -98,3 +98,22 @@ export type { Side, TableKind, TableSpecification } from "./effectTypes";
 export { SKILL_USE_RECOVERY } from "./effectTypes";
 export type { RoundScore } from "./types";
 export type { TableEventPayload } from "./effectTypes";
+
+export type { PassReactionCommand, ReactionView } from "./reactions";
+
+// @req REQ-2026-027: skill admission is independent of catalog eligibility and trump admission.
+export { legalSkillCommands, EXECUTABLE_SKILL_IDS } from "./skills";
+export type {
+  SkillRules,
+  SkillState,
+  SkillObservation,
+  SkillView,
+  SkillActivation,
+  SkillActivationStatus,
+  ActivateSkillCommand,
+  ResolveForcedTurnCommand,
+  SkillEventPayload,
+  SkillEventView,
+} from "./skillTypes";
+export { isNullifyImmune } from "./skillBarriers";
+export type { SkillRandomSources } from "./resourceTypes";

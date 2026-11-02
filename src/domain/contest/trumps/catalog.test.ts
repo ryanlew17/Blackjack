@@ -14,11 +14,11 @@ import { STOCK_QUANTITIES, createResourcePreset } from "../presets/resources";
 import { S2_DEVELOPMENT_PRESET } from "../presets/s2";
 
 describe("registered catalog and explicit admission", () => {
-  it("registers 54 identities and admits precisely the 53 executed definitions", () => {
+  it("registers 54 identities and admits all 54 executed definitions", () => {
     expect(TRUMP_IDS).toHaveLength(54);
     expect(new Set(TRUMP_IDS).size).toBe(54);
     expect(Object.keys(TRUMP_CATALOG)).toEqual([...TRUMP_IDS]);
-    expect(ADMITTED_TRUMP_IDS).toHaveLength(53);
+    expect(ADMITTED_TRUMP_IDS).toHaveLength(54);
     expect(new Set(Object.keys(ADMITTED_TRUMP_DEFINITIONS))).toEqual(
       new Set(ADMITTED_TRUMP_IDS),
     );
@@ -28,12 +28,9 @@ describe("registered catalog and explicit admission", () => {
       expect(card.id).toBe(id);
       expect(card.nameKey).toBe(`contest.trump.${id}.name`);
       expect(card.descriptionKey).toBe(`contest.trump.${id}.description`);
-      expect(card.playable).toBe(id !== "skill-revival");
-      expect(card.admission).toBe(
-        id === "skill-revival" ? "pending-skill" : "admitted",
-      );
-      if (id === "skill-revival") expect(card.execution).toBeNull();
-      else expect(card.execution).toBe(ADMITTED_TRUMP_DEFINITIONS[id]);
+      expect(card.playable).toBe(true);
+      expect(card.admission).toBe("admitted");
+      expect(card.execution).toBe(ADMITTED_TRUMP_DEFINITIONS[id]);
     }
     // These references are the existing 023/024 implementation, never translated copies.
     for (const [id, execution] of Object.entries({
@@ -98,14 +95,15 @@ describe("registered catalog and explicit admission", () => {
           0,
         ),
       ),
-    ).toEqual([39, 61, 73, 75, 77]);
+    ).toEqual([39, 61, 73, 76, 78]);
     expect(Object.keys(STOCK_QUANTITIES)).toEqual([...TRUMP_IDS]);
     expect(S2_DEVELOPMENT_PRESET.round.trumps.resources).toEqual(
       createResourcePreset("standard", ADMITTED_TRUMP_IDS),
     );
-    expect(
-      S2_DEVELOPMENT_PRESET.round.trumps.resources.stock,
-    ).not.toHaveProperty("skill-revival");
+    expect(S2_DEVELOPMENT_PRESET.round.trumps.resources.stock).toHaveProperty(
+      "skill-revival",
+      0,
+    );
     expect(EXPERIMENTAL_F1_P0.playable).toBe(false);
     for (const card of Object.values(TRUMP_CATALOG))
       expect(card).not.toHaveProperty("earliestDifficulty");

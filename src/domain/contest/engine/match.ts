@@ -1,3 +1,4 @@
+// @req REQ-2026-027: retain skill uses across Rounds and reset Game permission only for a new Game.
 // @req REQ-2026-024: apply one score breakdown and synchronize the public Game marker.
 // @req REQ-2026-016: compose round results into a standard BO5 in memory.
 import { createTrumpState } from "./effects";
@@ -6,12 +7,13 @@ import { freezeData } from "../immutable";
 import { legalActions } from "./legalActions";
 import { cleanupRound, cleanupGame } from "./lifecycle";
 import { randomUnit } from "./numbers";
-import { numberRandom, resourceRandom } from "./resourceTypes";
+import { numberRandom, resourceRandom, skillRandom } from "./resourceTypes";
 import type { ContestRandom } from "./resourceTypes";
 import { observeMatch } from "./matchObservation";
 import { createMatchRules } from "./rules";
 import { createContestGame, scoreContestRound, roundScore } from "./scoring";
 import { createRound, transition } from "./transition";
+import { skillFirstPlayer } from "./skillSettlement";
 import { opponentOf } from "./turn";
 import type {
   MatchCommand,
@@ -67,6 +69,7 @@ export function createMatch(
       })
     : undefined;
   // @req REQ-2026-020: reject invalid setup before consuming deal randomness.
+  if (rules.round.skills) skillRandom(random);
   if (rules.round.trumps?.resources) resourceRandom(random);
   const dealRandom = numberRandom(random);
   if (typeof dealRandom !== "function")
@@ -114,7 +117,7 @@ export function transitionMatch(
 
   if (command.type === "NextRound") {
     const round = createRound(
-      opponentOf(original.round.firstPlayer),
+      original.nextFirstPlayer ?? opponentOf(original.round.firstPlayer),
       random,
       original.rules.round,
       original.phase === "game-complete" && original.rules.round.trumps
@@ -129,9 +132,11 @@ export function transitionMatch(
       original.phase === "game-complete"
         ? undefined
         : original.game.suddenDeath,
+      original.round.skills,
     );
+    const { nextFirstPlayer: _consumed, ...continuing } = original;
     const state: MatchState = freezeData({
-      ...original,
+      ...continuing,
       phase: "playing",
       game:
         original.phase === "game-complete"
@@ -165,6 +170,13 @@ export function transitionMatch(
     original.rules,
     score.increment,
   );
+  const wins = game.winner
+    ? { ...state.wins, [game.winner]: state.wins[game.winner] + 1 }
+    : state.wins;
+  const matchWinner =
+    game.winner && wins[game.winner] >= state.rules.gamesToWin
+      ? game.winner
+      : null;
   state = freezeData({
     ...state,
     phase: "resolving",
@@ -184,6 +196,17 @@ export function transitionMatch(
     });
   }
 
+  // Outcomes are already computed; record the continuation before clearing Round effects.
+  const firstPlayer = skillFirstPlayer(round.state);
+  if (firstPlayer && !matchWinner) {
+    state = freezeData({ ...state, nextFirstPlayer: firstPlayer });
+    events.push({
+      type: "first-player-overridden",
+      player: firstPlayer,
+      state,
+    });
+  }
+
   state = freezeData({
     ...state,
     phase: game.winner ? "resolving" : "round-complete",
@@ -191,9 +214,6 @@ export function transitionMatch(
   });
   events.push({ type: "round-cleanup", state });
   if (game.winner) {
-    const wins = { ...state.wins, [game.winner]: state.wins[game.winner] + 1 };
-    const matchWinner =
-      wins[game.winner] >= state.rules.gamesToWin ? game.winner : null;
     state = freezeData({ ...state, game, wins });
     events.push({ type: "game-won", winner: game.winner, state });
     // Retain scores for presentation; private hand/resources clear only here.

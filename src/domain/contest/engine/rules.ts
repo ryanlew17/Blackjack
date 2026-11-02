@@ -1,3 +1,4 @@
+// @req REQ-2026-027: freeze and validate opt-in skill configuration before random consumption.
 // @req REQ-2026-024: validate interaction kinds and hidden all-other costs before RNG.
 // @req REQ-2026-023: numeric contributions, authorized information and reversible effects.
 // @req REQ-2026-015/022: validate all public configuration before any random call.
@@ -7,6 +8,7 @@ import type { MatchRules, RoundRules } from "./types";
 import type { TrumpEffect } from "./effectTypes";
 import { TABLE_KINDS } from "./effectTypes";
 import { HIT_PROBABILITIES } from "./resourceTypes";
+import { snapshotSkillRules } from "./skills";
 import { NUMBER_VALUES } from "./numbers";
 
 export const DEFAULT_ROUND_RULES: RoundRules = Object.freeze({
@@ -32,6 +34,7 @@ function validEffect(effect: TrumpEffect, definitions: object): boolean {
     case "exchange-table":
     case "undo-last":
     case "sudden-death":
+    case "recover-skill-use":
       return true;
     case "scry":
       return effect.count === 2;
@@ -71,12 +74,31 @@ export function snapshotRoundRules(rules: RoundRules): RoundRules {
     rules.pointTarget < 1
   )
     throw new RangeError("Invalid contest round rules");
+  const skills = rules.skills ? snapshotSkillRules(rules.skills) : undefined;
+  if (
+    skills &&
+    Object.values(skills.selected).includes("soul-transfer") &&
+    (!rules.trumps || !Object.hasOwn(rules.trumps.definitions, "regret"))
+  )
+    throw new RangeError(
+      "Soul Transfer requires an injected Regret definition",
+    );
+  if (
+    skills &&
+    Object.values(skills.selected).includes("endless-life") &&
+    (!rules.trumps?.resources ||
+      !Object.values(rules.trumps.resources.stock).some((n) => n > 0))
+  )
+    throw new RangeError(
+      "Endless Life requires an injected nonempty difficulty pool",
+    );
   if (!rules.trumps)
-    return Object.isFrozen(rules)
+    return Object.isFrozen(rules) && rules.skills === skills
       ? rules
       : Object.freeze({
           version: rules.version,
           pointTarget: rules.pointTarget,
+          ...(skills ? { skills } : {}),
         });
   const trumps = rules.trumps;
   if (trumps.tableCapacity !== 5)
@@ -117,6 +139,7 @@ export function snapshotRoundRules(rules: RoundRules): RoundRules {
     const counts = Object.entries(resource.stock);
     if (
       !DIFFICULTIES.includes(resource.difficulty) ||
+      (skills !== undefined && skills.difficulty !== resource.difficulty) ||
       resource.handLimit !== 8 ||
       resource.gameGrant !== 2 ||
       resource.roundGrant !== 1 ||
@@ -133,6 +156,7 @@ export function snapshotRoundRules(rules: RoundRules): RoundRules {
   }
   if (
     Object.isFrozen(rules) &&
+    rules.skills === skills &&
     Object.isFrozen(trumps) &&
     Object.isFrozen(trumps.definitions) &&
     Object.values(trumps.definitions).every(
@@ -149,6 +173,7 @@ export function snapshotRoundRules(rules: RoundRules): RoundRules {
   return freezeData({
     version: rules.version,
     pointTarget: rules.pointTarget,
+    ...(skills ? { skills } : {}),
     trumps: {
       tableCapacity: 5,
       definitions,
