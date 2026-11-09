@@ -9,6 +9,7 @@ import {
   projectMatchTransition,
   transitionMatch,
   type MatchState,
+  type MatchCommand,
   type MatchTransition,
   type MatchEventView,
   type RoundCommand,
@@ -16,7 +17,12 @@ import {
   type TrumpSetup,
 } from "../../domain/contest/engine";
 import { freezeData } from "../../domain/contest/immutable";
-import { createContestRandomSources } from "./random";
+import { createContestRandomSources, createSearchSeedSource } from "./random";
+import {
+  createBeliefMemory,
+  advanceBeliefMemory,
+  type BeliefMemory,
+} from "../../domain/contest/ai/memory";
 import { baselinePolicy } from "../../domain/contest/ai/policy";
 import type {
   ContestControllerOptions,
@@ -45,6 +51,10 @@ export function createContestCoordinator(
   const controlled = options.controlledPlayers ?? ["human"];
   const listeners = new Set<() => void>();
   let current: MatchState | null = null;
+  let aiMemory: BeliefMemory | null = null;
+  const nextSearchSeed = options.searchSeed ?? createSearchSeedSource();
+  let cancelDecision: (() => void) | undefined;
+  let visible = true;
   let generation = 0;
   let effectId = 0;
   let recentEvents: MatchEventView[] = [];
@@ -72,7 +82,9 @@ export function createContestCoordinator(
   function publish(match = view.match, event: MatchEventView | null = null) {
     const busy = replaying || thinking;
     const actionable =
-      current && !busy && !paused ? observeMatch(current, "human") : null;
+      current && !busy && !paused && visible
+        ? observeMatch(current, "human")
+        : null;
     const reaction = actionable?.round.reaction;
     const skills = actionable ? legalSkillCommands(actionable.round) : [];
     const activate = reaction?.player === "human" ? skills[0] : undefined;
@@ -133,6 +145,8 @@ export function createContestCoordinator(
   }
   function cancelPending() {
     generation++;
+    cancelDecision?.();
+    cancelDecision = undefined;
     clearTimeout(timer);
     timer = undefined;
     pendingEvents = [];
@@ -140,16 +154,44 @@ export function createContestCoordinator(
     thinking = false;
   }
 
-  const aiTurn = () =>
-    current?.phase === "playing" && current.round.turn?.player === "ai";
+  const aiDecision = () => {
+    if (current?.phase !== "playing") return false;
+    const view = observeMatch(current, "ai").round;
+    return view.reaction
+      ? view.reaction.player === "ai"
+      : view.turn?.player === "ai" && view.turn.controlledBy === undefined;
+  };
+
+  // Human and AI secret reactions use the same atomic activation+pass submission.
+  function submit(command: MatchCommand): boolean {
+    if (!current) return false;
+    const result = transitionMatch(current, command, random);
+    if (result.state === current) return false;
+    if (command.type === "ActivateSkill" && command.skillId === "twin-bloom") {
+      const passed = transitionMatch(
+        result.state,
+        {
+          type: "PassReaction",
+          player: command.player,
+          turnNumber: command.turnNumber,
+          reactionBoundary: command.reactionBoundary!,
+          roundNumber: current.roundNumber,
+        },
+        random,
+      );
+      commit({ state: passed.state, events: result.events });
+    } else commit(result);
+    return true;
+  }
 
   function scheduleOpponent() {
     if (
       !current ||
       paused ||
+      !visible ||
       replaying ||
       thinking ||
-      !aiTurn() ||
+      !aiDecision() ||
       controlled.includes("ai")
     )
       return;
@@ -160,42 +202,65 @@ export function createContestCoordinator(
     timer = setTimeout(() => {
       if (id !== generation) return;
       timer = undefined;
-      thinking = false;
-      if (!current || paused || !aiTurn()) return;
-      const observation = observeMatch(current, "ai");
-      const actions = legalMatchActions(observation).filter(
-        (action): action is OpponentAction =>
-          action === "Hit" || action === "Stay",
-      );
+      if (!current || paused || !visible || !aiDecision()) return;
       const expected = current;
-      const type = opponent(observation, actions);
-      // An injected policy can synchronously pause/exit/restart. Its old result is then stale.
-      if (id !== generation || current !== expected || paused) return;
-      const result = transitionMatch(
-        current,
-        {
-          type,
-          player: "ai",
-          roundNumber: current.roundNumber,
-        },
-        random,
-      );
-      if (result.state === current) {
-        publish(observeMatch(current, "human"));
-        return;
+      let completed = false;
+      const deliver = (command: MatchCommand | null) => {
+        if (
+          completed ||
+          id !== generation ||
+          current !== expected ||
+          paused ||
+          !visible ||
+          !thinking
+        )
+          return;
+        completed = true;
+        thinking = false;
+        cancelDecision = undefined;
+        if (
+          !command ||
+          command.type === "NextRound" ||
+          command.type === "ResolveForcedTurn" ||
+          command.player !== "ai" ||
+          command.roundNumber !== current.roundNumber ||
+          !submit(command)
+        )
+          publish(observeMatch(current, "human"));
+      };
+      if (options.decision) {
+        const cancel = options.decision(aiMemory!, nextSearchSeed(), deliver);
+        // Injected tasks can deliver synchronously or invalidate the coordinator during setup.
+        if (completed || id !== generation) cancel();
+        else cancelDecision = cancel;
+      } else {
+        const observation = observeMatch(current, "ai");
+        const actions = legalMatchActions(observation).filter(
+          (action): action is OpponentAction =>
+            action === "Hit" || action === "Stay",
+        );
+        const type = opponent(observation, actions);
+        deliver({ type, player: "ai", roundNumber: expected.roundNumber });
       }
-      commit(result);
     }, 300);
   }
 
   function ready() {
     replaying = false;
-    // Public cover windows must not reveal a secret use. Silently pass when this recipient
-    // cannot activate; the baseline AI also passes through this exact authority boundary.
+    // Human cover windows and legacy baseline reactions silently pass when appropriate.
+    // Async AI always enters the common decision boundary, even if only Pass is legal.
     const reaction = current
       ? observeMatch(current, "human").round.reaction
       : undefined;
-    if (current && reaction && !paused) {
+    if (current && reaction && !paused && visible) {
+      if (
+        reaction.player === "ai" &&
+        !controlled.includes("ai") &&
+        options.decision
+      ) {
+        scheduleOpponent();
+        return;
+      }
       const canActivate =
         legalSkillCommands(observeMatch(current, reaction.player).round)
           .length > 0;
@@ -222,7 +287,7 @@ export function createContestCoordinator(
     }
     const id = generation;
     publish(current ? observeMatch(current, "human") : null);
-    if (id !== generation || paused) return;
+    if (id !== generation || paused || !visible) return;
     // A pending explicit reaction gates both ordinary AI and the entire forced continuation.
     if (current && observeMatch(current, "human").round.reaction) return;
     // The controlled command remains atomic after this stable authorization boundary.
@@ -250,6 +315,13 @@ export function createContestCoordinator(
     cancelPending();
     if (current?.roundNumber !== result.state.roundNumber) recentEvents = [];
     current = result.state;
+    if (options.decision) {
+      const authorized = projectMatchTransition(result, "ai");
+      aiMemory =
+        resetView || !aiMemory
+          ? createBeliefMemory(authorized)
+          : advanceBeliefMemory(aiMemory, authorized);
+    }
     const projected = projectMatchTransition(result, "human");
     if (!projected.events.length) {
       ready();
@@ -306,6 +378,7 @@ export function createContestCoordinator(
     exit() {
       cancelPending();
       current = null;
+      aiMemory = null;
       recentEvents = [];
       paused = false;
       publish(null);
@@ -315,7 +388,7 @@ export function createContestCoordinator(
         readonly inputId?: number;
       },
     ) {
-      if (!current || replaying || thinking || paused) return false;
+      if (!current || replaying || thinking || paused || !visible) return false;
       if (
         (action.type === "PassReaction" ||
           (action.type === "ActivateSkill" &&
@@ -326,29 +399,17 @@ export function createContestCoordinator(
         return false;
       if (action.type !== "NextRound" && !controlled.includes(action.player))
         return false;
-      const result = transitionMatch(
-        current,
-        { ...action, roundNumber: current.roundNumber },
-        random,
-      );
-      if (result.state === current) return false;
-      if (action.type === "ActivateSkill" && action.skillId === "twin-bloom") {
-        // Secret preparation and the common pass share one application submission/generation.
-        const passed = transitionMatch(
-          result.state,
-          {
-            type: "PassReaction",
-            player: action.player,
-            turnNumber: action.turnNumber,
-            reactionBoundary: action.reactionBoundary!,
-            roundNumber: current.roundNumber,
-          },
-          random,
-        );
-        commit({ state: passed.state, events: result.events });
-      } else commit(result);
-      return true;
+      return submit({ ...action, roundNumber: current.roundNumber });
     },
+    setVisible(value: boolean) {
+      if (visible === value) return;
+      visible = value;
+      finishFeedback();
+      cancelPending();
+      if (value) ready();
+      else publish(current ? observeMatch(current, "human") : null);
+    },
+
     skipAnimations() {
       if (!current) return;
       // Visibility/skip also invalidates idle target selections and pending AI decisions.

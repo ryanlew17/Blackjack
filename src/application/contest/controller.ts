@@ -43,6 +43,7 @@ export function createContestController(
   });
   let preparation: ContestPreparation | null = null;
   let preparationId = 0;
+  let visible = true;
   const listeners = new Set<() => void>();
   const notify = () => {
     for (const listener of listeners) listener();
@@ -116,10 +117,20 @@ export function createContestController(
       preparation = freezeData({ ...preparation, inputId: ++preparationId });
       notify();
     },
+    setVisible(value: boolean) {
+      if (visible === value) return;
+      visible = value;
+      controls.setVisible(value);
+      if (preparation) {
+        preparation = freezeData({ ...preparation, inputId: ++preparationId });
+        notify();
+      }
+    },
     selectSkill(id: SkillId, inputId: number) {
       if (
         !preparation ||
         preparation.paused ||
+        !visible ||
         preparation.inputId !== inputId ||
         !preparation.options.some((option) => option.id === id)
       )
@@ -143,6 +154,7 @@ export function createContestController(
       if (
         !preparation ||
         preparation.paused ||
+        !visible ||
         preparation.inputId !== inputId ||
         !preparation.selected ||
         controls.snapshot()

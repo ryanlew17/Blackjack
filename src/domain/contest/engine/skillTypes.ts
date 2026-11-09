@@ -58,6 +58,8 @@ export interface SkillView {
   readonly canRecover?: true;
   readonly id: SkillId;
   readonly initialUses: number;
+  /** Public upper bound, including for the owner; secret spending never changes it. */
+  readonly publicRemainingUses: number;
   readonly remainingUses: number | null;
   readonly knownRemainingUses: { readonly min: number; readonly max: number };
   readonly gameActivationsRemaining: number | null;

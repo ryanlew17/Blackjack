@@ -8,6 +8,7 @@ import {
 } from "react";
 import type { Settings } from "../../infrastructure/classic/save";
 import { playSound, unlockAudio } from "../../infrastructure/shared/audio";
+import { runSearchDecision } from "./decision";
 import { createContestController } from "./controller";
 import type { ContestInput, ContestControllerOptions } from "./types";
 
@@ -36,6 +37,7 @@ export function useContest({
     createContestController({
       random,
       opponent,
+      decision: opponent ? undefined : runSearchDecision,
       preset,
       prepareSkills,
       reducedMotion: reduced,
@@ -68,9 +70,10 @@ export function useContest({
   }, [controller, reduced]);
   useEffect(() => {
     const onVisible = () => {
-      if (document.visibilityState === "visible") controller.skipAnimations();
+      controller.setVisible(document.visibilityState === "visible");
     };
     document.addEventListener("visibilitychange", onVisible);
+    onVisible();
     return () => {
       document.removeEventListener("visibilitychange", onVisible);
       controller.exit();

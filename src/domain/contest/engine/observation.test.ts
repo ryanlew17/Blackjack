@@ -190,3 +190,15 @@ describe("round observations and projected replay", () => {
     expect(cardValues(initial.state.hands.ai)).toEqual([9, 8]);
   });
 });
+
+// @req REQ-2026-028: immutable-node projection reuse does not cache caller-owned mutable inputs.
+it("reuses only certified immutable observations, separately for each viewer", () => {
+  const state = fixedRound([10, 9, 11, 8]).state;
+  const human = observeRound(state, "human");
+  expect(observeRound(state, "human")).toBe(human);
+  expect(observeRound(state, "ai")).not.toBe(human);
+  const external = { ...state, pointTarget: 24 };
+  expect(observeRound(external, "human").pointTarget).toBe(24);
+  external.pointTarget = 27;
+  expect(observeRound(external, "human").pointTarget).toBe(27);
+});

@@ -5,7 +5,7 @@
 import { observeReaction } from "./reactions";
 import { observeSkills } from "./skills";
 import { observeTrumps } from "./resources";
-import { freezeData } from "../immutable";
+import { freezeData, isFrozenData } from "../immutable";
 import type { PlayerId } from "../types";
 import { contribution, effectiveTotals, numberValue } from "./contributions";
 import { canUndoWith } from "./undo";
@@ -57,12 +57,20 @@ function handView(
   };
 }
 
+// @req REQ-2026-028: bounded reuse of certified immutable nodes, isolated by viewer.
+const observations = new Map<
+  RoundState,
+  Partial<Record<PlayerId, RoundObservation>>
+>();
+
 export function observeRound(
   state: RoundState,
   viewer: PlayerId,
 ): RoundObservation {
+  const cached = observations.get(state)?.[viewer];
+  if (cached) return cached;
   const reaction = observeReaction(state);
-  return freezeData({
+  const result = freezeData({
     viewer,
     rules: state.rules,
     firstPlayer: state.firstPlayer,
@@ -80,6 +88,14 @@ export function observeRound(
         .filter((c) => c.instanceId !== state.hiddenCards.ai)
         .map((c) => c.instanceId),
     },
+    // @req REQ-2026-028: distinguish public generated copies without exposing hidden IDs.
+    faceUpOrigins: Object.fromEntries(
+      (["human", "ai"] as const).flatMap((player) =>
+        state.hands[player]
+          .filter((card) => card.instanceId !== state.hiddenCards[player])
+          .map((card) => [card.instanceId, card.origin.type]),
+      ),
+    ),
     hiddenMultipliers: state.hiddenMultipliers,
     peek:
       state.scry[viewer]?.revision === state.deckRevision
@@ -125,6 +141,15 @@ export function observeRound(
         }
       : {}),
   });
+  if (isFrozenData(state)) {
+    const entry = observations.get(state) ?? {};
+    entry[viewer] = result;
+    observations.set(state, entry);
+    // Engine transitions reread nearby nodes; bound retention and GC work across long matches.
+    if (observations.size > 64)
+      observations.delete(observations.keys().next().value!);
+  }
+  return result;
 }
 
 export function projectRoundEvent(

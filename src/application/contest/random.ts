@@ -6,15 +6,7 @@ import type {
   SkillRandomSources,
 } from "../../domain/contest/engine";
 
-function stream(seed: number): RandomSource {
-  let state = seed;
-  return () => {
-    state = (state + 0x6d2b79f5) | 0;
-    let value = Math.imul(state ^ (state >>> 15), 1 | state);
-    value ^= value + Math.imul(value ^ (value >>> 7), 61 | value);
-    return ((value ^ (value >>> 14)) >>> 0) / 0x100000000;
-  };
-}
+import { seededRandom as stream } from "../../domain/contest/random";
 
 /** Lazy seeds preserve idle/invalid-initialization zero-random behavior. */
 export function createContestRandomSources(
@@ -37,5 +29,16 @@ export function createContestRandomSources(
     trumpSelection: () => sample("trumpSelection"),
     skillSelection: () => sample("skillSelection"),
     skillEffects: () => sample("skillEffects"),
+  };
+}
+
+/** Independent entropy and cursor: search calls cannot initialize or advance any live game stream. */
+export function createSearchSeedSource(
+  seed: () => number = () => crypto.getRandomValues(new Uint32Array(1))[0],
+): () => number {
+  let source: (() => number) | undefined;
+  return () => {
+    source ??= stream(seed());
+    return Math.floor(source() * 0x100000000);
   };
 }

@@ -1,9 +1,9 @@
 # design/state-and-animation — 状态协调与动画队列行为快照
 
-> 适用范围：经典 useGame 的权威状态、队列、恢复与冲突；竞赛 controller/useContest 的内存提交、投影回放、无道具 AI 与取消。
+> 适用范围：经典 useGame 的权威状态、队列、恢复与冲突；竞赛 controller/useContest 的内存提交、投影回放、组合搜索与取消。
 > 何时读取：改经典／竞赛协调、动画节奏、内存或持久化提交、取消及冲突处理前。
-> 关联需求：REQ-2026-003–006、REQ-2026-017、REQ-2026-025–027。
-> 最后更新：2026-11-02
+> 关联需求：REQ-2026-003–006、REQ-2026-017、REQ-2026-025–028。
+> 最后更新：2026-11-10
 > 来源：2026-09-22 重构定稿（effectId 单调计数器）
 
 以下 §1–5 为经典模式，竞赛见 §6。
@@ -73,7 +73,7 @@ start只打开标准10项介绍与空选，不建Match。selectSkill不采样，
 
 Turn起始先清到期限制，再按共同私有发动序号处理从众、激发补给、双生花复制与生生不息生成，最后标记受控Turn；私有startedTurnNumber保证幂等，序号不投影。全部起始待办已在前一命令提交中完成，重复订阅／恢复不会再领取。
 
-双生花只在对方Turn起始及完整可见命令终态授权反应，绑定Match的roundNumber、Turn与reactionBoundary；秘密命令及PassReaction不推进公开边界。同一已放行边界不因恢复重开。公开窗口只取身份和已知次数上界；本人真实许可不足时应用静默合法放行，正常AI也通过同一命令放行，不制造空等或提前发动策略。
+双生花只在对方Turn起始及完整可见命令终态授权反应，绑定Match的roundNumber、Turn与reactionBoundary；秘密命令及PassReaction不推进公开边界。同一已放行边界不因恢复重开。公开窗口只取身份和已知次数上界；本人真实许可不足时应用静默合法放行，AI无论是否仍有真实许可都进入同一异步决策入口，选择发动或放行；秘密发动与PassReaction合并提交。
 
 human有实际许可时，稳定点发布reaction.activate／pass并等待明确选择；等待期间不启动AI计时、普通命令或整段受控续行。秘密发动与通用放行合并一次应用提交／取消代次，对方完整视图与单独放行等价。pause／skip保留未决定机会但更换inputId；恢复取得同一领域边界的新令牌。说明Esc不等于放行，成功放行后界面焦点回本人说明。
 
@@ -85,8 +85,8 @@ human有实际许可时，稳定点发布reaction.activate／pass并等待明确
 
 pause／skip／exit／restart取消队列及AI任务，滞后回调逐次检查generation，策略返回后再次检查。pause先落定已提交反馈，恢复按权威行动方重新授权；exit丢弃Match，restart重新选技，即使新Match的Round／Turn同号也不能重用旧命令。
 
-回到可见时，useContest调用skipAnimations：回放直接落定，旧思考回调作废，再按权威行动方等待决策；闲置时也使目标选择失效，paused仍保持暂停。卸载移除visibilitychange监听并退出。刷新回首页，竞赛Match／技能次数／待办全部丢弃，经典仍按§1–5恢复。
+useContest在不可见时调用setVisible(false)：落定已提交回放并取消搜索、禁用输入；恢复可见后只按当前权威边界重新决策，不续跑旧迭代器。两次可见性切换均使牌桌／准备选择令牌失效，显式paused保持暂停。卸载移除visibilitychange监听并退出。刷新回首页，竞赛Match／技能次数／待办全部丢弃，经典仍按§1–5恢复。
 
-仅当无未决反应／受控续行且轮到AI时，应用等待300ms后调用基线策略。策略只接ai观察与合法Hit／Stay，自身总和＜17且可Hit时Hit，否则Stay；无真实随机端口，不主动用道具或发动技能。正常AI战前随机选技与行动策略分开；组合AI仍由REQ-028实施。
+普通AI行动与AI反应都先等待300ms，再由decision.ts分片运行搜索。任务只接当前ai授权BeliefMemory、独立数值种子和单步结果回调；每次提交在回放前更新记忆，新Match重建。每片最多64次yield或8ms，定时器让出事件循环，取消释放迭代器；generation、权威对象和完成标记拒绝旧／重复回调。真实五路随机不进入搜索，选技仍独立均匀随机。正常Hook注入搜索；直接controller／coordinator及显式opponent注入保留旧基线。性能测量同时记录活动片段总计算、含调度等待的决策延迟及最大片段；证据归REQ-028。
 
 Round清理保留场次数和Game许可，清除本Round知识／待办与效果；生生不息按明确规则跨Round保留。Game清理移除封锁、禁用与生成器，新Game保留Match次数和实际成功历史、恢复基本一次许可并重建资源。具体规则见[竞赛规则](./contest-rules.md)，实际验收证据留在对应需求。

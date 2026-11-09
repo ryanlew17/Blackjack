@@ -1,6 +1,6 @@
 # 竞赛引擎
 
-@req REQ-2026-015 @req REQ-2026-016 @req REQ-2026-019 @req REQ-2026-020 @req REQ-2026-022 @req REQ-2026-023 @req REQ-2026-024 @req REQ-2026-027
+@req REQ-2026-015 @req REQ-2026-016 @req REQ-2026-019 @req REQ-2026-020 @req REQ-2026-022 @req REQ-2026-023 @req REQ-2026-024 @req REQ-2026-027 @req REQ-2026-028
 
 纯TypeScript的Match／Game／Round／Turn状态机。正常页面使用标准含道具BO5，由应用显式注入冻结的资源／执行配置及独立随机端口；核心引擎入口不导入道具目录、执行定义或预设。
 
@@ -10,7 +10,7 @@
 
 `transitionMatch`接Hit／Stay／PlayTrump／ActivateSkill／PassReaction／NextRound及roundNumber；技能命令还绑定skillId和turnNumber，旧Turn不得重放发动。用卡不交权，Hit／Stay交权，两次安静Stay才揭牌结算，爆牌仍可行动；非法或过期命令同一状态引用、零事件零随机。每个命令先完整提交，事件仅供回放。夺心魄受控Turn只接受绑定turnNumber的内部ResolveForcedTurn，普通输入关闭；ordinaryHit.ts复用不交权的单次Hit，整段至多3次后以同一Stay路径交权一次，爆牌继续，禁抽／空堆不造牌。
 
-reactions.ts只在Turn开始／完整可见命令终态授权反应，roundNumber、turnNumber与reactionBoundary共同拒绝旧命令；窗口存在时正常命令关闭，仅反应方可发动双生花或PassReaction。秘密布置不推进边界且不消耗窗口，通用放行不会重开它。公开窗口只用身份与已知次数上界，真实许可仅给本人；应用自动放行无法发动的机会和基线AI，避免公开窗口是否存在泄漏秘密消费。未配置双生花时没有额外状态或等待。
+reactions.ts只在Turn开始／完整可见命令终态授权反应，roundNumber、turnNumber与reactionBoundary共同拒绝旧命令；窗口存在时正常命令关闭，仅反应方可发动双生花或PassReaction。秘密布置不推进边界且不消耗窗口，通用放行不会重开它。公开窗口只用身份与已知次数上界，真实许可仅给本人；应用静默放行human无法发动的机会；正常AI无论实际许可是否足够，都经同一异步策略入口选择发动或放行，避免公开窗口是否存在泄漏秘密消费。未配置双生花时没有额外状态或等待。
 
 twinBloom.ts在本人下一Turn起始按私有发动序号取效果时快照，复制原始明牌值与道具定义为新ID；先删己方对应区域，保留己方原逻辑暗牌及index 0、倍率、其他留场。清理旧明牌绑定及压制依赖，不复制对方暗牌、有效贡献、留场、技能次数或来源特权；不动库存／数字堆，不采样随机。复制公开消费与结果，空替换合法无效果；Round先结束则秘密过期。所有实际变更先完成再回放，上一手悔牌窗口关闭，复制不伪记用卡／发动或重置安静Stay。
 
@@ -48,4 +48,4 @@ skillBarriers.ts将破万法的所有库存封锁集中在领取入口、先于�
 
 Round清理留场、倍率、抽数修正、窥序与事务窗口，保留未用道具、库存及当前Game审计；技能资源效果复用grantTrumps／transferTrump，探囊使用skillEffects，巧物使用普通trumpSelection；天行健按contribution删明牌并清理绑定与依赖，不归还数字堆。生生不息的待办／持续状态跨Round保留，公共封锁在施放Round之后第二个Round清理时解除；对方Game禁用独立持续至局末。Game结束清空旧资源并移除封锁、禁用与生成器，未曾生成的待办过期；新Game用新命名空间重建，保留场次数及Match内实际成功历史。初始、生成、活牌与删除按来源核账，不以固定11活数字或每Game用卡≤2M约束所有生成玩法。
 
-prototype.ts与各测试助手不进入生产依赖图；正式预设和执行定义经精确文件白名单准入。主动技目录与资格已登记，round.skills准入全部15技；场次数跨Game保留，新Game恢复局内许可，公开发动用usedSkill打断安静Stay，不冒充道具消费。正常入口经战前必选建立含技能的标准Match，牌桌消费授权技能／反应命令，回仙已生产准入；组合AI仍待实现；没有竞赛牌面存储或经典规则耦合。
+prototype.ts与各测试助手不进入生产依赖图；正式预设和执行定义经精确文件白名单准入。主动技目录与资格已登记，round.skills准入全部15技；场次数跨Game保留，新Game恢复局内许可，公开发动用usedSkill打断安静Stay，不冒充道具消费。正常入口经战前必选建立含技能的标准Match，牌桌消费授权技能／反应命令，回仙已生产准入；正常AI经授权记忆驱动的组合搜索提交当前一步，回放后重新决策；没有竞赛牌面存储或经典规则耦合。

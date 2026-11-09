@@ -160,3 +160,18 @@ it("rejects insufficient skill/random ports before constructing a selection or c
   ).toThrow();
   expect(numbers).not.toHaveBeenCalled();
 });
+
+it("invalidates preparation tokens on hide and restore without clearing a manual pause", () => {
+  const { api, random, choose } = setup();
+  api.start();
+  const old = choose();
+  api.setVisible(false);
+  expect(api.confirmSkill(old)).toBe(false);
+  expect(api.confirmSkill(api.getPreparationSnapshot()!.inputId)).toBe(false);
+  api.pause();
+  api.setVisible(true);
+  expect(api.getPreparationSnapshot()!.paused).toBe(true);
+  noRandom(random);
+  api.resume();
+  expect(api.confirmSkill(api.getPreparationSnapshot()!.inputId)).toBe(true);
+});

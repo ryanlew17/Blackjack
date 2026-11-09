@@ -1,3 +1,12 @@
+// @req REQ-2026-028: asynchronous strategy receives authorized memory and a value seed only.
+import type { BeliefMemory } from "../../domain/contest/ai/memory";
+import type { DecisionCommand } from "../../domain/contest/ai/candidates";
+export type ContestDecisionTask = (
+  memory: BeliefMemory,
+  seed: number,
+  deliver: (command: DecisionCommand | null) => void,
+) => () => void;
+
 // @req REQ-2026-027: public skill and reaction inputs carry the current application generation.
 // @req REQ-2026-017/020: public coordination ports contain projected data only.
 import type {
@@ -66,6 +75,10 @@ export interface ContestControllerOptions {
   /** REQ-026 opts in when the page has a usable trump interface. */
   readonly preset?: "standard-no-trumps" | "s2-development";
   readonly opponent?: OpponentPolicy;
+  /** Explicit async strategy; omitted legacy callers retain the injected/default baseline. */
+  readonly decision?: ContestDecisionTask;
+  /** Independent seed values, never one of the real game random ports. */
+  readonly searchSeed?: () => number;
   readonly reducedMotion?: boolean;
   readonly onEvent?: (event: MatchEventView) => void;
 }

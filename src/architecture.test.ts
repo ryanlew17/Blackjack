@@ -88,6 +88,84 @@ describe("module architecture", () => {
       }
     }
   });
+  // @req REQ-2026-028: AI imports observation types and legal queries, not authority or RNG.
+  it("keeps AI decision inputs away from authoritative state and random ports", () => {
+    const allowed: Record<string, readonly string[]> = {
+      "../engine/types": [
+        "MatchObservation",
+        "MatchCommand",
+        "MatchTransitionView",
+        "RoundEventView",
+      ],
+      "../engine/effectTypes": ["TrumpInstance"],
+      "../types": ["NumberValue", "PlayerId"],
+      "../random": ["seededRandom"],
+      "../simulation": ["createSimulation", "Simulation"],
+      "../engine/legalActions": ["legalActions", "ordinaryHitAvailable"],
+      "../engine/trumpLegality": ["legalTrumpCommands"],
+      "../engine/skills": ["legalSkillCommands"],
+      "../immutable": ["freezeData"],
+    };
+    for (const { file, ast } of modules.filter((m) =>
+      m.file.includes("/contest/ai/"),
+    )) {
+      for (const node of ast.statements) {
+        if (!ts.isImportDeclaration(node)) continue;
+        const spec = node.moduleSpecifier;
+        if (!ts.isStringLiteral(spec)) continue;
+        if (spec.text.startsWith("./")) continue;
+        const names = allowed[spec.text];
+        expect(names, `${file}: ${spec.text}`).toBeDefined();
+        const bindings = node.importClause?.namedBindings;
+        expect(bindings && ts.isNamedImports(bindings)).toBe(true);
+        expect(node.importClause?.name).toBeUndefined();
+        if (bindings && ts.isNamedImports(bindings))
+          for (const element of bindings.elements)
+            expect(names).toContain(
+              (element.propertyName ?? element.name).text,
+            );
+      }
+      const visit = (node: ts.Node) => {
+        if (ts.isCallExpression(node)) {
+          expect(node.expression.kind, file).not.toBe(
+            ts.SyntaxKind.ImportKeyword,
+          );
+          expect(node.expression.getText(ast), file).not.toMatch(
+            /^(Math\.random|Date\.now|crypto\.|require$|import\.meta\.glob)/,
+          );
+        }
+        ts.forEachChild(node, visit);
+      };
+      visit(ast);
+    }
+  });
+  // @req REQ-2026-028: only the opaque simulation facade can cross its module boundary.
+  it("keeps hypothetical authority private to simulation", () => {
+    for (const { file, ast } of modules) {
+      for (const node of ast.statements) {
+        if (!ts.isImportDeclaration(node) && !ts.isExportDeclaration(node))
+          continue;
+        const spec = node.moduleSpecifier;
+        if (!spec || !ts.isStringLiteral(spec) || !spec.text.startsWith("."))
+          continue;
+        const target = resolveImport(file, spec.text);
+        if (
+          target.includes("/contest/simulation/") &&
+          !file.includes("/contest/simulation/")
+        )
+          expect(target).toBe("./domain/contest/simulation/index");
+      }
+    }
+    const facade = modules.find(
+      (m) => m.file === "./domain/contest/simulation/index.ts",
+    )!;
+    for (const node of facade.ast.statements) {
+      if (ts.isExportDeclaration(node))
+        throw new Error(
+          "Simulation facade must not re-export internal authority",
+        );
+    }
+  });
   // @req REQ-2026-014/018: trace real imports; playable contest is now intentional.
   it("keeps unimplemented contest features and test helpers outside the production entry", () => {
     const pending = ["./main.tsx"];
@@ -97,7 +175,7 @@ describe("module architecture", () => {
       if (visited.has(file)) continue;
       visited.add(file);
       expect(file).not.toMatch(
-        /\/contest\/codex\/|\/prototype[/.]|\.test\.|\/(?:[^/]*TestHelpers|testHelpers)\./,
+        /\/contest\/(?:codex)\/|\/prototype[/.]|\.test\.|\/(?:[^/]*TestHelpers|testHelpers)\./,
       );
       // @req REQ-2026-025: exact admission; experimental presets/catalog/fixtures stay excluded.
       if (/\/contest\/(presets|trumps)\//.test(file))
@@ -110,9 +188,26 @@ describe("module architecture", () => {
           "./domain/contest/trumps/interactionDefinitions.ts",
           "./domain/contest/trumps/skillDefinitions.ts",
         ]).toContain(file);
-      // @req REQ-2026-020: admit only the completed no-trump baseline.
+      // @req REQ-2026-028: exact admission of completed search and opaque simulation.
       if (file.includes("/contest/ai/"))
-        expect(file).toBe("./domain/contest/ai/policy.ts");
+        expect(
+          [
+            "policy",
+            "candidates",
+            "memory",
+            "belief",
+            "evaluation",
+            "heuristic",
+            "search",
+            "steps",
+          ].map((name) => `./domain/contest/ai/${name}.ts`),
+        ).toContain(file);
+      if (file.includes("/contest/simulation/"))
+        expect(
+          ["index", "hydrate", "undo"].map(
+            (name) => `./domain/contest/simulation/${name}.ts`,
+          ),
+        ).toContain(file);
       const module = modules.find((entry) => entry.file === file);
       if (!module) {
         expect(file).toMatch(/\.css$/);
@@ -155,6 +250,8 @@ describe("module architecture", () => {
     expect(visited).toContain("./application/contest/useContest.ts");
     expect(visited).toContain("./application/contest/controller.ts");
     expect(visited).toContain("./domain/contest/ai/policy.ts");
+    expect(visited).toContain("./domain/contest/ai/search.ts");
+    expect(visited).toContain("./application/contest/decision.ts");
     expect(visited).toContain("./domain/contest/presets/s2.ts");
     expect(visited).toContain("./domain/contest/trumps/admitted.ts");
     expect(visited).toContain("./presentation/shell/ModeSelect.tsx");

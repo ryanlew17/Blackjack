@@ -158,6 +158,7 @@ export function observeSkills(
         ? { canRecover: true as const }
         : {}),
       initialUses,
+      publicRemainingUses: runtime.publicRemainingUses,
       remainingUses: exact ? runtime.remainingUses : null,
       knownRemainingUses: exact
         ? { min: runtime.remainingUses, max: runtime.remainingUses }

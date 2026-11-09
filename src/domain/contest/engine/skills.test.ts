@@ -92,13 +92,14 @@ const next = (state: MatchState, random: ContestRandom) =>
     { type: "NextRound", roundNumber: state.roundNumber },
     random,
   );
+// publicRemainingUses is an explicitly authorized upper bound since REQ-028;
+// the private counters, hidden knowledge and activation ordering remain excluded.
 function assertNoPrivateStructures(value: unknown) {
   if (value && typeof value === "object") {
     for (const key of [
       "deck",
       "knownHiddenCards",
       "nextActivationSequence",
-      "publicRemainingUses",
       "sequence",
       "public",
     ])

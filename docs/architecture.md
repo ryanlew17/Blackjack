@@ -2,7 +2,7 @@
 
 > 适用范围：当前代码的模块职责、依赖边界、权威状态、持久化与构建方式；未实现能力单列为预留。
 > 何时读取：新增／移动模块、修改跨层接口、状态协调、构建或部署方式前。
-> 最后更新：2026-11-03
+> 最后更新：2026-11-10
 
 ## 1. 技术栈与入口
 
@@ -47,7 +47,8 @@ flowchart LR
 | `src/domain/contest/trumps/`                        | 稳定ID、双语键与来源元数据、唯一执行定义及准入集合。                                                                                             |
 | `src/domain/contest/skills/`                        | 15技稳定ID、双语键、五档次数与可玩难度资格；登记与执行准入分离，当前15技均可显式配置执行。                                                       |
 | `src/domain/contest/presets/`                       | 五档数量、准入过滤及冻结的标准开发配置；experimental仅用于历史实验。                                                                             |
-| `src/domain/contest/ai/`                            | 仅消费观察与合法动作的Hit／Stay基线策略。                                                                                                        |
+| `src/domain/contest/simulation/`                    | 授权记忆驱动的不可变假设；内部复用权威引擎，外部仅提供观察、候选及单步分支，供正常组合搜索使用。                                                 |
+| `src/domain/contest/ai/`                            | Hit／Stay基线、单步候选、授权记忆、信念采样、动态单步启发式及有限组合搜索；正常Hook接入分片搜索，基线保留注入对照。                              |
 | `src/domain/contest/codex/`                         | 图鉴查询、进度更新及子负载校验的纯数据API，尚未接页面或持久化。                                                                                  |
 | `src/application/classic/useGame.ts`                | 经典权威信封、保存／冲突处理、展示状态及动画队列。                                                                                               |
 | `src/application/contest/`                          | coordinator私有持有Match；controller通过input.ts限制玩家命令并提供战前选择；useContest适配双存储订阅、偏好、音效及可见性；random提供独立随机流。 |
@@ -89,7 +90,17 @@ flowchart LR
 - `round.skills`在初始化时复制、校验并冻结；`engine/skills.ts`管理场次数、Game许可、Match内成功历史及授权投影。`skills/selection.ts`从同一可用集合等概率选择AI技能一次，确认前不建立Match、不抽AI技能。
 - coordinator发布权威观察中的`skillCommands`与`reaction`，`input.ts`仅接受匹配当前`inputId`、技能／Turn／反应边界的完整human命令。`engine/reactions.ts`授权稳定命令边界，秘密布置不推进对方可见边界；牌桌不自行推导资格或提交内部续行。
 - 技能的Turn待办、结算与封锁／清理均在现有引擎命令链内完成，复用实例账；私有发动序号不进入投影。出牌者与效果控制者分离：原方承担出卡费用与消费，效果按控制者权限执行并记录实际差量。逐技机制见[主动技设计](./design/contest-skills.md)，调度见[状态协调](./design/state-and-animation.md#9-turn起始反应与受控续行)。
-- `application/contest/random.ts`为数字洗牌、Hit门控、道具选取、技能选择及真实技能效果建立五路惰性初始化且独立推进的流；未配置技能的旧注入端口仍兼容，显式技能配置要求独立选技／效果端口。当前AI仅按自身总和＜17且可Hit时Hit，否则Stay，不主动用卡且无随机端口；后续搜索采样须与真实随机隔离。
+- `application/contest/random.ts`为数字洗牌、Hit门控、道具选取、技能选择及真实技能效果建立五路惰性初始化且独立推进的流；未配置技能的旧注入端口仍兼容，显式技能配置要求独立选技／效果端口。正常AI使用分片组合搜索，旧Hit／Stay基线保留注入对照；搜索种子由单独的惰性流提供，不消费上述五路；`domain/contest/random.ts`提供两侧复用的确定性流算法，真实流保持原五路惰性种子／游标；信念采样每次仅收独立数值种子，不接真实随机端口。
+
+### 组合搜索与观察驱动模拟
+
+- `simulation/index.ts`是模拟的唯一外部入口，只接授权BeliefMemory与数值种子。内部hydrate构造假设MatchState，undo从授权帧重建撤销见证；推进、触发、结算和生命周期复用权威引擎。已知实例与来源保留，未知实例使用模拟身份；不接真实状态或真实随机函数。
+- 模拟投影只供搜索，不替代协调层实际投影。依赖守卫限制外部只能使用模拟门面，生产图继续排除原型、图鉴与测试夹具；接口约定见[AI模块](../src/domain/contest/ai/README.md#观察驱动模拟)。
+- `ai/evaluation.ts`经模拟门面执行被动收束及一次Hit风险探测，从引擎结算叠加资源启发值；`heuristic.ts`按共同假设比较当前一步，另提供不枚举道具的合法起点。`ai/search.ts`逐层加深，按实际反应／行动方作有限max/min，只发布最近完整层的当前动作；所有step请求含叶收束及缓存命中共用预算，不限制真实Turn用卡数。
+- 五档共用4个假设／6层／1,200步请求。搜索本身不持有时钟，`application/contest/decision.ts`以8ms／64次yield软目标驱动同一生成器，让出主线程；普通行动与AI反应共用可取消端口。协调层在回放前更新AI授权记忆，按代次、权威身份及完成标记拒绝旧／重复结果；不可见即取消，恢复重新观察，显式暂停不解除。
+- 冻结认证使用4,096项FIFO环形缓存，淘汰后重新检查；Round观察最多复用64个近期认证不可变节点，按viewer隔离。模拟授权事件按需投影；单次搜索缓存候选及同节点／同种子后继，不跨真实决策或隐藏假设共享。叶收束不枚举不用的道具组合。
+
+参数依据、性能和完整对抗证据归[REQ-028](./requirements/archive/REQ-2026-028-contest-combination-ai.md)。
 
 ## 7. 持久化与预留能力
 
@@ -97,7 +108,7 @@ flowchart LR
 
 竞赛对局只在内存中，刷新／退出即放弃；controller、Hook与策略不读写竞赛存档。共享偏好继续经经典设置API保存，图鉴纯数据API不等于已接入浏览器存储。
 
-`infrastructure/contest/`、难度／图鉴／自定义页面及组合AI仍有预留工作，目录README表示职责而非已交付能力。未来元进度使用独立键、版本与冲突处理，写入失败不回滚内存牌面；技能次数／待办不保存，技能ID不混入道具图鉴负载。实施范围与顺序见[roadmap](./roadmap.md)，元进度格式仍为[契约草案](./contracts/contest-save-format.md)。
+`infrastructure/contest/`、难度／图鉴／自定义页面仍有预留工作，目录README表示职责而非已交付能力。未来元进度使用独立键、版本与冲突处理，写入失败不回滚内存牌面；技能次数／待办不保存，技能ID不混入道具图鉴负载。实施范围与顺序见[roadmap](./roadmap.md)，元进度格式仍为[契约草案](./contracts/contest-save-format.md)。
 
 ## 8. 设计依据与导航
 

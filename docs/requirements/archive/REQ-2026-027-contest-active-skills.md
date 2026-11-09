@@ -5,7 +5,7 @@
 验收归档: 2026-11-03，开发自验与外部独立验收均通过
 关联设计: [主动技目录与设计](../../design/contest-skills.md) · [竞赛规则](../../design/contest-rules.md#12-主动技战前选择与牌桌) · [ADR-004](../../adr/ADR-004-contest-turns-and-shared-boundaries.md)
 影响模块: domain/contest/、application/contest/、presentation/contest/、共享弹层、i18n及相关测试
-前置依赖: REQ-021–026；后续组合AI由[REQ-028](../active/REQ-2026-028-contest-combination-ai.md)接续。
+前置依赖: REQ-021–026；后续组合AI由[REQ-028](./REQ-2026-028-contest-combination-ai.md)接续。
 
 ## 背景与范围
 

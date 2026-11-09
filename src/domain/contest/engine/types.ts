@@ -154,6 +154,8 @@ export interface RoundObservation {
   readonly hands: Readonly<Record<PlayerId, RoundHandView>>;
   readonly deckCount: number;
   readonly faceUpCardIds: Readonly<Record<PlayerId, readonly string[]>>;
+  /** Public provenance only for the already exposed faceUpCardIds; no hidden-slot IDs. */
+  readonly faceUpOrigins: Readonly<Record<string, "initial" | "generated">>;
   readonly hiddenMultipliers: Readonly<Record<PlayerId, 1 | 2>>;
   readonly peek: readonly NumberValue[] | null;
   readonly pointTarget: number;
