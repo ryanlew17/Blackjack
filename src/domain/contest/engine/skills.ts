@@ -219,18 +219,10 @@ export function legalSkillCommands(
     case "mind-grip":
       legal = true;
       break;
-    case "scapegoat": {
-      const hand = view.hands[other];
-      // A privately learned value must never enable this public-information condition.
-      const lowerBound =
-        hand.visibleTotal +
-        (hand.cards.some((c) => c.faceDown)
-          ? view.hiddenMultipliers[other]
-          : 0);
-      legal =
-        lowerBound > view.pointTarget && view.faceUpCardIds[other].length > 0;
+    // @req REQ-2026-029: Scapegoat needs an opposing face-up card, not a bust.
+    case "scapegoat":
+      legal = view.faceUpCardIds[other].length > 0;
       break;
-    }
     case "pickpocket":
       legal =
         !!view.trumps &&
@@ -291,7 +283,6 @@ export function activateSkill(
   const delayed = [
     "tempt-fate",
     "frame",
-    "scapegoat",
     "metamorphosis",
     "provoke",
     "mind-grip",
@@ -311,24 +302,22 @@ export function activateSkill(
   const effect: SkillPendingEffect | undefined =
     command.skillId === "endless-life"
       ? { type: "endless-life", targetTurn: original.turn!.number + 2 }
-      : command.skillId === "scapegoat"
-        ? { type: "scapegoat", value: taken!.value }
-        : command.skillId === "provoke"
-          ? {
-              type: "provoke",
-              targetTurn: original.turn!.number + 1,
-              phase: "waiting",
-            }
-          : command.skillId === "mind-grip"
-            ? { type: "mind-grip", targetTurn: original.turn!.number + 1 }
-            : command.skillId === "twin-bloom"
-              ? { type: "twin-bloom", targetTurn: original.turn!.number + 1 }
-              : command.skillId === "tempt-fate" ||
-                  command.skillId === "frame" ||
-                  command.skillId === "metamorphosis" ||
-                  command.skillId === "soul-transfer"
-                ? { type: command.skillId }
-                : undefined;
+      : command.skillId === "provoke"
+        ? {
+            type: "provoke",
+            targetTurn: original.turn!.number + 1,
+            phase: "waiting",
+          }
+        : command.skillId === "mind-grip"
+          ? { type: "mind-grip", targetTurn: original.turn!.number + 1 }
+          : command.skillId === "twin-bloom"
+            ? { type: "twin-bloom", targetTurn: original.turn!.number + 1 }
+            : command.skillId === "tempt-fate" ||
+                command.skillId === "frame" ||
+                command.skillId === "metamorphosis" ||
+                command.skillId === "soul-transfer"
+              ? { type: command.skillId }
+              : undefined;
   const activation: SkillActivation = {
     sequence: skills.nextActivationSequence,
     roundNumber: original.numberScope,
@@ -385,6 +374,7 @@ export function activateSkill(
         taken!.instanceId,
       );
       detail = { card: taken!.value, targetId: taken!.instanceId };
+      succeeded = true;
       break;
     case "spirit-sight":
       state = freezeData({

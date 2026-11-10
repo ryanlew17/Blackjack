@@ -68,6 +68,7 @@ function opposingTable(human: readonly string[], ai: readonly string[]) {
 }
 describe("all REQ-023 definitions", () => {
   it("implements exactly the 28 assigned original definitions plus Regret, with immutable data", () => {
+    // @req REQ-2026-029: ignore the appended player-description column.
     const rows = source
       .split("\n")
       .map((line) =>
@@ -78,7 +79,7 @@ describe("all REQ-023 definitions", () => {
       )
       .filter(
         (c) =>
-          c.length === 7 &&
+          c.length === 8 &&
           /^\x60[^\x60]+\x60$/.test(c[0]) &&
           c[6] === "REQ-023",
       );

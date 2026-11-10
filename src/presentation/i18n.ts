@@ -52,52 +52,52 @@ export const en = {
   trumpIneffective: "{player}: {name} had no effect.",
   trumpSkillRecovered:
     "{player}: {name} restored one skill use and one activation this game. Existing skill seals remain.",
-  // @req REQ-2026-027: registered skill text; execution admission is separate.
+  // @req REQ-2026-027/029: registered player-facing skill text; execution admission is separate.
   "contest.skill.pickpocket.name": "Pickpocket",
   "contest.skill.pickpocket.description":
-    "Before ending your turn, randomly transfer one opposing trump to your hand. Requires an opposing trump and your trump count below hand limit minus one. The instance and its origin are preserved.",
+    "During your turn, steal one random trump from your opponent. They must hold a trump, and you can have at most six trumps.",
   "contest.skill.tempt-fate.name": "Invite Misfortune",
   "contest.skill.tempt-fate.description":
-    "Prepare in your turn. At round settlement, add a uniform random integer from 1 to the opponent’s effective hidden-card value plus 1 to your total. If you lose, you act first next round; alternation continues from that player.",
+    "Activate during your turn. At round settlement, increase your total by a random amount from 1 to the opponent’s hidden-card value + 1. If you lose the round, you act first in the next round.",
   "contest.skill.scapegoat.name": "Scapegoat",
   "contest.skill.scapegoat.description":
-    "Before ending your turn, if public information confirms the opponent is over target and has a face-up card, take their last face-up card. Snapshot its value v; subtract a uniform random integer from 1 to v plus 1 from your settlement total.",
+    "During your turn, move the opponent’s last face-up card to your side. They must have a face-up card.",
   "contest.skill.craft-gift.name": "Resourcefulness",
   "contest.skill.craft-gift.description":
-    "Before ending your turn, with no trumps in hand, draw up to two trumps from your remaining stock. This does not end the turn or trigger a Hit supply check.",
+    "During your turn, if you have no trumps, draw up to two trumps at random from your stock.",
   "contest.skill.metamorphosis.name": "Metamorphosis",
   "contest.skill.metamorphosis.description":
-    "Prepare secretly in your turn. After the settlement reveal, independently replace the settlement value of every number instance still worth 1 with a uniform value from 2 to 11. Instances and the number deck stay in place.",
+    "Secretly activate during your turn. At round settlement, every 1 held by either player changes to a random value from 2 to 11.",
   "contest.skill.frame.name": "Frame Up",
   "contest.skill.frame.description":
-    "Prepare in your turn. At settlement, add a uniform random integer from 1 to your effective hidden-card value plus 1 to the opponent’s total. If you win, the opponent acts first next round; alternation continues from them.",
+    "Activate during your turn. At round settlement, increase the opponent’s total by a random amount from 1 to your hidden-card value + 1. If you win the round, the opponent acts first in the next round.",
   "contest.skill.fortune.name": "Fortune",
   "contest.skill.fortune.description":
-    "Before ending your turn, retrieve Best Draw from your remaining stock if present and your hand has room. A missing card or a full hand still spends this skill use; availability does not reveal the stock.",
+    "During your turn, take one Best Draw from your stock. If none remains or your hand is full, you gain nothing but still spend the skill use.",
   "contest.skill.spirit-sight.name": "Spirit Sight",
   "contest.skill.spirit-sight.description":
-    "In your own turn before Hit or Stay, privately learn the value in the opponent’s logical hidden-card slot. Activation is public; the value is only for you. Cannot activate after that slot is publicly revealed.",
+    "During your turn, look at the opponent’s hidden card; only you see the result. You cannot activate this after their hidden card is revealed.",
   "contest.skill.provoke.name": "Provocation",
   "contest.skill.provoke.description":
-    "Watch the opponent’s next turn. Before their first decision, if they hold no trumps, supply one from stock under normal limits. If they consume no trump that turn, add 99 to their settlement total this round. Expires if the round ends first.",
+    "Activate during your turn. If the opponent plays no trumps on their next turn, add 99 to their round total.",
   "contest.skill.soul-transfer.name": "Soul Transfer",
   "contest.skill.soul-transfer.description":
-    "Secretly prepare in your turn with your trump count below hand limit minus one. Redirect the opponent’s next legal trump effect to your perspective, then generate Regret if there is room. They still pay, destroy the original card and keep the turn. Expires at round end.",
+    "Secretly activate during your turn while holding at most six trumps. The opponent’s next trump this round resolves as if you played it. After a successful interception, gain one Regret if there is room.",
   "contest.skill.nullify.name": "Dispel All Arts",
   "contest.skill.nullify.description":
-    "Delete both non-exempt trump hands. Cancel the opponent’s pending skill effects regardless of secrecy and lock their skill for this game, except Endless Life. Block both players’ stock grants and new skills through the next two complete rounds; game end clears the seal. Endless Life and its directly generated cards keep their explicit immunity.",
+    "During your turn, delete both players’ trump hands and cancel the opponent’s pending skills. The opponent cannot activate skills for the rest of this game. Through the next two full rounds, neither player can draw from stock or activate skills. Endless Life and the trumps it generates are exempt.",
   "contest.skill.self-renewal.name": "Self Renewal",
   "contest.skill.self-renewal.description":
-    "Before ending your turn, if you are over target and have a face-up card, delete the face-up card with the highest effective contribution. Break ties by most recently acquired. It does not return to the deck.",
+    "During your turn, if you have busted, delete your highest-value face-up card.",
   "contest.skill.twin-bloom.name": "Twin Bloom",
   "contest.skill.twin-bloom.description":
-    "Secretly prepare only in a stable opposing-turn reaction window. At your next turn start, replace your face-up numbers and trump hand with new instances copied from the opponent then. Keep your hidden card; do not copy skills, table effects or origin exemptions.",
+    "Secretly activate during a reaction window on the opponent’s turn. At the start of your next turn, replace your face-up cards and trumps with copies of the opponent’s cards and trumps at that time. Your hidden card stays unchanged.",
   "contest.skill.mind-grip.name": "Mind Grip",
   "contest.skill.mind-grip.description":
-    "Take over the opponent’s next turn after turn-start effects: perform up to three legal ordinary Hits, then automatically Stay. Continue when over target, respect draw locks and stop at an empty deck. The whole sequence is one turn.",
+    "Activate during your turn. Take control of the opponent’s next turn: they Hit up to three times, then Stay, without stopping early if they bust.",
   "contest.skill.endless-life.name": "Endless Life",
   "contest.skill.endless-life.description":
-    "From your next turn until this game ends, generate one uniformly chosen eligible admitted trump at each of your turn starts, subject to hand capacity and without using stock. This skill and its direct creations have explicit immunity to Dispel All Arts; other deletion effects still apply.",
+    "Activate during your turn. Starting with your next turn, gain one random trump at the start of each of your turns until this game ends, without using your stock. Dispel All Arts cannot remove this skill or the trumps it creates.",
 
   // @req REQ-2026-018: mode entrance and projected contest table.
   homeEyebrow: "A SEAT AT THE GREEN ROOM",
@@ -298,170 +298,170 @@ export const en = {
   contestRuleBaseline:
     "The opponent chooses a skill before the match but currently only plays Hit or Stay. It does not actively use trumps or skills.",
 
-  // @req REQ-2026-013: catalog copy; no codex page is mounted yet.
+  // @req REQ-2026-013/029: player-facing catalog copy; no codex page is mounted yet.
   "contest.trump.draw-2.name": "Draw 2",
   "contest.trump.draw-2.description":
-    "Draw the number 2. If it is unavailable, this trump is still consumed without effect.",
+    "Draw a face-up 2. If no 2 remains in the deck, this trump is still spent.",
   "contest.trump.draw-3.name": "Draw 3",
   "contest.trump.draw-3.description":
-    "Draw the number 3. If it is unavailable, this trump is still consumed without effect.",
+    "Draw a face-up 3. If no 3 remains in the deck, this trump is still spent.",
   "contest.trump.draw-4.name": "Draw 4",
   "contest.trump.draw-4.description":
-    "Draw the number 4. If it is unavailable, this trump is still consumed without effect.",
+    "Draw a face-up 4. If no 4 remains in the deck, this trump is still spent.",
   "contest.trump.draw-5.name": "Draw 5",
   "contest.trump.draw-5.description":
-    "Draw the number 5. If it is unavailable, this trump is still consumed without effect.",
+    "Draw a face-up 5. If no 5 remains in the deck, this trump is still spent.",
   "contest.trump.draw-6.name": "Draw 6",
   "contest.trump.draw-6.description":
-    "Draw the number 6. If it is unavailable, this trump is still consumed without effect.",
+    "Draw a face-up 6. If no 6 remains in the deck, this trump is still spent.",
   "contest.trump.draw-7.name": "Draw 7",
   "contest.trump.draw-7.description":
-    "Draw the number 7. If it is unavailable, this trump is still consumed without effect.",
+    "Draw a face-up 7. If no 7 remains in the deck, this trump is still spent.",
   "contest.trump.return.name": "Return",
   "contest.trump.return.description":
-    "Return your last face-up number card to the pool. Requires a face-up card.",
+    "Return your last face-up card to the bottom of the number deck. You need a face-up card.",
   "contest.trump.remove.name": "Remove",
   "contest.trump.remove.description":
-    "Return your opponent’s last face-up number card to the pool. Requires a face-up card and may rescue a bust.",
+    "Return the opponent’s last face-up card to the bottom of the number deck. They need a face-up card; this may also save them from busting.",
   "contest.trump.exchange.name": "Exchange",
   "contest.trump.exchange.description":
-    "Swap both players’ last face-up number cards. Both must have a face-up card; this does not trigger draw rewards.",
+    "Swap your last face-up card with the opponent’s. Both players need a face-up card.",
   "contest.trump.destroy.name": "Dispel",
   "contest.trump.destroy.description":
-    "Remove your opponent’s most recently placed trump still on the table. Requires an opposing table trump; completed effects are not undone.",
+    "Remove the opponent’s most recently placed table effect. They need a table effect; completed effects are not undone.",
   "contest.trump.destroy-all.name": "Sweep",
   "contest.trump.destroy-all.description":
-    "Remove all opposing table trumps. Requires at least one; completed effects are not undone.",
+    "Remove all opposing table effects. The opponent needs at least one; completed effects are not undone.",
   "contest.trump.best-draw.name": "Best Draw",
   "contest.trump.best-draw.description":
-    "Draw the highest remaining number that keeps your total within the target, or the lowest if all would exceed it. Consumed even if the pool is empty.",
+    "Draw the highest remaining number that will not make you bust. If every card would make you bust, draw the lowest instead. This trump is still spent if the deck is empty.",
   "contest.trump.pressure.name": "Pressure",
   "contest.trump.pressure.description":
-    "While in play, gain 1 bonus point if you win this round, subject to defenses and the bonus cap. Does not benefit your opponent if you lose.",
+    "If you win this round, gain 1 attack point.",
   "contest.trump.pressure-supply.name": "Prepared Pressure",
   "contest.trump.pressure-supply.description":
-    "Gain up to 1 trump. While in play, gain 1 bonus point if you win, subject to defenses and the cap. Requires table space; supply and hand capacity limit the draw.",
+    "Gain up to 1 trump, then leave an effect: if you win this round, gain 1 attack point.",
   "contest.trump.shield.name": "Cushion",
   "contest.trump.shield.description":
-    "While in play, cancel 1 opposing bonus point if you lose this round. Does not reduce the base point.",
+    "If you lose this round, cancel 1 of the opponent’s bonus points. This does not cancel their base point.",
   "contest.trump.shared-supply.name": "Shared Supply",
   "contest.trump.shared-supply.description":
-    "You gain up to 1 trump, then your opponent gains up to 1. Each uses their own supply and hand capacity.",
+    "You and the opponent each gain up to 1 trump from your own stock, starting with you.",
   "contest.trump.resource-swap.name": "Refit",
   "contest.trump.resource-swap.description":
-    "Choose and discard another trump from your hand, then gain up to 2. Pay the cost first; limited supply or capacity does not refund it.",
+    "Discard another trump, then gain up to 2 trumps from your stock.",
   "contest.trump.harvest.name": "Reserve",
   "contest.trump.harvest.description":
-    "While in play, gain up to 1 trump after consuming another trump, at most twice, then remove this effect. Does not trigger itself or trigger from grants; supply and capacity apply.",
+    "After you play another trump, gain up to 1 trump from your stock. This can trigger twice.",
   "contest.trump.target-17.name": "Target 17",
   "contest.trump.target-17.description":
-    "While in play, set both players’ target to 17, replacing any existing target trump. Removing it restores 21. Requires table space.",
+    "Set both players’ target to 17, replacing the current target effect. Removing it restores the target to 21.",
   "contest.trump.target-24.name": "Target 24",
   "contest.trump.target-24.description":
-    "While in play, set both players’ target to 24, replacing any existing target trump. Removing it restores 21. Requires table space.",
+    "Set both players’ target to 24, replacing the current target effect. Removing it restores the target to 21.",
   "contest.trump.target-27.name": "Target 27",
   "contest.trump.target-27.description":
-    "While in play, set both players’ target to 27, replacing any existing target trump. Removing it restores 21. Requires table space.",
-  // @req REQ-2026-025: 54 registered definitions; Skill Revival remains pending.
+    "Set both players’ target to 27, replacing the current target effect. Removing it restores the target to 21.",
+  // @req REQ-2026-025/027/029: all 54 registered definitions are admitted and use player-facing copy.
   "contest.trump.symbiosis.name": "Symbiosis",
   "contest.trump.symbiosis.description":
-    "At settlement, both hidden contributions become their combined effective value. Replaces existing Symbiosis; removable.",
+    "At round settlement, both hidden cards use the combined value of the two hidden cards.",
   "contest.trump.double-hidden.name": "Double Hidden",
   "contest.trump.double-hidden.description":
-    "Set the opponent’s hidden multiplier to 2 this round; repeated uses do not multiply it further.",
+    "Double the opponent’s hidden-card value for this round. Playing this again does not multiply it further.",
   "contest.trump.bandwagon.name": "Follow Suit",
   "contest.trump.bandwagon.description":
-    "Watch the opponent’s first trump next turn. At your next turn retrieve a matching card from your stock, then expire. No copy is generated; capacity applies.",
+    "Watch the first trump the opponent plays next turn. At the start of your next turn, gain a matching trump from your stock if one remains.",
   "contest.trump.normalize.name": "Normalize",
   "contest.trump.normalize.description":
-    "Restore your hidden multiplier from 2 to 1. Requires a multiplier of 2.",
+    "Return your doubled hidden card to its normal value. You can only play this while your hidden card is doubled.",
   "contest.trump.hush.name": "Quiet Window",
   "contest.trump.hush.description":
-    "Block the opponent’s normal Hit next turn, then expire. Trumps and Stay remain available; does not stack for the same side.",
+    "The opponent cannot Hit on their next turn. They can still play trumps or Stay.",
   "contest.trump.embargo.name": "Embargo",
   "contest.trump.embargo.description":
-    "Block the first otherwise eligible trump grant during the opponent’s next turn, then expire. Also expires at that turn’s end.",
+    "Block the first trump the opponent would draw from stock on their next turn.",
   "contest.trump.full-shield.name": "Full Guard",
   "contest.trump.full-shield.description":
-    "If you lose this round, the opponent scores zero including the base point. Does not prevent Sudden Death from deciding the game; does not stack.",
+    "If you lose this round, the opponent scores no points, including the base point.",
   "contest.trump.last-stand.name": "Last Stand",
   "contest.trump.last-stand.description":
-    "Gain 2 attack bonus points if both hands bust and you win. Defense and the bonus cap still apply.",
+    "If both hands bust and you win the round, gain 2 attack points.",
   "contest.trump.ceasefire.name": "Ceasefire",
   "contest.trump.ceasefire.description":
-    "Set both sides’ bonus points to zero this round. The base point and Full Guard still apply; replaces existing Ceasefire.",
+    "Neither player gains bonus points this round. Base points are unaffected.",
   "contest.trump.risk-pledge.name": "Risk Pledge",
   "contest.trump.risk-pledge.description":
-    "Gain 2 attack bonus points if you win; give the opponent 1 if you lose. Defense and the cap apply.",
+    "If you win this round, gain 2 attack points. If the opponent wins, they gain 1 attack point.",
   "contest.trump.forced-draw.name": "Forced Draw",
   "contest.trump.forced-draw.description":
-    "The opponent draws the top number face up. Requires a nonempty deck; keeps your turn and grants no Hit reward.",
+    "Make the opponent draw the top number card face up. The deck must not be empty.",
   "contest.trump.redraw.name": "Redraw",
   "contest.trump.redraw.description":
-    "Return your last face-up card to the deck’s end, then draw its top card. Requires a face-up card; grants no Hit reward.",
+    "Return your last face-up card to the bottom of the deck, then draw the top card. You need a face-up card.",
   "contest.trump.scry.name": "Scry",
   "contest.trump.scry.description":
-    "Privately inspect up to two top numbers in order. Deck changes invalidate their positions; consumed even with an empty deck.",
+    "Look at up to two cards on top of the number deck, in order. Only you can see them. This information expires when the deck changes.",
   "contest.trump.deck-rotate.name": "Bottom Turn",
   "contest.trump.deck-rotate.description":
-    "Move the top number to the deck’s end without revealing it. Requires at least two remaining cards.",
+    "Move the top card of the number deck to the bottom without revealing it. The deck needs at least two cards.",
   "contest.trump.trim.name": "Lighten",
   "contest.trump.trim.description":
-    "Return your face-up cards with original values of 8 or more to the deck’s end, left to right. Requires a matching card; protects the logical hidden slot.",
+    "Return all your face-up cards worth 8 or more to the bottom of the deck. You need at least one matching card.",
   "contest.trump.reveal-self.name": "Open Hand",
   "contest.trump.reveal-self.description":
-    "Reveal your hidden card and gain up to one trump. Requires an unrevealed card; preserves its logical hidden slot.",
+    "Reveal your hidden card and gain up to 1 trump. Your hidden card must still be unrevealed.",
   "contest.trump.reveal-opponent.name": "Expose",
   "contest.trump.reveal-opponent.description":
-    "Reveal the opponent’s hidden card to both players. Requires an unrevealed card; preserves its logical hidden slot.",
+    "Reveal the opponent’s hidden card to both players. Their hidden card must still be unrevealed.",
   "contest.trump.target-lock.name": "Target Anchor",
   "contest.trump.target-lock.description":
-    "Until the opponent’s next turn ends, block new target effects. Existing targets may still be removed to restore the base target.",
+    "Until the opponent’s next turn ends, neither player can play a new target effect to change the current target.",
   "contest.trump.table-exchange.name": "Table Exchange",
   "contest.trump.table-exchange.description":
-    "Exchange one eligible effect from each side, preserving charges without replaying immediate effects. Suppression keeps its target and original expiry.",
+    "Choose one movable table effect from each side and exchange control of them.",
   "contest.trump.suppress.name": "Suppress",
   "contest.trump.suppress.description":
-    "Suspend one opposing effect until the opponent’s next turn ends. Cannot target Suppress; leaves if its target leaves. Immediate effects remain.",
+    "Choose an opposing table effect and pause it until the opponent’s next turn ends. You cannot target Suppress.",
   "contest.trump.decommission.name": "Decommission",
   "contest.trump.decommission.description":
-    "Remove one of your table effects, then gain up to one trump. The destroyed source card is not recovered.",
+    "Remove one of your table effects, then gain up to 1 trump.",
   "contest.trump.banish-copy.name": "Cut Supply",
   "contest.trump.banish-copy.description":
-    "Declare a public definition and destroy one matching card in opposing remaining stock. Consumed on a miss; held cards are untouched.",
+    "Choose a trump type and destroy one matching card from the opponent’s stock. If none remains, this trump is still spent. Their hand is unaffected.",
   "contest.trump.heavy-hit.name": "Heavy Hit",
   "contest.trump.heavy-hit.description":
-    "If the opponent Hits next turn, draw up to two numbers in one turn with one grant gate. Expires after that turn.",
+    "If the opponent Hits on their next turn, they draw up to two number cards instead of one.",
   "contest.trump.face-lighten.name": "Soft Step",
   "contest.trump.face-lighten.description":
-    "Bind your chosen face-up card: contribution minus 2, minimum 1. Does not stack on the same card; leaves when it returns to the deck.",
+    "Choose one of your face-up cards. Its value is reduced by 2, to a minimum of 1.",
   "contest.trump.face-burden.name": "Extra Weight",
   "contest.trump.face-burden.description":
-    "Bind an opposing face-up card: contribution plus 2. Does not change its printed value or stack on the same card.",
+    "Choose an opposing face-up card. Its value increases by 2.",
   "contest.trump.resonance.name": "Resonance",
   "contest.trump.resonance.description":
-    "Set the target to 21 plus both sides’ current non-hidden face-up card count. Replaces other targets and does not track later changes.",
+    "Set the target to 21 plus both players’ current face-up cards. Later card-count changes do not update it.",
   "contest.trump.supply-cache.name": "Supply Cache",
   "contest.trump.supply-cache.description":
-    "Your next successful normal Hit grant draws up to two trumps, then expires. A failed gate does not consume the charge; round end clears it.",
+    "The next time your Hit triggers a trump grant, gain up to two trumps instead.",
   "contest.trump.life-trade.name": "Risk for Supply",
   "contest.trump.life-trade.description":
-    "Draw one top number, then gain up to two trumps. Requires a nonempty number deck; keeps your turn and grants no extra Hit reward.",
+    "Draw the top number card, then gain up to two trumps. The number deck must not be empty.",
   "contest.trump.purge-hand.name": "Clean Slate",
   "contest.trump.purge-hand.description":
-    "Destroy all your other held trumps as a private cost, then gain up to three. Requires another held card; costs are never refunded.",
+    "Discard all your other trumps, then gain up to three. You need at least one other trump to play this.",
   "contest.trump.safe-hit.name": "Safe Hit",
   "contest.trump.safe-hit.description":
-    "On your next normal Hit, return its first drawn card face up to the deck’s end if it would bust. Still ends the turn and checks one grant gate; one charge.",
+    "On your next Hit, if the drawn card would make you bust, return it to the bottom of the deck. Otherwise, keep it.",
   "contest.trump.regret.name": "Regret",
   "contest.trump.regret.description":
-    "Undo the last eligible play’s actual effects. Destroyed cards, costs, randomness, turns and known information stay committed; undoing deletion creates a new identity.",
+    "Undo the reversible effects of the last trump played. Spent trumps and costs are not refunded; known information and turn progress do not rewind.",
   "contest.trump.skill-revival.name": "Skill Revival",
   "contest.trump.skill-revival.description":
-    "After the selected skill has succeeded in this match, restore one use up to its initial cap and allow one extra activation this game. Existing skill seals remain.",
+    "If your skill has succeeded this match and is below its use limit, restore one use and allow one extra activation this game. Existing skill seals remain.",
   "contest.trump.sudden-death.name": "Sudden Death",
   "contest.trump.sudden-death.description":
-    "The next decisive round wins this game directly, including through Full Guard. Ties carry the marker forward; does not win the match directly or allow a second marker.",
+    "The next round with a winner decides this game immediately. Ties leave this effect in place. It does not win the whole match.",
   "contest.codex.title": "Codex",
   "contest.codex.locked": "???",
   "contest.codex.new": "New",
@@ -670,7 +670,7 @@ export const zh: Copy = {
   trumpIneffective: "{player}的{name}未产生效果。",
   trumpSkillRecovered:
     "{player}的{name}恢复了1次技能次数，并增加本局1次发动许可；原有禁用仍生效。",
-  // @req REQ-2026-027: registered skill text; execution admission is separate.
+  // @req REQ-2026-027/029: registered player-facing skill text; execution admission is separate.
   skillSelectionTitle: "选择你的主动技",
   skillSelectionIntro:
     "为本场标准比赛选择一项技能。确认后，对手从同一列表等概率随机选择一次；比赛中不能更换技能。",
@@ -679,49 +679,49 @@ export const zh: Copy = {
   skillSelectionConfirm: "确认并开始比赛",
   "contest.skill.pickpocket.name": "探囊",
   "contest.skill.pickpocket.description":
-    "自己的行动轮结束前，对方有道具且己方道具手牌数小于上限减一时，等概率转移对方一张道具到己方，保留实例与来源。",
+    "你的行动轮中可发动：随机偷取对手一张道具。对手必须有道具，且你最多持有6张道具。",
   "contest.skill.tempt-fate.name": "招灾",
   "contest.skill.tempt-fate.description":
-    "自己的行动轮布置；本回合结算己方总点数增加均匀随机整数1至对方有效暗牌值加1。若己方输掉回合，下回合己方先手，此后继续轮换。",
+    "你的行动轮中可发动。本回合结算时，你的总点数随机增加至少1点，最多为对手暗牌点数+1。若你输掉本回合，下一回合由你先手。",
   "contest.skill.scapegoat.name": "替罪",
   "contest.skill.scapegoat.description":
-    "自己的行动轮结束前，公开信息已确认对方爆牌且有明牌时，转移其末张明牌到己方并记录当时牌值v；本回合结算己方总点数减去均匀随机整数1至v加1。",
+    "你的行动轮中可发动：将对手最后一张明牌移到自己场上。对手必须有明牌。",
   "contest.skill.craft-gift.name": "巧物",
   "contest.skill.craft-gift.description":
-    "自己的行动轮结束前，道具手牌为空时，从己方剩余库存普通抽取最多两张道具，不结束行动轮、不触发Hit补给门控。",
+    "你的行动轮中，若没有道具，可从自己的道具库存随机抽取最多2张道具。",
   "contest.skill.metamorphosis.name": "变形",
   "contest.skill.metamorphosis.description":
-    "自己的行动轮隐身布置；本回合结算揭牌后，将双方场上牌值仍为1的每个数字实例的结算牌值独立等概率变为2至11，不移动实例、不改数字堆。",
+    "你的行动轮中可秘密发动。本回合结算时，双方每张点数为1的牌都随机变为2–11点。",
   "contest.skill.frame.name": "嫁祸",
   "contest.skill.frame.description":
-    "自己的行动轮布置；本回合结算对方总点数增加均匀随机整数1至己方有效暗牌值加1。若己方赢下回合，下回合对方先手，此后继续轮换。",
+    "你的行动轮中可发动。本回合结算时，对手总点数随机增加至少1点，最多为你的暗牌点数+1。若你赢下本回合，下一回合由对手先手。",
   "contest.skill.fortune.name": "强运",
   "contest.skill.fortune.description":
-    "自己的行动轮结束前，定向检索己方库存中的精准抽牌，有牌且有容量则移至手牌；缺牌或满手仍消耗次数，发动条件不预告隐藏库存。",
+    "你的行动轮中可发动，从道具库存取出1张「精准抽牌」。库存中没有或手牌已满时不会获得，但仍会消耗发动次数。",
   "contest.skill.spirit-sight.name": "灵闻",
   "contest.skill.spirit-sight.description":
-    "自己的稳定行动轮中、Hit或Stay提交前，立即获知对方逻辑暗牌槽位的牌值。发动行为公开，牌值仅向本人授权；对方暗牌已公共揭示时不可发动。",
+    "你的行动轮中可发动，查看对手的暗牌；只有你能看到结果。对手暗牌已公开时不能发动。",
   "contest.skill.provoke.name": "激发",
   "contest.skill.provoke.description":
-    "监控对方下一行动轮；首次决策前若其无道具，按库存及封锁规则补一张。该行动轮未合法消费道具则本回合结算对方总点数加99；主动技、Hit补给和费用弃牌不算出道具，本回合先结束则过期。",
+    "你的行动轮中可发动。对手下一行动轮若完全没有使用道具，本回合结算时其总点数+99。",
   "contest.skill.soul-transfer.name": "魂迁",
   "contest.skill.soul-transfer.description":
-    "自己的行动轮、道具手牌数小于上限减一时隐身布置；拦截对方下一次合法出道具，以己方视角重解释效果。成功时按容量生成一张悔牌；原出牌方仍支付费用、销毁原卡并保留行动权，回合结束未拦截则过期。",
+    "你最多持有6张道具时，可在自己的行动轮中秘密发动。本回合内，对手下一次使用的道具将改由你施放；成功拦截后，若手牌有空间，获得1张「悔牌」。",
   "contest.skill.nullify.name": "破万法",
   "contest.skill.nullify.description":
-    "删除双方非豁免道具手牌，无视隐身取消对方待生效技能并锁定至本局结束，生生不息除外；本回合余下及之后两个完整回合禁止双方库存补给和新技能发动，Game结束提前解除。生生不息及其直接生成牌的明确豁免保留。",
+    "你的行动轮中可发动：清除双方所有道具手牌，并取消对手尚未生效的技能。对手本局不能再发动技能；直到之后两个回合结束，双方都不能从库存补牌或发动技能。「生生不息」及其生成的道具不受影响。",
   "contest.skill.self-renewal.name": "天行健",
   "contest.skill.self-renewal.description":
-    "自己的行动轮结束前，己方已爆牌且有明牌时，删除己方有效贡献最高的一张明牌，同点取最后取得者；不回数字堆、不改其他牌。",
+    "你的行动轮中，若你已经爆牌，可删除自己点数最高的一张明牌。",
   "contest.skill.twin-bloom.name": "双生花",
   "contest.skill.twin-bloom.description":
-    "仅在对方行动轮的稳定反应窗口隐身布置；己方下个行动轮开始时，删除己方明牌和道具手牌，按此时对方相应区域生成新实例。保留自己的暗牌，不复制技能、次数、留场或来源豁免。",
+    "在对手行动轮的反应时机可秘密发动。到你的下一行动轮开始时，复制对手当时的明牌和道具，替换你已有的明牌和道具；暗牌不变。",
   "contest.skill.mind-grip.name": "夺心魄",
   "contest.skill.mind-grip.description":
-    "接管对方下个行动轮，在起始效果后顺序执行最多三次合法普通Hit，再自动Stay；爆牌继续，遵守禁抽与空堆限制，不重洗或补造，整个序列只交权一次。",
+    "你的行动轮中可发动。对手下一行动轮将由你操控，连续要牌最多3次，然后停牌；即使爆牌也不会提前停下。",
   "contest.skill.endless-life.name": "生生不息",
   "contest.skill.endless-life.description":
-    "己方下个行动轮起至本Game结束，每次己方行动轮开始按容量等概率生成一张本档可用且已准入的道具，不消耗库存。本技能发动、待办、持续状态及直接生成牌明确免疫破万法，仍可受其他明确删除效果影响。",
+    "你的行动轮中可发动。从你的下一行动轮起，每次轮到你行动时随机获得1张道具，直到本局结束；不消耗库存。此技能及其生成的道具不会被「破万法」清除。",
 
   // @req REQ-2026-018: mode entrance and projected contest table.
   homeEyebrow: "绿房间，为你留座",
@@ -895,170 +895,168 @@ export const zh: Copy = {
   contestRuleBaseline:
     "对手会在战前选技，但目前只执行要牌或停牌，不主动使用道具或发动技能。",
 
-  // @req REQ-2026-013: catalog copy; no codex page is mounted yet.
+  // @req REQ-2026-013/029: player-facing catalog copy; no codex page is mounted yet.
   "contest.trump.draw-2.name": "指定抽牌·2",
   "contest.trump.draw-2.description":
-    "抽取数字2。若已不在牌堆中，道具仍会消耗且不产生效果。",
+    "抽一张数字2作为你的明牌。若牌堆中没有2，本卡仍会消耗。",
   "contest.trump.draw-3.name": "指定抽牌·3",
   "contest.trump.draw-3.description":
-    "抽取数字3。若已不在牌堆中，道具仍会消耗且不产生效果。",
+    "抽一张数字3作为你的明牌。若牌堆中没有3，本卡仍会消耗。",
   "contest.trump.draw-4.name": "指定抽牌·4",
   "contest.trump.draw-4.description":
-    "抽取数字4。若已不在牌堆中，道具仍会消耗且不产生效果。",
+    "抽一张数字4作为你的明牌。若牌堆中没有4，本卡仍会消耗。",
   "contest.trump.draw-5.name": "指定抽牌·5",
   "contest.trump.draw-5.description":
-    "抽取数字5。若已不在牌堆中，道具仍会消耗且不产生效果。",
+    "抽一张数字5作为你的明牌。若牌堆中没有5，本卡仍会消耗。",
   "contest.trump.draw-6.name": "指定抽牌·6",
   "contest.trump.draw-6.description":
-    "抽取数字6。若已不在牌堆中，道具仍会消耗且不产生效果。",
+    "抽一张数字6作为你的明牌。若牌堆中没有6，本卡仍会消耗。",
   "contest.trump.draw-7.name": "指定抽牌·7",
   "contest.trump.draw-7.description":
-    "抽取数字7。若已不在牌堆中，道具仍会消耗且不产生效果。",
+    "抽一张数字7作为你的明牌。若牌堆中没有7，本卡仍会消耗。",
   "contest.trump.return.name": "收回",
   "contest.trump.return.description":
-    "将自己最后一张明牌放回数字牌堆。需要自己有明牌。",
+    "将你最后一张明牌放回数字牌堆底。需要至少一张明牌。",
   "contest.trump.remove.name": "驱离",
   "contest.trump.remove.description":
-    "将对手最后一张明牌放回数字牌堆。需要对手有明牌，也可能帮助对手解除爆牌。",
+    "将对手最后一张明牌放回数字牌堆底。对手需要有明牌；也可能因此帮对手解除爆牌。",
   "contest.trump.exchange.name": "易位",
   "contest.trump.exchange.description":
-    "交换双方最后一张明牌。双方都必须有明牌；不触发抽牌奖励。",
+    "交换你和对手的最后一张明牌。双方都需要至少一张明牌。",
   "contest.trump.destroy.name": "拆解",
   "contest.trump.destroy.description":
-    "清除对手最近放置且仍在场的一张道具。需要对手有留场道具；不撤销已执行的效果。",
+    "移除对手最近放置的一项留场效果。对手需要有留场效果；不会撤销已经完成的效果。",
   "contest.trump.destroy-all.name": "清场",
   "contest.trump.destroy-all.description":
-    "清除对手全部留场道具。需要对手有留场道具；不撤销已执行的效果。",
+    "移除对手所有留场效果。对手需要有留场效果；不会撤销已经完成的效果。",
   "contest.trump.best-draw.name": "精准抽牌",
   "contest.trump.best-draw.description":
-    "抽取不会令自己超过当前目标的最大剩余数字；若全部会超出则抽最小数字。空堆时仍消耗道具。",
+    "抽取当前不会爆牌的最大剩余数字；如果抽任何牌都会爆牌，则抽取最小数字。牌堆为空时仍会消耗本卡。",
   "contest.trump.pressure.name": "施压",
-  "contest.trump.pressure.description":
-    "留场期间，本回合获胜时额外获得1分；受防御与额外加分上限影响。失败时不替对手加分。",
+  "contest.trump.pressure.description": "若你赢下本回合，进攻得分+1。",
   "contest.trump.pressure-supply.name": "战备施压",
   "contest.trump.pressure-supply.description":
-    "补充最多1张道具。留场期间，本回合获胜额外获得1分，受防御与上限影响。桌面满时不能使用；补牌受库存和手牌容量限制。",
+    "获得最多1张道具，并留下效果：本回合获胜时进攻得分+1。",
   "contest.trump.shield.name": "缓冲",
   "contest.trump.shield.description":
-    "留场期间，自己输掉本回合时抵消对手1点额外加分，不抵消基础分。",
+    "本回合落败时，抵消对手1点额外得分；不会抵消基础分。",
   "contest.trump.shared-supply.name": "共同补给",
   "contest.trump.shared-supply.description":
-    "自己先补充最多1张道具，再由对手补充最多1张。各自使用自己的库存，受手牌容量限制。",
+    "你和对手各从自己的库存补充最多1张道具，你先补。",
   "contest.trump.resource-swap.name": "整备",
   "contest.trump.resource-swap.description":
-    "选择并弃掉另一张道具手牌，再补充最多2张。必须先支付弃牌费用；领取不足时不返还。",
+    "弃掉另一张道具，然后从自己的库存补充最多2张道具。",
   "contest.trump.harvest.name": "余粮",
   "contest.trump.harvest.description":
-    "留场后，每消耗一张其他道具补充最多1张，最多触发2次后离场。自身不触发，补牌不递归触发；受库存与容量限制。",
+    "留场后，你每使用一张其他道具，就补充最多1张道具；最多触发2次。",
   "contest.trump.target-17.name": "目标17",
   "contest.trump.target-17.description":
-    "留场期间，双方目标点数改为17，替换已有目标牌。清除后恢复21；桌面满时不能使用。",
+    "将双方的牌面目标改为17，并替换原有目标效果。该效果被移除后恢复为21。",
   "contest.trump.target-24.name": "目标24",
   "contest.trump.target-24.description":
-    "留场期间，双方目标点数改为24，替换已有目标牌。清除后恢复21；桌面满时不能使用。",
+    "将双方的牌面目标改为24，并替换原有目标效果。该效果被移除后恢复为21。",
   "contest.trump.target-27.name": "目标27",
   "contest.trump.target-27.description":
-    "留场期间，双方目标点数改为27，替换已有目标牌。清除后恢复21；桌面满时不能使用。",
-  // @req REQ-2026-025: 54 registered definitions; Skill Revival remains pending.
+    "将双方的牌面目标改为27，并替换原有目标效果。该效果被移除后恢复为21。",
+  // @req REQ-2026-025/027/029: all 54 registered definitions are admitted and use player-facing copy.
   "contest.trump.symbiosis.name": "共生",
   "contest.trump.symbiosis.description":
-    "结算时，双方暗牌贡献均变为两方有效暗牌贡献之和；替换已有共生，可被清除。",
+    "本回合结算时，双方的暗牌点数都变为两张暗牌点数之和。",
   "contest.trump.double-hidden.name": "双效暗牌",
   "contest.trump.double-hidden.description":
-    "本回合对方暗牌倍率设为2，重复使用不继续叠乘；归一可反制。",
+    "本回合中，对手暗牌按2倍点数计算；重复使用不会继续翻倍。",
   "contest.trump.bandwagon.name": "从众",
   "contest.trump.bandwagon.description":
-    "记录对方下个行动轮消费的首张道具；自己下轮开始时从库存检索同定义一张后离场，缺牌或手满失败，不生成副本。",
+    "记录对手下一行动轮使用的第一张道具。到你的下一行动轮开始时，若库存中有同款道具，便获得1张。",
   "contest.trump.normalize.name": "归一",
   "contest.trump.normalize.description":
-    "自己的暗牌倍率从2恢复1；仅倍率为2时可用。",
+    "将已翻倍的己方暗牌恢复为原本点数。只有暗牌点数翻倍时才能使用。",
   "contest.trump.hush.name": "静默",
   "contest.trump.hush.description":
-    "封锁对方下轮普通要牌，轮末离场；道具和停牌仍可用，同方同类不叠加。",
+    "对手下一行动轮不能要牌，但仍可使用道具或停牌。",
   "contest.trump.embargo.name": "断供",
   "contest.trump.embargo.description":
-    "阻止对方下轮第一次本可领取的道具，最多一张后离场；未触发也在该轮结束时离场。",
+    "对手下一行动轮第一次从库存获得道具时，阻止这次补给，最多阻止1张。",
   "contest.trump.full-shield.name": "护身",
   "contest.trump.full-shield.description":
-    "本回合自己输时令对方所得归零，含基础分；不能阻止赌命判局胜，同方不叠加。",
+    "若你输掉本回合，对手本回合不得分，包括基础分。",
   "contest.trump.last-stand.name": "背水",
   "contest.trump.last-stand.description":
-    "双方均爆牌且自己赢时进攻加分增加2；仍受防御抵消与上限约束。",
+    "若双方都爆牌且你赢下本回合，进攻得分+2。",
   "contest.trump.ceasefire.name": "息战",
   "contest.trump.ceasefire.description":
-    "本回合双方额外分归零，保留基础分与护身归零；替换已有息战。",
+    "本回合双方都不会获得额外得分，基础分不受影响。",
   "contest.trump.risk-pledge.name": "押注",
   "contest.trump.risk-pledge.description":
-    "自己赢时进攻加分增加2，对方赢时其进攻加分增加1；均受抵消与上限约束。",
+    "若你赢下本回合，进攻得分+2；若对手获胜，其进攻得分+1。",
   "contest.trump.forced-draw.name": "强征",
   "contest.trump.forced-draw.description":
-    "对方从堆顶强制取一张明牌；需堆非空，不结束自己的行动轮，不触发要牌补给。",
+    "强制对手抽取数字牌堆顶的1张牌，作为明牌。牌堆不能为空。",
   "contest.trump.redraw.name": "调度",
   "contest.trump.redraw.description":
-    "自己末张明牌回堆末，再取堆顶一张；需有明牌，不触发要牌补给。",
+    "将你最后一张明牌放回牌堆底，再抽取牌堆顶的1张牌。需要有明牌。",
   "contest.trump.scry.name": "窥序",
   "contest.trump.scry.description":
-    "仅自己窥看堆顶最多两张及顺序；堆变化后位置标记失效，空堆仍消费。",
+    "查看数字牌堆顶最多2张牌及其顺序，只有你能看到。牌堆变动后，这次查看结果失效。",
   "contest.trump.deck-rotate.name": "移底",
   "contest.trump.deck-rotate.description":
-    "堆顶一张移至堆末且不公开数值；需剩余至少两张，使窥序位置标记失效。",
+    "将数字牌堆顶的1张牌移到底部，不公开牌面。牌堆至少要有2张牌。",
   "contest.trump.trim.name": "减负",
   "contest.trump.trim.description":
-    "将自己原值至少8的明牌从左到右回堆末；需有符合条件的牌，逻辑暗牌不受影响。",
+    "将你所有点数为8或以上的明牌放回牌堆底。需要至少一张符合条件的明牌。",
   "contest.trump.reveal-self.name": "明志",
   "contest.trump.reveal-self.description":
-    "公开自己原暗牌并补最多一道具；需尚未公开，仍保留逻辑暗牌槽位。",
+    "公开自己的暗牌，并补充最多1张道具。暗牌尚未公开时才能使用。",
   "contest.trump.reveal-opponent.name": "识破",
   "contest.trump.reveal-opponent.description":
-    "公开对方原暗牌，之后双方可见；需尚未公开，仍保留逻辑暗牌槽位。",
+    "公开对手的暗牌，双方都能查看。对手暗牌尚未公开时才能使用。",
   "contest.trump.target-lock.name": "定锚",
   "contest.trump.target-lock.description":
-    "至对方下轮结束，禁止新目标改变或替换当前目标；仍可清除当前目标恢复基准。",
+    "直到对手下一行动轮结束，双方都不能使用新的目标牌改变当前目标。",
   "contest.trump.table-exchange.name": "移花",
   "contest.trump.table-exchange.description":
-    "双方各选一张可转移留场效果交换控制方，保留次数、不重放即效；压制仍绑定原效果和到期轮。",
+    "选择双方各一项可转移的留场效果，交换其控制方。",
   "contest.trump.suppress.name": "压制",
   "contest.trump.suppress.description":
-    "暂停对方一张留场效果至其下轮结束；不能选压制，目标离场时同步离场，不撤销即效。",
+    "选择对手一项留场效果，使其暂停生效直到对手下一行动轮结束。不能选择另一张「压制」。",
   "contest.trump.decommission.name": "卸载",
   "contest.trump.decommission.description":
-    "移除自己选定一张留场效果，再补最多一道具；不会取回已销毁卡体。",
+    "移除自己的一项留场效果，然后补充最多1张道具。",
   "contest.trump.banish-copy.name": "截流",
   "contest.trump.banish-copy.description":
-    "声明公开目录定义，销毁对方剩余库存中的一个同定义实例；缺牌仍消费，不影响手牌。",
+    "选择一种道具，销毁对手库存中的一张同款道具；没有同款时本卡仍会消耗。不会影响对手手牌。",
   "contest.trump.heavy-hit.name": "重担",
   "contest.trump.heavy-hit.description":
-    "对方下轮若要牌则抽最多两张数字，只交权、判定补给各一次；该轮结束后离场。",
+    "对手下一行动轮若要牌，将一次抽取最多2张数字牌。",
   "contest.trump.face-lighten.name": "缓步",
   "contest.trump.face-lighten.description":
-    "绑定自己一张明牌，有效贡献减2且最低1；同牌同类不叠加，回堆时移除绑定效果。",
+    "选择自己的一张明牌，使其点数-2，最低为1。",
   "contest.trump.face-burden.name": "加码",
-  "contest.trump.face-burden.description":
-    "绑定对方一张明牌，有效贡献加2；不改原值，同牌同类不叠加。",
+  "contest.trump.face-burden.description": "选择对手的一张明牌，使其点数+2。",
   "contest.trump.resonance.name": "共振",
   "contest.trump.resonance.description":
-    "目标锁定为21加双方当前非暗牌槽位明牌数；替换其他目标，后续牌数变化不追算。",
+    "将牌面目标设为21加上双方当前明牌总数，之后不随牌数变化。",
   "contest.trump.supply-cache.name": "备粮",
   "contest.trump.supply-cache.description":
-    "自己下次普通要牌补给门控成功时改补最多两道具后离场；门控失败不耗次数，回合末清理。",
+    "你下一次要牌若触发道具补给，将改为补充最多2张道具。",
   "contest.trump.life-trade.name": "险中求备",
   "contest.trump.life-trade.description":
-    "先取堆顶一张明牌再补最多两道具；需数字堆非空，不换人、不额外判定要牌补给。",
+    "先抽取数字牌堆顶的1张牌，再补充最多2张道具。牌堆不能为空。",
   "contest.trump.purge-hand.name": "破釜",
   "contest.trump.purge-hand.description":
-    "将自己全部其他手牌作为隐藏费用销毁，再补最多三张；须至少另一张手牌，少领不退费用。",
+    "弃掉自己所有其他道具，再补充最多3张道具。至少需要另一张道具才能使用。",
   "contest.trump.safe-hit.name": "避险",
   "contest.trump.safe-hit.description":
-    "自己下次普通要牌首张若会爆牌则公开退至堆末，否则保留；仍结束行动轮并判定一次补给，仅一次。",
+    "你下一次要牌时，若抽到的牌会令你爆牌，就将它放回牌堆底；否则正常保留。",
   "contest.trump.regret.name": "悔牌",
   "contest.trump.regret.description":
-    "撤销上一笔可撤销出牌的实际效果；不退已销毁卡体、费用、随机、行动权或已知信息，撤销删除创建新身份。",
+    "撤销上一张道具产生且仍可撤销的效果。已消耗的道具和费用不会返还，已知信息和行动进度也不会回退。",
   "contest.trump.skill-revival.name": "回仙",
   "contest.trump.skill-revival.description":
-    "本场所选主动技曾成功生效后，恢复1次次数且不超初始上限，并增加本局1次发动许可；不解除已有禁用。",
+    "若你的技能在本场比赛中曾成功生效且次数未满，恢复1次使用次数，并允许本局再发动一次。不会解除技能封锁。",
   "contest.trump.sudden-death.name": "赌命",
   "contest.trump.sudden-death.description":
-    "本回合决胜方直接赢本局，护身不能阻止；平局将标记顺延，不直接赢整场，已有标记不可重复。",
+    "下一个分出胜负的回合，其胜方直接赢下本局；平局则继续保留此效果。不会直接赢下整场比赛。",
   "contest.codex.title": "图鉴",
   "contest.codex.locked": "???",
   "contest.codex.new": "未查看",

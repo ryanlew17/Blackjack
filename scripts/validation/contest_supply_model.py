@@ -18,10 +18,11 @@ import itertools, json, math, platform, random, statistics
 from collections import Counter
 from pathlib import Path
 CARD_TABLE = Path(__file__).resolve().parents[2] / "docs/design/contest-trumps.md"
+# @req REQ-2026-029: ignore the appended player-description column.
 CARDS = []
 for line in CARD_TABLE.read_text(encoding="utf-8").splitlines():
     cells = [x.strip() for x in line.strip().strip("|").split("|")]
-    if len(cells) == 7 and cells[0].startswith(chr(96)):
+    if len(cells) == 8 and cells[0].startswith(chr(96)):
         CARDS.append((cells[0].strip(chr(96)), list(map(int, cells[3].split("/")))))
 assert len(CARDS) == 51 and len({x[0] for x in CARDS}) == 51
 SEED, SAMPLES = 20261021, 100000

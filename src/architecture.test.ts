@@ -262,6 +262,7 @@ describe("module architecture", () => {
     const { TRUMP_CATALOG } = await import("./domain/contest/trumps/catalog");
     const { isTrumpId, TRUMP_IDS } =
       await import("./domain/contest/trumps/ids");
+    // @req REQ-2026-029: the baseline table includes a player-description column.
     const rows = research
       .split("\n")
       .map((line) =>
@@ -271,7 +272,7 @@ describe("module architecture", () => {
           .map((cell) => cell.trim()),
       )
       .filter(
-        (cells) => cells.length === 7 && /^\x60[^\x60]+\x60$/.test(cells[0]),
+        (cells) => cells.length === 8 && /^\x60[^\x60]+\x60$/.test(cells[0]),
       );
     const ids = rows.map((row) => row[0].slice(1, -1));
     expect(ids).toHaveLength(51);

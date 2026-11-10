@@ -202,7 +202,8 @@ describe("Dispel All Arts", () => {
       ).toBe(true);
     },
   );
-  it("cancels Scapegoat's pending adjustment without reversing its already moved face", () => {
+  // @req REQ-2026-029: Scapegoat completes before a later Dispel All Arts.
+  it("keeps Scapegoat's successful transfer without a pending effect to cancel", () => {
     const f = fixture({
       first: "ai",
       ai: "scapegoat",
@@ -213,12 +214,19 @@ describe("Dispel All Arts", () => {
       state = play(state, "forced-draw", f.random).state;
     state = skill(state, "ai", f.random).state;
     const moved = state.round.hands.ai.at(-1)!;
+    expect(state.round.skills!.players.ai.activations[0].status).toBe(
+      "succeeded",
+    );
+    expect(
+      state.round.skills!.players.ai.activations[0].effect,
+    ).toBeUndefined();
     state = act(state, "Stay", f.random).state;
     state = skill(state, "human", f.random).state;
     expect(state.round.hands.ai).toContain(moved);
     expect(state.round.skills!.players.ai.activations[0].status).toBe(
-      "cancelled",
+      "succeeded",
     );
+    expect(state.round.skills!.players.ai.hasSucceeded).toBe(true);
     expect(f.calls.skillEffects).toBe(0);
     assertBarrierLedger({ state, events: [] });
   });

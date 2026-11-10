@@ -315,9 +315,10 @@ describe("Turn skill command admission", () => {
   );
 });
 
-describe("Provocation supply and actual response", () => {
+// @req REQ-2026-029: Provocation never supplies the watched player.
+describe("Provocation actual response", () => {
   it.each(["human", "ai"] as const)(
-    "supplies an empty target of %s exactly once before commands and only authorizes its identity to the receiver",
+    "does not supply an empty target of %s before commands",
     (caster) => {
       const f = fixture({
         human: caster === "human" ? "provoke" : "spirit-sight",
@@ -336,12 +337,10 @@ describe("Provocation supply and actual response", () => {
       const result = emptyThenWatch(f, caster),
         state = result.state,
         target = caster === "human" ? "ai" : "human";
-      const granted = resources(result).filter(
-        (e) => e.operation === "draw" && e.cause === "trigger",
+      expect(resources(result).filter((e) => e.cause === "trigger")).toEqual(
+        [],
       );
-      expect(granted).toHaveLength(1);
-      expect(granted[0].instance).not.toBeNull();
-      expect(state.round.trumps!.hands[target]).toHaveLength(1);
+      expect(state.round.trumps!.hands[target]).toHaveLength(0);
       expect(state.round.turn!.usedTrump).toBe(false);
       expect(state.round.skills!.players[caster].activations[0]).toMatchObject({
         status: "prepared",
@@ -355,12 +354,12 @@ describe("Provocation supply and actual response", () => {
         projectMatchTransition(result, player).events.flatMap((e) =>
           e.type === "round" && e.event.type === "resource" ? [e.event] : [],
         );
-      expect(projected(caster).at(-1)!.instance).toBeNull();
-      expect(projected(target).at(-1)!.instance).toEqual(granted[0].instance);
+      expect(projected(caster)).toEqual([]);
+      expect(projected(target)).toEqual([]);
       const repeated = beginTurn(state.round, state.round.turn!, f.random);
       expect(repeated).toEqual({ state: state.round, events: [] });
       expect(repeated.state).toBe(state.round);
-      expect(f.random.trumpSelection).toHaveBeenCalledTimes(7);
+      expect(f.random.trumpSelection).toHaveBeenCalledTimes(6);
       expect(f.random.trumpGate).not.toHaveBeenCalled();
       expect(f.random.skillEffects).not.toHaveBeenCalled();
       ledger(result);
@@ -466,18 +465,15 @@ describe("Provocation supply and actual response", () => {
     );
     expect(random.skillEffects).not.toHaveBeenCalled();
   });
-  it("a missing stock supply is a legal zero draw without random selection or refund", () => {
+  it("lets an empty target Stay and applies 99 without any stock supply", () => {
     const f = fixture({
       stock: { "burn-hand": 1, noop: 2 },
       humanTrumps: ["burn-hand", "noop", "noop"],
       aiTrumps: ["burn-hand", "noop", "noop"],
     });
     const started = emptyThenWatch(f);
-    expect(resources(started).at(-1)).toMatchObject({
-      operation: "draw",
-      cause: "trigger",
-      instance: null,
-    });
+    expect(resources(started).filter((e) => e.cause === "trigger")).toEqual([]);
+    expect(started.state.round.trumps!.hands.ai).toEqual([]);
     const result = finish(started.state, f.random);
     expect(skills(result).filter((e) => e.amount === 99)).toHaveLength(1);
     expect(f.random.trumpSelection).toHaveBeenCalledTimes(6);
@@ -486,7 +482,7 @@ describe("Provocation supply and actual response", () => {
     ).toBe(0);
     ledger(result);
   });
-  it("respects the target's current Embargo and consumes it once without retrying supply", () => {
+  it("does not consume the target's Embargo because Provocation grants nothing", () => {
     const f = fixture({
       stock,
       humanTrumps: ["embargo", "noop", "noop"],
@@ -498,13 +494,13 @@ describe("Provocation supply and actual response", () => {
     state = play(state, "embargo", f.random).state;
     state = activate(state, f.random).state;
     const started = act(state, "Stay", f.random);
-    expect(
-      resources(started).filter((e) => e.operation === "blocked"),
-    ).toHaveLength(1);
+    expect(resources(started).filter((e) => e.operation === "blocked")).toEqual(
+      [],
+    );
     expect(started.state.round.trumps!.hands.ai).toEqual([]);
     expect(
       started.state.round.trumps!.table.some((t) => t.kind === "embargo"),
-    ).toBe(false);
+    ).toBe(true);
     expect(
       beginTurn(started.state.round, started.state.round.turn!, f.random)
         .events,
@@ -514,39 +510,7 @@ describe("Provocation supply and actual response", () => {
       skills(finish(started.state, f.random)).filter((e) => e.amount === 99),
     ).toHaveLength(1);
   });
-  it("expires an old lock before the next pending supply", () => {
-    let { state, random } = fixture({
-      stock,
-      humanTrumps: ["noop", "noop", "noop"],
-      aiTrumps: ["embargo", "burn-hand", "noop"],
-      selections: [0],
-    });
-    state = act(state, "Stay", random).state;
-    state = play(state, "embargo", random).state;
-    state = play(state, "burn-hand", random).state;
-    state = act(state, "Stay", random).state;
-    const old = state.round.trumps!.table.find(
-      (t) => t.kind === "embargo",
-    )!.effectId;
-    state = activate(state, random).state;
-    const result = act(state, "Stay", random);
-    const removed = result.events.findIndex(
-      (e) =>
-        e.type === "round" &&
-        e.event.type === "table-effect" &&
-        e.event.effectId === old,
-    );
-    const supplied = result.events.findIndex(
-      (e) =>
-        e.type === "round" &&
-        e.event.type === "resource" &&
-        e.event.cause === "trigger",
-    );
-    expect(removed).toBeGreaterThanOrEqual(0);
-    expect(removed).toBeLessThan(supplied);
-    expect(result.state.round.trumps!.hands.ai).toHaveLength(1);
-  });
-  it("orders an earlier Bandwagon before Provocation and does not add a second supply", () => {
+  it("orders an earlier Bandwagon before Provocation without another supply", () => {
     let { state, random } = fixture({
       stock,
       humanTrumps: ["noop", "noop", "noop"],

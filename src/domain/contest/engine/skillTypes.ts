@@ -1,4 +1,4 @@
-// @req REQ-2026-027: authoritative skill state and authorized view are distinct contracts.
+// @req REQ-2026-027/029: authoritative skill state and authorized view are distinct contracts.
 import type { SkillId } from "../skills/catalog";
 import type { Difficulty, PlayerId, NumberValue } from "../types";
 
@@ -13,7 +13,6 @@ export type SkillPendingEffect =
   | {
       readonly type: "tempt-fate" | "frame" | "metamorphosis" | "soul-transfer";
     }
-  | { readonly type: "scapegoat"; readonly value: NumberValue }
   | {
       readonly type: "provoke";
       readonly targetTurn: number;

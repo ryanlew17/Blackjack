@@ -5,6 +5,7 @@ import { STOCK_QUANTITIES, createResourcePreset } from "./resources";
 import { DIFFICULTIES } from "../types";
 describe("54-definition stock quantities", () => {
   it("retains all 51 original quantities and adds the three specified cards", () => {
+    // @req REQ-2026-029: ignore the appended player-description column.
     const rows = baseline
       .split("\n")
       .map((line) =>
@@ -13,7 +14,7 @@ describe("54-definition stock quantities", () => {
           .slice(1, -1)
           .map((c) => c.trim()),
       )
-      .filter((c) => c.length === 7 && /^\x60[^\x60]+\x60$/.test(c[0]));
+      .filter((c) => c.length === 8 && /^\x60[^\x60]+\x60$/.test(c[0]));
     expect(rows).toHaveLength(51);
     for (const row of rows)
       expect(

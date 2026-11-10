@@ -238,11 +238,12 @@ it("does not commit a takeover after a stable-boundary subscriber exits or pause
     expect(random.numbers).toHaveBeenCalledTimes(11);
   }
 });
-it("commits Provocation's supply before feedback and never grants twice on pause/resume/skip", () => {
+// @req REQ-2026-029: Provocation commits only its watch, including across replay controls.
+it("commits Provocation's watch before feedback and never supplies on pause/resume/skip", () => {
   const shuffle = fixedRandom([10, 8, 11, 9]);
   let coin = true;
-  // Six fixed initial selections: human noops, AI burn+noops; the seventh is the watched supply.
-  const samples = [1.5 / 9, 1.5 / 8, 0.5 / 9, 0.5 / 8, 1.5 / 7, 0.5 / 7, 0];
+  // Six fixed initial selections: human noops and AI burn+noops.
+  const samples = [1.5 / 9, 1.5 / 8, 0.5 / 9, 0.5 / 8, 1.5 / 7, 0.5 / 7];
   const unexpected = () => {
     throw new Error("Unexpected randomness");
   };
@@ -302,16 +303,16 @@ it("commits Provocation's supply before feedback and never grants twice on pause
   api.sendCommand(legalSkillCommands(api.snapshot()!.round)[0]);
   api.skipAnimations();
   expect(api.sendCommand({ type: "Stay", player: "human" })).toBe(true);
-  expect(api.snapshot()!.round.trumps!.opponentHandCount).toBe(1);
-  expect(random.trumpSelection).toHaveBeenCalledTimes(7);
+  expect(api.snapshot()!.round.trumps!.opponentHandCount).toBe(0);
+  expect(random.trumpSelection).toHaveBeenCalledTimes(6);
   expect(api.getSnapshot().busy).toBe(true);
   api.pause();
   api.resume();
   api.skipAnimations();
   api.skipAnimations();
   vi.runAllTimers();
-  expect(api.snapshot()!.round.trumps!.opponentHandCount).toBe(1);
-  expect(random.trumpSelection).toHaveBeenCalledTimes(7);
+  expect(api.snapshot()!.round.trumps!.opponentHandCount).toBe(0);
+  expect(random.trumpSelection).toHaveBeenCalledTimes(6);
   const grants = api
     .getSnapshot()
     .recentEvents.filter(
@@ -320,8 +321,7 @@ it("commits Provocation's supply before feedback and never grants twice on pause
         e.event.type === "resource" &&
         e.event.cause === "trigger",
     );
-  expect(grants).toHaveLength(1);
-  expect(grants[0]).toMatchObject({ event: { instance: null } });
+  expect(grants).toEqual([]);
   expect(random.trumpGate).not.toHaveBeenCalled();
   expect(random.skillEffects).not.toHaveBeenCalled();
   api.exit();

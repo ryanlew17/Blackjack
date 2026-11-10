@@ -871,8 +871,9 @@ describe("copy lifecycle and other pending effects", () => {
     ).toBe(false);
     expectNoEffectRandom(random);
   });
+  // @req REQ-2026-029: Provoke ordering never adds a stock grant around Twin Bloom.
   it.each(["earlier", "later"] as const)(
-    "orders the %s armed Provoke supply with copy using the same private sequence",
+    "orders the %s armed Provoke with copy without supplying",
     (order) => {
       const { state, random } = fixture({
         ai: "provoke",
@@ -912,9 +913,7 @@ describe("copy lifecycle and other pending effects", () => {
       );
       expect(order === "earlier" ? provoke < copy : copy < provoke).toBe(true);
       expect(result.state.round.trumps!.hands.human).toHaveLength(3);
-      expect(random.trumpSelection).toHaveBeenCalledTimes(
-        order === "earlier" ? 7 : 6,
-      );
+      expect(random.trumpSelection).toHaveBeenCalledTimes(6);
       ledger(result);
     },
   );

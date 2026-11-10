@@ -38,8 +38,9 @@
 | [REQ-2026-026](./archive/REQ-2026-026-contest-trump-interface.md)                  | S2 道具手牌、留场与对抗反馈界面         | done | 用户（S2 拆分）      | src/presentation/contest/、App.tsx、i18n.ts、styles.css、src/application/contest/useContest.ts 及相关测试 | docs/design/contest-rules.md、docs/adr/ADR-004-contest-turns-and-shared-boundaries.md                                                   | 2026-10-23 |
 | [REQ-2026-027](./archive/REQ-2026-027-contest-active-skills.md)                    | S2 主动技框架、首批15技与战前选择       | done | 用户（主动技提前）   | domain/contest、application/contest、presentation/contest、i18n及测试                                     | docs/design/contest-skills.md、docs/design/contest-rules.md、docs/design/ui.md、docs/adr/ADR-004-contest-turns-and-shared-boundaries.md | 2026-11-03 |
 | [REQ-2026-028](./archive/REQ-2026-028-contest-combination-ai.md)                   | 道具与主动技组合AI对抗                  | done | 用户（S2拆分／顺延） | src/domain/contest/ai/、必要engine纯函数、src/application/contest/及测试                                  | docs/design/contest-rules.md、docs/adr/ADR-004-contest-turns-and-shared-boundaries.md                                                   | 2026-11-10 |
+| [REQ-2026-029](./archive/REQ-2026-029-contest-player-copy.md)                      | 竞赛玩家文案与技能反馈调整              | done | 用户（S2收尾）       | src/domain/contest、src/presentation/i18n.ts、竞赛设计文档及相关测试                                      | docs/design/contest-skills.md、docs/design/contest-trumps.md、docs/design/contest-rules.md、docs/design/ui.md                           | 2026-11-10 |
 
-REQ-001–028已验收归档；后续新编号自REQ-2026-029起顺延。S1周期结论见[REQ-020](archive/REQ-2026-020-contest-basic-ai.md#s1-周期归档记录)，S2依赖与实施顺序见[roadmap](../roadmap.md#s2-需求拆分与实施顺序2026-10-21)。
+REQ-001–029已验收归档；后续新编号自REQ-2026-030起顺延。S1周期结论见[REQ-020](archive/REQ-2026-020-contest-basic-ai.md#s1-周期归档记录)，S2依赖与实施顺序见[roadmap](../roadmap.md#s2-需求拆分与实施顺序2026-10-21)。
 
 ## 状态流转
 

@@ -262,20 +262,14 @@ describe("public settlement point skills", () => {
   );
 });
 
-describe("Scapegoat public legality and captured value", () => {
-  it("rejects a true but publicly unconfirmed bust and ignores privately learned totals", () => {
-    let { state, random } = fixture({
-      human: "scapegoat",
-      prefix: [8, 11, 9, 7],
-      aiTrumps: ["gen-six"],
-    });
-    state = act(state, "Stay", random).state;
-    state = play(state, "gen-six", random);
-    state = act(state, "Stay", random).state;
-    expect(effectiveTotals(state.round).ai).toBe(24);
+// @req REQ-2026-029: Scapegoat is an immediate face-up transfer without a bust check or settlement effect.
+describe("Scapegoat immediate transfer", () => {
+  it("allows a transfer without a bust and does not depend on privately learned totals", () => {
+    const { state, random } = fixture({ human: "scapegoat" });
+    expect(effectiveTotals(state.round).ai).toBe(17);
     const view = observeMatch(state, "human").round;
     expect(view.hands.ai.total).toBeNull();
-    expect(legalSkillCommands(view)).toEqual([]);
+    expect(legalSkillCommands(view)).toHaveLength(1);
     const privateView: RoundObservation = {
       ...view,
       hands: {
@@ -289,63 +283,54 @@ describe("Scapegoat public legality and captured value", () => {
         },
       },
     };
-    expect(legalSkillCommands(privateView)).toEqual([]);
-    reject(state, random);
+    expect(legalSkillCommands(privateView)).toHaveLength(1);
+    const card = state.round.hands.ai.at(-1)!;
+    const result = skill(state, random);
+    expect(result.state.round.hands.human.at(-1)).toBe(card);
+    expect(result.state.round.hands.ai).not.toContain(card);
+    expect(
+      result.state.round.skills!.players.human.activations[0],
+    ).toMatchObject({ status: "succeeded" });
+    expect(
+      result.state.round.skills!.players.human.activations[0].effect,
+    ).toBeUndefined();
+    expect(random.skillEffects).not.toHaveBeenCalled();
   });
-  it("uses a guaranteed hidden minimum to confirm bust, transfers the original bound card and snapshots raw v", () => {
+  it("transfers the original bound card immediately and never applies a settlement penalty", () => {
     let { state, random } = fixture({
       human: "scapegoat",
       prefix: [8, 2, 9, 11],
       humanTrumps: ["face-burden", "return"],
       aiTrumps: ["gen-ten"],
-      samples: [0.999999],
     });
     state = act(state, "Stay", random).state;
     state = play(state, "gen-ten", random);
     state = act(state, "Stay", random).state;
-    expect(observeMatch(state, "human").round.hands.ai.visibleTotal).toBe(21);
-    expect(legalSkillCommands(observeMatch(state, "human").round)).toHaveLength(
-      1,
-    );
     const card = state.round.hands.ai.at(-1)!;
     state = play(state, "face-burden", random, card.instanceId);
     const hidden = state.round.hiddenCards,
       deck = state.round.deck;
-    const prepared = skill(state, random);
-    state = prepared.state;
+    const activated = skill(state, random);
+    state = activated.state;
     expect(state.round.hands.human.at(-1)).toBe(card);
     expect(state.round.hiddenCards).toBe(hidden);
     expect(state.round.deck).toBe(deck);
     expect(state.round.hands.ai[0].instanceId).toBe(hidden.ai);
     expect(state.round.skills!.players.human.activations[0]).toMatchObject({
-      status: "prepared",
-      effect: { type: "scapegoat", value: 10 },
+      status: "succeeded",
     });
+    expect(
+      state.round.skills!.players.human.activations[0].effect,
+    ).toBeUndefined();
+    expect(state.round.skills!.players.human.hasSucceeded).toBe(true);
     expect(random.skillEffects).not.toHaveBeenCalled();
     state = play(state, "return", random);
     const result = finish(state, random);
-    expect(result.state.round.result!.totals).toEqual({ human: 6, ai: 13 });
-    expect(skillEvents(result)[0].amount).toBe(-11);
+    expect(result.state.round.result!.totals).toEqual({ human: 17, ai: 13 });
+    expect(skillEvents(result)).toEqual([]);
+    expect(random.skillEffects).not.toHaveBeenCalled();
   });
-  it("accepts a publicly revealed bust", () => {
-    let { state, random } = fixture({
-      human: "scapegoat",
-      prefix: [8, 11, 9, 7],
-      humanTrumps: ["reveal-opponent"],
-      aiTrumps: ["gen-six"],
-      samples: [0],
-    });
-    state = act(state, "Stay", random).state;
-    state = play(state, "gen-six", random);
-    state = act(state, "Stay", random).state;
-    state = play(state, "reveal-opponent", random);
-    expect(legalSkillCommands(observeMatch(state, "human").round)).toHaveLength(
-      1,
-    );
-    const result = finish(skill(state, random).state, random);
-    expect(skillEvents(result)[0].amount).toBe(-1);
-  });
-  it("rejects a publicly confirmed bust when the opponent has only their logical hidden card", () => {
+  it("rejects the skill when the opponent has only their logical hidden card", () => {
     let { state, random } = fixture({
       human: "scapegoat",
       prefix: [8, 11, 9, 10],
@@ -363,62 +348,39 @@ describe("Scapegoat public legality and captured value", () => {
     expect(legalSkillCommands(view)).toEqual([]);
     reject(state, random);
   });
-  it("uses the moved original value for an AI Scapegoat even if Metamorphosis later changes that instance", () => {
+  it("combines AI Scapegoat with Metamorphosis without sampling for Scapegoat", () => {
     let { state, random } = fixture({
       human: "metamorphosis",
       ai: "scapegoat",
       prefix: [8, 2, 11, 9],
       humanTrumps: ["gen-ten", "gen-one"],
-      samples: [0.999999, 0.999999],
+      samples: [0.999999],
     });
     state = play(state, "gen-ten", random);
     state = play(state, "gen-one", random);
     const original = state.round.hands.human.at(-1)!;
     state = skill(state, random).state;
     state = act(state, "Stay", random).state;
-    const prepared = skill(state, random);
-    state = prepared.state;
+    const activated = skill(state, random);
+    state = activated.state;
     expect(state.round.hands.ai.at(-1)).toBe(original);
     expect(state.round.skills!.players.ai.activations[0]).toMatchObject({
-      effect: { type: "scapegoat", value: 1 },
-      status: "prepared",
+      status: "succeeded",
     });
+    expect(
+      state.round.skills!.players.ai.activations[0].effect,
+    ).toBeUndefined();
     const result = finish(state, random);
     expect(skillEvents(result).map((e) => [e.skillId, e.amount])).toEqual([
       ["metamorphosis", undefined],
-      ["scapegoat", -2],
     ]);
     expect(
       observeMatch(result.state, "ai").round.hands.ai.cards.at(-1)!.value,
     ).toBe(11);
-    expect(result.state.round.result!.totals).toEqual({ human: 29, ai: 20 });
+    expect(result.state.round.result!.totals).toEqual({ human: 29, ai: 22 });
     expect(result.state.round.result!.winner).toBe("ai");
     expect(result.state.round.hands.ai.at(-1)).toBe(original);
-    expect(random.skillEffects).toHaveBeenCalledTimes(2);
-  });
-  it("clamps only the final combined total, after a negative adjustment followed by Frame", () => {
-    let { state, random } = fixture({
-      human: "scapegoat",
-      ai: "frame",
-      prefix: [1, 3, 2, 10],
-      humanTrumps: ["return"],
-      aiTrumps: ["gen-eleven"],
-      samples: [0.999999, 0.999999],
-    });
-    state = act(state, "Stay", random).state;
-    state = play(state, "gen-eleven", random);
-    state = act(state, "Stay", random).state;
-    state = skill(state, random).state;
-    state = play(state, "return", random);
-    state = act(state, "Stay", random).state;
-    state = skill(state, random).state;
-    const result = finish(state, random);
-    expect(skillEvents(result).map((e) => e.amount)).toEqual([-12, 4]);
-    expect(result.state.round.result!.totals).toEqual({ human: 0, ai: 13 });
-    expect(observeMatch(result.state, "human").round.hands.human.total).toBe(0);
-    expect(
-      observeMatch(result.state, "human").round.hands.human.visibleTotal,
-    ).toBe(0);
+    expect(random.skillEffects).toHaveBeenCalledTimes(1);
   });
 });
 

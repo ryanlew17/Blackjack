@@ -78,10 +78,11 @@ export function settleRoundSkills(
   const totals = {
     ...(state.settlementTotals ?? effectiveTotals(state, true)),
   };
+  // @req REQ-2026-029: Scapegoat has no settlement adjustment.
   for (const entry of pending.filter((p) => {
     const effect = p.activation.effect!;
     return (
-      ["tempt-fate", "frame", "scapegoat"].includes(effect.type) ||
+      ["tempt-fate", "frame"].includes(effect.type) ||
       (effect.type === "provoke" && effect.phase === "penalty")
     );
   })) {
@@ -91,16 +92,13 @@ export function settleRoundSkills(
         ? opponentOf(entry.player)
         : entry.player;
     const upper =
-      effect.type === "scapegoat"
-        ? effect.value + 1
-        : hiddenValues[
-            effect.type === "frame" ? entry.player : opponentOf(entry.player)
-          ] + 1;
+      hiddenValues[
+        effect.type === "frame" ? entry.player : opponentOf(entry.player)
+      ] + 1;
     const amount =
       effect.type === "provoke"
         ? 99
-        : (effect.type === "scapegoat" ? -1 : 1) *
-          (1 + Math.floor(randomUnit(random?.skillEffects!) * upper));
+        : 1 + Math.floor(randomUnit(random?.skillEffects!) * upper);
     totals[target] += amount;
     state = freezeData({
       ...state,

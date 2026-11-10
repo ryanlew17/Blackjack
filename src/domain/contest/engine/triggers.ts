@@ -284,6 +284,7 @@ export function beginTurn(
       }
       if (effect.type !== "provoke") continue;
       closeUndoWindow();
+      // @req REQ-2026-029: watch the empty-handed target without granting a trump.
       state = updateSkillActivation(
         state,
         entry.player,
@@ -298,17 +299,6 @@ export function beginTurn(
         status: "prepared",
         state,
       });
-      if (state.trumps?.hands[turn.player].length === 0) {
-        const grant = grantTrumps(
-          state,
-          turn.player,
-          1,
-          "trigger",
-          random?.trumpSelection,
-        );
-        state = grant.state;
-        events.push(...grant.events);
-      }
     }
   }
   // Takeover arms only after every starting effect; its finite sequence is a separate atomic continuation.
