@@ -79,6 +79,6 @@ S3元进度接入时，当前Storage零调用断言须按授权写入边界拆�
 
 新需求先登记GitHub Issue或requirements/active/，再关联本路线图；PRD不存需求正文。实现后更新所属设计，按[适用测试门槛](./testing.md)与自审验收归档，额外外审由用户安排。需求完成不隐含提交、合并、构建版本或发布。
 
-工具链major升级按风险独立立项，统一基线升级证据见[REQ-030](./requirements/archive/REQ-2026-030-node-26-vite-8-toolchain.md)。TypeScript 7原生编译器不再提供当前架构测试使用的Compiler API（包括`ts.ScriptTarget`），缓议至专项REQ先迁移AST守卫并量化类型检查收益；Motion 14跨两个major且牌桌动画深度使用，缓议至专项REQ以经典／竞赛、320px及减少动态效果的独立视觉回归为前置。Dependabot暂时忽略`typescript` 7.x与`motion` 14.x，对应专项REQ开工时移除该ignore，避免同major升级反复扰动其他工具链需求。
+工具链major升级按风险独立立项，统一基线升级证据见[REQ-030](./requirements/archive/REQ-2026-030-node-26-vite-8-toolchain.md)。TypeScript 6与7一并缓议至同一专项REQ：7的原生编译器不再提供当前架构测试使用的Compiler API（包括`ts.ScriptTarget`），须先迁移AST守卫并量化类型检查收益；6虽保留该API，但同属major且无独立收益评估，作为该专项内的过渡台阶一并处理。Motion 13与14同属牌桌动画深度使用的major跨度，一并缓议至专项REQ，以经典／竞赛、320px及减少动态效果的独立视觉回归为前置。Dependabot暂时忽略`typescript` 6.x与7.x、`motion` 13.x与14.x（忽略按major整段生效，仅点名最高major会漏入次高major），对应专项REQ开工时移除相关ignore，避免major升级反复扰动其他工具链需求。
 
 发布从v0.1.0起递增版本号，重大升级跳号由用户指定。**竞赛首个发布为v0.2.0**，内部迭代走v0.2.x；竞赛开发期间经典修复仍可按v0.1.x独立发布。0.x期间不预占1.0.0，待产品形态稳定再裁定。分支按变更类型使用feat/、fix/、chore/、docs/、style/、refactor/、perf/、test/、build/、ci/、revert/前缀，具体合并和发布节奏按当前任务授权。
