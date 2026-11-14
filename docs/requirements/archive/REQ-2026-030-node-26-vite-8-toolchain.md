@@ -41,4 +41,4 @@ Dependabot PR #1–#3由本REQ选择性覆盖：#1包含必须排除的TypeScrip
 - `dist/`仅含index.html与favicon.svg，一个内联脚本、无外部脚本，SHA-256与CSP完全匹配；构建无配置警告。Rolldown 1.2.19打包的AI验证在种子1完成18 Round，human以3–0获胜。
 - Chromium／WebKit的preview与`file://`、Firefox preview、Chromium dev均完成真实经典手牌及下一局操作，错误与CSP违规为0；dev WebSocket捕获`full-reload`帧。正常动态偏好下最多观察到6个并发动画。
 - 六场景均在320px下实际操作经典结算区与下注控制区，竞赛选技页和实际牌桌另经窄屏检查，均无横向溢出；减少动态效果生效。整分支独立审查无Critical／Minor，审查指出的窄屏证据缺口已补测闭环。
-- 远程交付结果待推送、实施PR CI及Dependabot PR关闭后补记，不提前记为通过。未执行合并、Release或LAN验证。
+- 远程交付：[实施PR #5](https://github.com/ryanlew17/Blackjack/pull/5)已创建；[push CI](https://github.com/ryanlew17/Blackjack/actions/runs/43641716613)与[PR CI](https://github.com/ryanlew17/Blackjack/actions/runs/43641710546)的audit、Node 26.13.1 test/build均通过。Dependabot #1–#3已按本REQ覆盖关闭，#4已按Motion 14专项缓议关闭。PR保持未合并，未执行Release或LAN验证。
