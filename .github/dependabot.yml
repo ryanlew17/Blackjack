@@ -9,9 +9,9 @@ updates:
         dependency-type: development
     ignore:
       - dependency-name: "typescript"
-        versions: ["7.x"]
+        versions: ["6.x", "7.x"]
       - dependency-name: "motion"
-        versions: ["14.x"]
+        versions: ["13.x", "14.x"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
