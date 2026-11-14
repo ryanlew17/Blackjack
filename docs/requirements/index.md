@@ -3,7 +3,7 @@
 > 适用范围：**增量需求**的唯一登记处。PRD 不内联需求正文；已实现功能的行为快照在 `../design/`，不转为需求。
 > 何时读取：开始实现任何新需求之前——先在这里（或 GitHub Issues）定位需求 ID。
 > 关联需求：本文件即需求索引。
-> 最后更新：2026-11-10
+> 最后更新：2026-11-15
 > 来源：增量需求登记与归档。
 
 ## 需求表
@@ -39,8 +39,9 @@
 | [REQ-2026-027](./archive/REQ-2026-027-contest-active-skills.md)                    | S2 主动技框架、首批15技与战前选择       | done | 用户（主动技提前）   | domain/contest、application/contest、presentation/contest、i18n及测试                                     | docs/design/contest-skills.md、docs/design/contest-rules.md、docs/design/ui.md、docs/adr/ADR-004-contest-turns-and-shared-boundaries.md | 2026-11-03 |
 | [REQ-2026-028](./archive/REQ-2026-028-contest-combination-ai.md)                   | 道具与主动技组合AI对抗                  | done | 用户（S2拆分／顺延） | src/domain/contest/ai/、必要engine纯函数、src/application/contest/及测试                                  | docs/design/contest-rules.md、docs/adr/ADR-004-contest-turns-and-shared-boundaries.md                                                   | 2026-11-10 |
 | [REQ-2026-029](./archive/REQ-2026-029-contest-player-copy.md)                      | 竞赛玩家文案与技能反馈调整              | done | 用户（S2收尾）       | src/domain/contest、src/presentation/i18n.ts、竞赛设计文档及相关测试                                      | docs/design/contest-skills.md、docs/design/contest-trumps.md、docs/design/contest-rules.md、docs/design/ui.md                           | 2026-11-10 |
+| [REQ-2026-030](./archive/REQ-2026-030-node-26-vite-8-toolchain.md)                 | Node 26基线与Vite 8工具链升级           | done | 用户（工具链升级）   | 工具链、CI、启动脚本、验证脚本及文档                                                                      | docs/architecture.md、docs/adr/ADR-002、docs/testing.md、docs/roadmap.md                                                                | 2026-11-15 |
 
-REQ-001–029已验收归档；后续新编号自REQ-2026-030起顺延。S1周期结论见[REQ-020](archive/REQ-2026-020-contest-basic-ai.md#s1-周期归档记录)，S2依赖与实施顺序见[roadmap](../roadmap.md#s2-需求拆分与实施顺序2026-10-21)。
+REQ-001–030已验收归档；后续新编号自REQ-2026-031起顺延。S1周期结论见[REQ-020](archive/REQ-2026-020-contest-basic-ai.md#s1-周期归档记录)，S2依赖与实施顺序见[roadmap](../roadmap.md#s2-需求拆分与实施顺序2026-10-21)。
 
 ## 状态流转
 

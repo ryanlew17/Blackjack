@@ -9,7 +9,7 @@
 | 领域       | 当前选择                                                         |
 | ---------- | ---------------------------------------------------------------- |
 | 界面与类型 | React 19、TypeScript严格模式；Motion、CSS、内联SVG与Web Audio。  |
-| 构建       | Vite 6、npm锁文件；Node.js 24.x ≥24.22.1 或26.x ≥26.12.1。       |
+| 构建       | Vite 8（Rolldown／Oxc）、npm锁文件；Node.js 26.x ≥26.13.1。      |
 | 验证       | Vitest、Prettier、Playwright；门槛见[testing.md](./testing.md)。 |
 
 `main.tsx`以React.StrictMode挂载`presentation/App.tsx`。App用内存中的home／classic／contest选择页面，无路由、后端或额外状态管理库。经典Hook保持挂载以保留进度和共享设置；进入竞赛先打开战前选技，确认后才建立新Match；正常页面选择标准含道具BO5开发预设和标准10项技能。
@@ -64,7 +64,8 @@ flowchart LR
 - `npm run dev`启动127.0.0.1:5173；`npm run build`执行`tsc -b`和Vite；`npm run preview`在127.0.0.1:4173预览产物。
 - `vite.config.ts`保留`base: "./"`与vite-plugin-singlefile，JS／CSS内联到`dist/index.html`，favicon外置；版本由package.json注入`__APP_VERSION__`。
 - CSP插件在singlefile内联完成后，对换行规范化的最终脚本文本计算SHA-256并写入策略，meta始终位于脚本之前。生产`connect-src 'none'`；开发增加本机WebSocket与self以支持HMR。
-- [CI](../.github/workflows/ci.yml)在main／codex/**推送、PR或手动触发时，运行high／critical依赖审计，以及Node 24.22.1／26.12.1矩阵的测试和构建。通过升级修复依赖公告，不降低审计等级或抑制公告；Actions固定commit SHA，经Dependabot PR更新。[Dependabot](../.github/dependabot.yml)每周检查npm及Actions依赖。
+- 默认浏览器构建目标为Chrome／Edge 111、Firefox 114、Safari 16.4及以上；独立AI验证脚本使用Vite 8带入的Rolldown打包，不依赖传递安装的esbuild。
+- [CI](../.github/workflows/ci.yml)在main及feat/、fix/、chore/等约定类型分支推送、PR或手动触发时，运行high／critical依赖审计，以及Node 26.13.1单点的测试和构建。通过升级修复依赖公告，不降低审计等级或抑制公告；Actions固定commit SHA，经Dependabot PR更新。[Dependabot](../.github/dependabot.yml)每周检查npm及Actions依赖。
 - 产物可通过file://直接打开，或部署到静态HTTP／HTTPS主机的根／子目录；无客户端路由回退或Service Worker。单文件分发约束见[ADR-002](./adr/ADR-002-singlefile-release-build.md)。
 
 ## 5. 权威状态与回放

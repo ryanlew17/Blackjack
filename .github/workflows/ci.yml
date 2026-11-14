@@ -2,7 +2,19 @@ name: CI
 
 on:
   push:
-    branches: [main, "codex/**"]
+    branches:
+      - main
+      - "feat/**"
+      - "fix/**"
+      - "docs/**"
+      - "style/**"
+      - "refactor/**"
+      - "perf/**"
+      - "test/**"
+      - "build/**"
+      - "ci/**"
+      - "chore/**"
+      - "revert/**"
   pull_request:
   workflow_dispatch:
 
@@ -17,21 +29,18 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: "26.12.1"
+          node-version: "26.13.1"
       - name: npm audit (lockfile only, high and above)
         run: npm audit --package-lock-only --audit-level=high
 
   test:
-    name: Tests and build (Node ${{ matrix.node-version }})
+    name: Tests and build (Node 26.13.1)
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: ["24.22.1", "26.12.1"]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: "26.13.1"
           cache: npm
       - run: npm ci
       - run: npm test
