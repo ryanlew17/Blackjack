@@ -53,16 +53,26 @@ A–E分阶段提交；中间仅进行安装、配置加载或定向验证，不
 
 ## 验收标准
 
-- [ ] A–E各有独立提交；Node 26.13.1下最终`npm ci`、全量`npm test`、`npm run typecheck`、`npm run build`、`npm run format:check`通过，既有55个测试文件／1136项测试不减少。
+- [x] A–E各有独立提交；Node 26.13.1下最终`npm ci`、全量`npm test`、`npm run typecheck`、`npm run build`、`npm run format:check`通过，既有55个测试文件／1136项测试不减少。
 - [ ] CI现有audit、test/build两个job在Node 26.13.1单点全绿；锁文件审计0漏洞，无公告或脚本警告抑制。
-- [ ] 启动脚本拒绝Node 24.22.1、26.12.1与26.13.0，接受26.13.1；文档准确表达“支持范围”，不将非engine-strict环境描述为所有npm入口均硬阻断；`.bat`编码与换行符合约束。
-- [ ] `dist/index.html`内联全部JS／CSS，仅既有favicon.svg外置；最终CSP hash与实际内联脚本一致，CSP策略及`base: "./"`未变。
-- [ ] 生产preview、干净目录`file://`、dev server均正常；Chromium验证dev WebSocket及一次真实HMR，preview与`file://`完成核心流程，WebKit完成preview／`file://`代表场景，Firefox完成preview基础流程。各场景零控制台错误、页面错误及CSP违规，并核对实际画面、320px布局、减少动态效果与代表性动画。
-- [ ] `scripts/validation/contest_ai.ts`以实际选定打包器完成至少一个固定种子的真实对抗并正常终局；未因常规测试未覆盖该入口而漏检。
-- [ ] 双语README、AGENTS.md、architecture.md、roadmap.md与最终版本、浏览器目标和缓议策略一致；Dependabot ignore与后续解除条件一致。
-- [ ] 除`vite.config.ts`最小兼容适配外无`src/`游戏代码差异；验证脚本仅调整打包入口或必要说明，无规则、存档或规则版本变化。
+- [x] 启动脚本拒绝Node 24.22.1、26.12.1与26.13.0，接受26.13.1；文档准确表达“支持范围”，不将非engine-strict环境描述为所有npm入口均硬阻断；`.bat`编码与换行符合约束。
+- [x] `dist/index.html`内联全部JS／CSS，仅既有favicon.svg外置；最终CSP hash与实际内联脚本一致，CSP策略及`base: "./"`未变。
+- [x] 生产preview、干净目录`file://`、dev server均正常；Chromium验证dev WebSocket及一次真实HMR，preview与`file://`完成核心流程，WebKit完成preview／`file://`代表场景，Firefox完成preview基础流程。各场景零控制台错误、页面错误及CSP违规，并核对实际画面、320px布局、减少动态效果与代表性动画。
+- [x] `scripts/validation/contest_ai.ts`以实际选定打包器完成至少一个固定种子的真实对抗并正常终局；未因常规测试未覆盖该入口而漏检。
+- [x] 双语README、AGENTS.md、architecture.md、roadmap.md与最终版本、浏览器目标和缓议策略一致；Dependabot ignore与后续解除条件一致。
+- [x] 除`vite.config.ts`最小兼容适配外无`src/`游戏代码差异；验证脚本仅调整打包入口或必要说明，无规则、存档或规则版本变化。
 - [ ] PR #1–#4按本REQ约定关闭或自动关闭并保留正确原因；实现经符合变更类型的独立分支（本项为`chore/`）及PR提交，无直接main推送、历史重写或Release操作。
 
 ## 验收记录
 
-尚未验收。实施完成后合并各阶段证据，记录最终版本、检查结果、浏览器范围、验证脚本打包器选择及未覆盖边界。
+2026-11-15本地实施与验证完成；GitHub CI与Dependabot PR收口尚未执行，REQ保持active。
+
+- 实现：A–E提交依次为`181830a`、`0583368`、`e368b72`、`abc3a1b`、`654f933`。最终为Node 26.13.1、Vite 8.3.8、plugin-react 6.3.0、Vitest 5.1.0、React／react-dom 19.3.1、Prettier 3.10.1；TypeScript保持5.8.3，Motion保持12.43.0。
+- 自动检查：Node 26.13.1／npm 11.20.0下干净`npm ci`、55文件／1136测试、typecheck、format、format:check、Vite 8构建全部通过，audit为0漏洞；未删除或跳过测试。仅剩fsevents可选install-script提示，未使用任何抑制手段。
+- 构建与CSP：`dist/`仅含index.html与favicon.svg，一个内联脚本、无外部脚本，最终SHA-256与CSP完全匹配；生产`connect-src 'none'`、`base: "./"`及原策略不变。package.json改为标准JSON默认导入后，构建无配置警告，singlefile与CSP hook顺序无需适配。
+- 验证脚本：Rolldown 1.2.19成功打包`contest_ai.ts`，Node 26.13.1下种子1完成18 Round，human以3–0获胜；不再需要esbuild。
+- 浏览器：Playwright 1.65.1的Chromium／WebKit preview与`file://`、Firefox preview、Chromium dev均完成真实经典手牌及下一局操作，控制台错误、页面错误、请求失败和CSP违规均为0。dev WebSocket捕获`src/main.tsx`触发的`full-reload`帧；正常动态偏好下观察到最多6个并发动画。
+- 窄屏与可访问性：六场景均在320px下实际操作经典结算区与下注控制区，scrollWidth为320且减少动态效果生效；竞赛选技页和实际牌桌另经320px检查，无横向溢出。截图已核对首页、经典结算、竞赛牌桌和正常动画结算。
+- 启动脚本：版本表达式拒绝24.22.1、26.12.1、26.13.0与27.0.0，接受26.13.1及26.14.0；`.bat`保持纯ASCII与CRLF。
+- 审查：整分支独立审查无Critical／Minor；其指出的320px仅覆盖首页问题已通过经典结算／下注区与竞赛实际牌桌补测闭环。`src/`无游戏代码差异。
+- 待办：推送`chore/node-26-vite-8`并创建实施PR，等待GitHub两job全绿后按方案关闭PR #1–#4。未执行远程关闭、合并、Release或LAN验证。
