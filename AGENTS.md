@@ -41,7 +41,7 @@ Do NOT read all of `docs/` by default. Product scope conflicts resolve to `docs/
 ## Commands
 
 ```bash
-npm ci               # install from lockfile (Node.js 24.x ≥24.22.1 or 26.x ≥26.12.1)
+npm ci               # install from lockfile (Node.js 26.x ≥26.13.1)
 npm run dev          # Vite dev server, http://127.0.0.1:5173
 npm test             # Vitest: domain rules + save validation (colocated *.test.ts)
 npm run typecheck    # strict TypeScript
@@ -55,7 +55,7 @@ No lint script — Prettier is the style gate. `start-game.bat` / `start-game.co
 
 ## CI (GitHub Actions)
 
-`.github/workflows/ci.yml` gates pushes to `main` / `codex/**` and PRs: dependency audit (fails on high/critical), `npm test`, `npm run build`. Dependabot opens weekly dependency and Actions PRs. Keep the audit clean by upgrading dependencies — never suppress advisories; workflow actions stay pinned by commit SHA. Details → `docs/architecture.md` §4.
+`.github/workflows/ci.yml` gates pushes to `main` and conventional type branches (`feat/**`, `fix/**`, `chore/**`, etc.) and PRs: dependency audit (fails on high/critical), `npm test`, `npm run build`. Dependabot opens weekly dependency and Actions PRs. Keep the audit clean by upgrading dependencies — never suppress advisories; workflow actions stay pinned by commit SHA. Details → `docs/architecture.md` §4.
 
 ## Boundaries and Known Quirks
 

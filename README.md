@@ -44,7 +44,7 @@ Classic progress and shared preferences stay in your browser; nothing leaves you
 
 ## Run from source
 
-Requires **Node.js 24.x ≥24.22.1 or 26.x ≥26.12.1** and npm.
+Requires **Node.js 26.x ≥26.13.1** and npm.
 
 ```bash
 npm ci
