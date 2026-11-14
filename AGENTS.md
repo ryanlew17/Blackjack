@@ -1,6 +1,6 @@
 # AGENTS.md — Blackjack · The Green Room
 
-Local-first, single-player Blackjack web game (React 19 + TypeScript strict + Vite 6). This file routes you to current guidance and states the hard rules; start a design-area visit from `docs/design/README.md`. Product scope authority is `docs/prd.md`; requirement implementation and acceptance evidence belong in `docs/requirements/`.
+Local-first, single-player Blackjack web game (React 19 + TypeScript strict + Vite 8). This file routes you to current guidance and states the hard rules; start a design-area visit from `docs/design/README.md`. Product scope authority is `docs/prd.md`; requirement implementation and acceptance evidence belong in `docs/requirements/`.
 
 ## Context Loading Order
 

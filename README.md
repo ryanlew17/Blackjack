@@ -19,7 +19,7 @@ A local-first, single-player Blackjack game for the browser. Play the classic gr
 
 ## Play right away
 
-Download the latest release build, unzip it, and double-click `index.html` — no Node.js or server needed. The single-file build runs over `file://` in Chrome, Edge, Firefox, and Safari, and the same folder can be uploaded to any static HTTP/HTTPS host, at the root or in a subdirectory. There is no Service Worker: a hosted copy needs the server reachable while you play.
+Download the latest release build, unzip it, and double-click `index.html` — no Node.js or server needed. The single-file build runs over `file://` and targets Chrome/Edge 111+, Firefox 114+, and Safari 16.4+. The same folder can be uploaded to any static HTTP/HTTPS host, at the root or in a subdirectory. There is no Service Worker: a hosted copy needs the server reachable while you play.
 
 ## Table rules (Classic Mode)
 

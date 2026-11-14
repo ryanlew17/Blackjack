@@ -2,7 +2,7 @@ import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import { viteSingleFile } from "vite-plugin-singlefile";
 
-import { version } from "./package.json";
+import packageJson from "./package.json" with { type: "json" };
 
 async function applyScriptHashes(html: string, dev = false): Promise<string> {
   const meta = html.match(
@@ -81,6 +81,6 @@ export default defineConfig({
   // Hash the final script bytes after singlefile has finished inlining them.
   plugins: [react(), viteSingleFile(), contentSecurityPolicy()],
   // @req REQ-2026-007: package.json is the sole version source.
-  define: { __APP_VERSION__: JSON.stringify(version) },
+  define: { __APP_VERSION__: JSON.stringify(packageJson.version) },
   base: "./",
 });

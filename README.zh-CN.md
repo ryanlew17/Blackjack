@@ -19,7 +19,7 @@
 
 ## 立即开始
 
-下载最新的 Release 构建包，解压后双击 `index.html` 即可——无需 Node.js 或本地服务器。单文件构建可在 Chrome、Edge、Firefox、Safari 中经 `file://` 运行；同一目录也可上传到任意静态 HTTP/HTTPS 服务器的根目录或子目录。项目没有 Service Worker：通过网站方式游玩时需要服务器可访问。
+下载最新的 Release 构建包，解压后双击 `index.html` 即可——无需 Node.js 或本地服务器。单文件构建可经 `file://` 运行，构建目标为 Chrome/Edge 111+、Firefox 114+、Safari 16.4+；同一目录也可上传到任意静态 HTTP/HTTPS 服务器的根目录或子目录。项目没有 Service Worker：通过网站方式游玩时需要服务器可访问。
 
 ## 牌桌规则（经典模式）
 

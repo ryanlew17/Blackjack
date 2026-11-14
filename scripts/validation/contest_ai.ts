@@ -1,5 +1,6 @@
 // @req REQ-2026-028: reproducible full matches through real commands, not patched state.
-// Run: node_modules/.bin/esbuild scripts/validation/contest_ai.ts --bundle --platform=node --format=esm --outfile=/tmp/contest-ai.mjs
+// @req REQ-2026-030: use Vite 8's Rolldown for the standalone validation bundle.
+// Run: node_modules/.bin/rolldown scripts/validation/contest_ai.ts --platform=node --format=esm --file=/tmp/contest-ai.mjs
 //      node /tmp/contest-ai.mjs > output/contest-ai.json
 // Computation sums active slices; latency includes timer yields; match duration excludes UI replay/thinking.
 // Optional P7_SEEDS=1,2 P7_OPPONENT=search (default baseline); no gameplay caps.
